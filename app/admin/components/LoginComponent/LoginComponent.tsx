@@ -42,8 +42,8 @@ export default function LoginComponent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData);
     dispatch(loginUser(formData));
+
   };
 
   return (

@@ -45,7 +45,6 @@ export default function ProductsPage() {
           `${process.env.NEXT_PUBLIC_API_URL}api/products?limit=${limit}&page=${page}`
         );
         const data = await response.data;
-        console.log(data);
 
         setProducts(data.products);
         setIsLoading(false);
