@@ -45,10 +45,11 @@ export function POST(req: NextRequest) {
             // Handle validation errors
             if (error instanceof Error && error.name === 'ValidationError') {
                 const validationErrors: Record<string, string> = {};
+                const mongooseError = error as unknown as { errors: Record<string, { message: string }> };
 
                 // Extract validation error messages
-                Object.entries((error as any).errors).forEach(([field, error]) => {
-                    validationErrors[field] = (error as any).message;
+                Object.entries(mongooseError.errors).forEach(([field, error]) => {
+                    validationErrors[field] = error.message;
                 });
 
                 return NextResponse.json(

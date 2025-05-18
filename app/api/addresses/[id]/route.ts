@@ -5,14 +5,14 @@ import connectToDatabase from '../../../../utils/db';
 import Address from '../../models/Address';
 
 // Get address by ID
-export function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    return authMiddleware(req, async (req, user) => {
-        try {
-            const { id } = params;
+    const { id } = await params;
 
+    return authMiddleware(request, async (req, user) => {
+        try {
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return NextResponse.json(
@@ -53,14 +53,13 @@ export function GET(
 }
 
 // Update address
-export function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    return authMiddleware(req, async (req, user) => {
+    const { id } = await params;
+    return authMiddleware(request, async (req, user) => {
         try {
-            const { id } = params;
-
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return NextResponse.json(
@@ -111,8 +110,8 @@ export function PUT(
                 const validationErrors: Record<string, string> = {};
 
                 // Extract validation error messages
-                Object.entries((error as any).errors).forEach(([field, error]) => {
-                    validationErrors[field] = (error as any).message;
+                Object.entries((error as unknown as { errors: Record<string, { message: string }> }).errors).forEach(([field, error]) => {
+                    validationErrors[field] = error.message;
                 });
 
                 return NextResponse.json(
@@ -130,14 +129,13 @@ export function PUT(
 }
 
 // Delete address
-export function DELETE(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    return authMiddleware(req, async (req, user) => {
+    const { id } = await params;
+    return authMiddleware(request, async (req, user) => {
         try {
-            const { id } = params;
-
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return NextResponse.json(

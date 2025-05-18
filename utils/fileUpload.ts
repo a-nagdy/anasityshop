@@ -15,6 +15,7 @@ interface UploadResult {
 interface FileBuffer {
     buffer: Buffer;
     mimetype: string;
+    name: string;
 }
 
 // Upload file to Cloudinary

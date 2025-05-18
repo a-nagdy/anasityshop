@@ -1,3 +1,4 @@
+import { CartItem } from '@/app/types/cart';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware } from '../../../../middleware/authMiddleware';
@@ -8,11 +9,11 @@ import Product from '../../models/Product';
 // Update cart item
 export function PUT(
     req: NextRequest,
-    { params }: { params: { productId: string } }
+    { params }: { params: Promise<{ productId: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         try {
-            const { productId } = params;
+            const { productId } = await params;
 
             // Validate product ID
             if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -49,7 +50,7 @@ export function PUT(
 
             // Find the cart item with matching product, color, and size
             const itemIndex = cart.items.findIndex(
-                item => item.product.toString() === productId &&
+                (item: CartItem) => item.product.toString() === productId &&
                     item.color === (color || '') &&
                     item.size === (size || '')
             );
@@ -90,11 +91,11 @@ export function PUT(
 // Remove item from cart
 export function DELETE(
     req: NextRequest,
-    { params }: { params: { productId: string } }
+    { params }: { params: Promise<{ productId: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         try {
-            const { productId } = params;
+            const { productId } = await params;
 
             // Validate product ID
             if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -118,7 +119,7 @@ export function DELETE(
             // Find the cart item with matching product, color, and size
             const initialItemsCount = cart.items.length;
             cart.items = cart.items.filter(
-                item => !(
+                (item: CartItem) => !(
                     item.product.toString() === productId &&
                     item.color === color &&
                     item.size === size

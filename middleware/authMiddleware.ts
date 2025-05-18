@@ -1,8 +1,8 @@
+import { User } from '@/app/types/user';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserById } from '../app/api/auth/authUtils';
-
 // Create JWT secret for verification
 const createSecretKey = () => {
     const secret = process.env.JWT_SECRET;
@@ -15,7 +15,7 @@ const createSecretKey = () => {
 // Auth middleware for API routes
 export async function authMiddleware(
     req: NextRequest,
-    handler: (req: NextRequest, user: any) => Promise<NextResponse>
+    handler: (req: NextRequest, user: User) => Promise<NextResponse>
 ) {
     try {
         // Get token from authorization header or cookie
@@ -25,7 +25,7 @@ export async function authMiddleware(
         if (authHeader?.startsWith('Bearer ')) {
             token = authHeader.split(' ')[1];
         } else {
-            const cookieStore = cookies();
+            const cookieStore = await cookies();
             token = cookieStore.get('adminToken')?.value;
         }
 
@@ -69,7 +69,7 @@ export async function authMiddleware(
 }
 
 // Admin check middleware
-export function isAdmin(user: any) {
+export function isAdmin(user: User) {
     if (user.role !== 'admin' && user.role !== 'super-admin') {
         return NextResponse.json(
             { success: false, message: 'Not authorized as an admin' },
@@ -80,7 +80,7 @@ export function isAdmin(user: any) {
 }
 
 // Super admin check middleware
-export function isSuperAdmin(user: any) {
+export function isSuperAdmin(user: User) {
     if (user.role !== 'super-admin') {
         return NextResponse.json(
             { success: false, message: 'Access denied. Super admin privileges required.' },

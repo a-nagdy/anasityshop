@@ -4,6 +4,7 @@ import { authMiddleware } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
+import { CartItem } from '@/app/types/cart';
 
 // Get user's cart
 export function GET(req: NextRequest) {
@@ -83,7 +84,7 @@ export function POST(req: NextRequest) {
 
             // Check if product already exists in cart
             const existingItemIndex = cart.items.findIndex(
-                item => item.product.toString() === productId &&
+                (item: CartItem) => item.product.toString() === productId &&
                     item.color === (color || '') &&
                     item.size === (size || '')
             );

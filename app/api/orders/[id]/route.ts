@@ -7,11 +7,11 @@ import Order from '../../models/Order';
 // Get order by ID
 export function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         try {
-            const { id } = params;
+            const { id } = await params;
 
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -64,7 +64,7 @@ export function GET(
 // Update order - Admin only
 export function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         // Check if user is admin
@@ -72,7 +72,7 @@ export function PUT(
         if (adminCheckResult) return adminCheckResult;
 
         try {
-            const { id } = params;
+            const { id } = await params;
 
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -128,7 +128,7 @@ export function PUT(
 // Delete order - Admin only
 export function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         // Check if user is admin
@@ -136,7 +136,7 @@ export function DELETE(
         if (adminCheckResult) return adminCheckResult;
 
         try {
-            const { id } = params;
+            const { id } = await params;
 
             // Check if ID is valid MongoDB ObjectId
             if (!mongoose.Types.ObjectId.isValid(id)) {

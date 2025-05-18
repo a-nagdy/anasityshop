@@ -3,6 +3,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { logoutUser } from "@/app/store/slices/authSlice";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -223,10 +224,15 @@ export default function Navbar() {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center focus:outline-none"
             >
-              <img
+              <Image
                 className="h-8 w-8 rounded-full object-cover"
-                src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
+                src={
+                  user?.avatar ||
+                  "https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff"
+                }
                 alt="Admin user"
+                width={32}
+                height={32}
               />
               <svg
                 className="ml-1 h-4 w-4 text-gray-500 dark:text-gray-400"

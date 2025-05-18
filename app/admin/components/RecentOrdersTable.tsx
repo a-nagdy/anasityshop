@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 type Order = {
   id: string;
@@ -11,44 +12,16 @@ type Order = {
 };
 
 export default function RecentOrdersTable() {
-  // Mock data - replace with actual data from API
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "ORD-7842",
-      customer: "John Smith",
-      date: "2023-11-05",
-      amount: 239.99,
-      status: "Completed",
-    },
-    {
-      id: "ORD-7843",
-      customer: "Sarah Johnson",
-      date: "2023-11-05",
-      amount: 125.5,
-      status: "Processing",
-    },
-    {
-      id: "ORD-7844",
-      customer: "Michael Brown",
-      date: "2023-11-04",
-      amount: 89.99,
-      status: "Pending",
-    },
-    {
-      id: "ORD-7845",
-      customer: "Emily Davis",
-      date: "2023-11-04",
-      amount: 352.75,
-      status: "Completed",
-    },
-    {
-      id: "ORD-7846",
-      customer: "Robert Wilson",
-      date: "2023-11-03",
-      amount: 199.99,
-      status: "Cancelled",
-    },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const response = await axios.get("/api/orders");
+
+      setOrders(response.data);
+    };
+    fetchOrders();
+  }, []);
 
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {

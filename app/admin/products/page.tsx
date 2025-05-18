@@ -189,6 +189,18 @@ export default function ProductsPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+            <div className="mt-2">
+              <select
+                className="block w-full max-w-xs rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
+                value={limit}
+                onChange={(e) => setLimit(parseInt(e.target.value))}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -330,12 +342,14 @@ export default function ProductsPage() {
             <button
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               onClick={() => setPage(page - 1)}
+              disabled={page === 1}
             >
               Previous
             </button>
             <button
               className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               onClick={() => setPage(page + 1)}
+              disabled={page === Math.ceil(products.length / limit)}
             >
               Next
             </button>

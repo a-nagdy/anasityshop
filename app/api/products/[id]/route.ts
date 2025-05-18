@@ -3,14 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../../middleware/authMiddleware';
 import connectToDatabase from '../../../../utils/db';
 import { deleteFile, uploadFile } from '../../../../utils/fileUpload';
+import { MongooseError, ProductData, ValidationError } from '../../../types/mongoose';
 import Product from '../../models/Product';
-
 // Get product by ID
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
-    const { id } = params;
+    const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return NextResponse.json(
@@ -31,9 +31,9 @@ export async function GET(
         }
 
         return NextResponse.json(product);
-    } catch (error: any) {
+    } catch (error: unknown) {
         return NextResponse.json(
-            { message: error.message },
+            { message: error instanceof Error ? error.message : 'An error occurred' },
             { status: 500 }
         );
     }
@@ -42,14 +42,14 @@ export async function GET(
 // Update product by ID - Admin only
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         // Check if user is admin
         const adminCheckResult = isAdmin(user);
         if (adminCheckResult) return adminCheckResult;
 
-        const { id } = params;
+        const { id } = await params;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return NextResponse.json(
@@ -74,7 +74,7 @@ export async function PUT(
             const formData = await req.formData();
 
             // Parse product data
-            const updateData: any = {};
+            const updateData: ProductData = {};
 
             // Extract fields from formData
             formData.forEach((value, key) => {
@@ -91,7 +91,7 @@ export async function PUT(
 
             // Handle slug update if name is changed but slug isn't provided
             if (updateData.name && !updateData.slug) {
-                updateData.slug = updateData.name
+                updateData.slug = (updateData.name as string)
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)/g, '');
@@ -100,7 +100,7 @@ export async function PUT(
             // Validate category ID if provided
             if (
                 updateData.category &&
-                !mongoose.Types.ObjectId.isValid(updateData.category)
+                !mongoose.Types.ObjectId.isValid(updateData.category as string)
             ) {
                 return NextResponse.json(
                     { message: 'Invalid category ID format' },
@@ -119,12 +119,22 @@ export async function PUT(
                         await deleteFile(product.image);
                     }
 
-                    const uploadResult = await uploadFile(mainImage, 'products');
+                    // Convert File to FileBuffer
+                    const arrayBuffer = await mainImage.arrayBuffer();
+                    const buffer = Buffer.from(arrayBuffer);
+                    const fileBuffer = {
+                        buffer,
+                        mimetype: mainImage.type,
+                        name: mainImage.name,
+                        file: mainImage
+                    };
+
+                    const uploadResult = await uploadFile(fileBuffer, 'products');
                     updateData.image = uploadResult.url;
                     updateData.imageId = uploadResult.publicId;
-                } catch (uploadError: any) {
+                } catch (uploadError: unknown) {
                     return NextResponse.json(
-                        { message: uploadError.message },
+                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
                         { status: 400 }
                     );
                 }
@@ -175,7 +185,20 @@ export async function PUT(
             if (additionalImages && additionalImages.length > 0) {
                 try {
                     const uploadResults = await Promise.all(
-                        additionalImages.map((file: any) => uploadFile(file, 'products'))
+                        additionalImages.map(async (file) => {
+                            if (file instanceof File) {
+                                const arrayBuffer = await file.arrayBuffer();
+                                const buffer = Buffer.from(arrayBuffer);
+                                const fileBuffer = {
+                                    buffer,
+                                    mimetype: file.type,
+                                    name: file.name,
+                                    file
+                                };
+                                return uploadFile(fileBuffer, 'products');
+                            }
+                            throw new Error('Invalid file type');
+                        })
                     );
 
                     // Merge with existing images or create new arrays
@@ -188,9 +211,9 @@ export async function PUT(
                         ...(updateData.imageIds || product.imageIds || []),
                         ...uploadResults.map(result => result.publicId)
                     ];
-                } catch (uploadError: any) {
+                } catch (uploadError: unknown) {
                     return NextResponse.json(
-                        { message: uploadError.message },
+                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
                         { status: 400 }
                     );
                 }
@@ -200,18 +223,18 @@ export async function PUT(
             if (typeof updateData.color === 'string') {
                 try {
                     updateData.color = JSON.parse(updateData.color);
-                } catch (e) {
+                } catch {
                     // If it's not valid JSON, treat it as a single value
-                    updateData.color = [updateData.color];
+                    updateData.color = [updateData.color as string];
                 }
             }
 
             if (typeof updateData.size === 'string') {
                 try {
                     updateData.size = JSON.parse(updateData.size);
-                } catch (e) {
+                } catch {
                     // If it's not valid JSON, treat it as a single value
-                    updateData.size = [updateData.size];
+                    updateData.size = [updateData.size as string];
                 }
             }
 
@@ -223,14 +246,15 @@ export async function PUT(
             );
 
             return NextResponse.json(updatedProduct);
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Handle validation errors
-            if (error.name === 'ValidationError') {
-                const errors: any = {};
+            if (error instanceof Error && error.name === 'ValidationError') {
+                const mongooseError = error as ValidationError;
+                const errors: Record<string, string> = {};
 
                 // Extract all validation errors
-                Object.keys(error.errors).forEach((field) => {
-                    errors[field] = error.errors[field].message;
+                Object.keys(mongooseError.errors).forEach((field) => {
+                    errors[field] = mongooseError.errors[field].message;
                 });
 
                 return NextResponse.json(
@@ -240,19 +264,22 @@ export async function PUT(
             }
 
             // Handle duplicate key errors
-            if (error.code === 11000) {
-                return NextResponse.json(
-                    {
-                        message: 'Duplicate value error',
-                        field: Object.keys(error.keyPattern)[0],
-                        value: error.keyValue[Object.keys(error.keyPattern)[0]],
-                    },
-                    { status: 400 }
-                );
+            if (error instanceof Error && error.name === 'MongooseError') {
+                const mongooseError = error as MongooseError;
+                if (mongooseError.code === 11000) {
+                    return NextResponse.json(
+                        {
+                            message: 'Duplicate value error',
+                            field: Object.keys(mongooseError.keyPattern || {})[0],
+                            value: mongooseError.keyValue?.[Object.keys(mongooseError.keyPattern || {})[0]],
+                        },
+                        { status: 400 }
+                    );
+                }
             }
 
             return NextResponse.json(
-                { message: error.message },
+                { message: error instanceof Error ? error.message : 'An error occurred' },
                 { status: 500 }
             );
         }
@@ -262,14 +289,14 @@ export async function PUT(
 // Delete product by ID - Admin only
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     return authMiddleware(req, async (req, user) => {
         // Check if user is admin
         const adminCheckResult = isAdmin(user);
         if (adminCheckResult) return adminCheckResult;
 
-        const { id } = params;
+        const { id } = await params;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return NextResponse.json(
@@ -307,7 +334,7 @@ export async function DELETE(
 
                     await Promise.all(deletePromises);
                 }
-            } catch (deleteError: any) {
+            } catch (deleteError: unknown) {
                 console.error('Error deleting product images:', deleteError);
                 // Continue with product deletion even if image deletion fails
             }
@@ -319,9 +346,9 @@ export async function DELETE(
                 { message: 'Product deleted successfully' },
                 { status: 200 }
             );
-        } catch (error: any) {
+        } catch (error: unknown) {
             return NextResponse.json(
-                { message: error.message },
+                { message: error instanceof Error ? error.message : 'An error occurred' },
                 { status: 500 }
             );
         }

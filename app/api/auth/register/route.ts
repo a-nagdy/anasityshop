@@ -50,14 +50,14 @@ export async function POST(req: NextRequest) {
         delete userResponse.password;
 
         return NextResponse.json(userResponse, { status: 201 });
-    } catch (error: any) {
+    } catch (error: unknown) {
         // Handle validation errors
-        if (error.name === 'ValidationError') {
-            const errors: any = {};
-
+        if (error instanceof Error && error.name === 'ValidationError') {
+            const errors: Record<string, string> = {};
+            const mongooseError = error as unknown as { errors: Record<string, { message: string }> };
             // Extract all validation errors
-            Object.keys(error.errors).forEach((field) => {
-                errors[field] = error.errors[field].message;
+            Object.keys(mongooseError.errors).forEach((field) => {
+                errors[field] = mongooseError.errors[field].message;
             });
 
             return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json(
-            { message: error.message },
+            { message: error instanceof Error ? error.message : 'An error occurred' },
             { status: 500 }
         );
     }

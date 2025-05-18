@@ -6,6 +6,21 @@ import Cart from '../models/Cart';
 import Order from '../models/Order';
 import Product from '../models/Product';
 
+type CartItem = {
+    product: {
+        _id: mongoose.Types.ObjectId;
+        name: string;
+        image: string;
+    };
+    name: string;
+    quantity: number;
+    price: number;
+    totalPrice: number;
+    color: string;
+    size: string;
+    image: string;
+};
+
 // Get orders - Admins get all orders, users get only their own
 export function GET(req: NextRequest) {
     return authMiddleware(req, async (req, user) => {
@@ -17,7 +32,7 @@ export function GET(req: NextRequest) {
             const limit = parseInt(url.searchParams.get('limit') || '10');
             const skip = (page - 1) * limit;
 
-            let query: any = {};
+            let query: Record<string, string | boolean | mongoose.Types.ObjectId> = {};
 
             // If not admin, only show user's orders
             if (user.role !== 'admin' && user.role !== 'super-admin') {
@@ -97,7 +112,7 @@ export function POST(req: NextRequest) {
                     }
 
                     // Transform cart items to order items
-                    orderData.items = cart.items.map((item: any) => ({
+                    orderData.items = cart.items.map((item: CartItem) => ({
                         product: item.product._id,
                         name: item.product.name,
                         quantity: item.quantity,

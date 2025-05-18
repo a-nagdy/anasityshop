@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import connectToDatabase from '../../../utils/db';
 import { determineProductStatus } from '../../../utils/productStatus';
+import { ProductStatus } from '@/app/types/product';
 
 const productSchema = new mongoose.Schema(
   {
@@ -95,12 +96,7 @@ productSchema.index({ name: "text", description: "text" });
 productSchema.pre("save", function (next) {
   // Only update status if quantity or active state has changed
   if (this.isModified("quantity") || this.isModified("active")) {
-    this.status = determineProductStatus(this.quantity, this.active);
-  }
-
-  // Ensure no sequentialId
-  if (this.sequentialId !== undefined) {
-    delete this.sequentialId;
+    this.status = determineProductStatus(this.quantity, this.active) as ProductStatus;
   }
 
   next();

@@ -1,3 +1,4 @@
+import { MongooseError, ProductData, ValidationError } from '@/app/types/mongoose';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
@@ -32,8 +33,8 @@ export async function GET(req: NextRequest) {
         };
 
         return NextResponse.json({ products, pagination });
-    } catch (error: any) {
-        return NextResponse.json({ message: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        return NextResponse.json({ message: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
     }
 }
 
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
             const formData = await req.formData();
 
             // Parse product data
-            const productData: any = {};
+            const productData: ProductData = {};
 
             // Extract fields from formData
             formData.forEach((value, key) => {
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
 
             // Create a slug if not provided
             if (!productData.slug && productData.name) {
-                productData.slug = productData.name
+                productData.slug = (productData.name as string)
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)/g, '');
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
 
             // Validate category ID if provided
             if (productData.category) {
-                if (!mongoose.Types.ObjectId.isValid(productData.category)) {
+                if (!mongoose.Types.ObjectId.isValid(productData.category as string)) {
                     return NextResponse.json(
                         { message: 'Invalid category ID format' },
                         { status: 400 }
@@ -83,12 +84,22 @@ export async function POST(req: NextRequest) {
             const mainImage = formData.get('image') as File;
             if (mainImage) {
                 try {
-                    const uploadResult = await uploadFile(mainImage, 'products');
+                    // Convert File to FileBuffer
+                    const arrayBuffer = await mainImage.arrayBuffer();
+                    const buffer = Buffer.from(arrayBuffer);
+                    const fileBuffer = {
+                        buffer,
+                        mimetype: mainImage.type,
+                        name: mainImage.name,
+                        file: mainImage
+                    };
+
+                    const uploadResult = await uploadFile(fileBuffer, 'products');
                     productData.image = uploadResult.url;
                     productData.imageId = uploadResult.publicId;
-                } catch (uploadError: any) {
+                } catch (uploadError: unknown) {
                     return NextResponse.json(
-                        { message: uploadError.message },
+                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
                         { status: 400 }
                     );
                 }
@@ -99,20 +110,33 @@ export async function POST(req: NextRequest) {
             if (additionalImages && additionalImages.length > 0) {
                 try {
                     const uploadResults = await Promise.all(
-                        additionalImages.map((file: any) => uploadFile(file, 'products'))
+                        additionalImages.map(async (file) => {
+                            if (file instanceof File) {
+                                const arrayBuffer = await file.arrayBuffer();
+                                const buffer = Buffer.from(arrayBuffer);
+                                const fileBuffer = {
+                                    buffer,
+                                    mimetype: file.type,
+                                    name: file.name,
+                                    file
+                                };
+                                return uploadFile(fileBuffer, 'products');
+                            }
+                            throw new Error('Invalid file type');
+                        })
                     );
 
-                    productData.images = uploadResults.map(result => result.url);
-                    productData.imageIds = uploadResults.map(result => result.publicId);
+                    productData.images = uploadResults.map(result => result.url) as string[];
+                    productData.imageIds = uploadResults.map(result => result.publicId) as string[];
 
                     // If main image is missing but we have images, use the first one
                     if (!productData.image && uploadResults.length > 0) {
                         productData.image = uploadResults[0].url;
                         productData.imageId = uploadResults[0].publicId;
                     }
-                } catch (uploadError: any) {
+                } catch (uploadError: unknown) {
                     return NextResponse.json(
-                        { message: uploadError.message },
+                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
                         { status: 400 }
                     );
                 }
@@ -122,18 +146,18 @@ export async function POST(req: NextRequest) {
             if (typeof productData.color === 'string') {
                 try {
                     productData.color = JSON.parse(productData.color);
-                } catch (e) {
+                } catch {
                     // If it's not valid JSON, treat it as a single value
-                    productData.color = [productData.color];
+                    productData.color = [productData.color as string];
                 }
             }
 
             if (typeof productData.size === 'string') {
                 try {
                     productData.size = JSON.parse(productData.size);
-                } catch (e) {
+                } catch {
                     // If it's not valid JSON, treat it as a single value
-                    productData.size = [productData.size];
+                    productData.size = [productData.size as string];
                 }
             }
 
@@ -141,14 +165,14 @@ export async function POST(req: NextRequest) {
             const product = await Product.create(productData);
             return NextResponse.json(product, { status: 201 });
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Handle validation errors
-            if (error.name === 'ValidationError') {
-                const errors: any = {};
-
+            if (error instanceof Error && error.name === 'ValidationError') {
+                const errors: Record<string, string> = {};
+                const mongooseError = error as ValidationError;
                 // Extract all validation errors
-                Object.keys(error.errors).forEach((field) => {
-                    errors[field] = error.errors[field].message;
+                Object.keys(mongooseError.errors).forEach((field) => {
+                    errors[field] = mongooseError.errors[field].message;
                 });
 
                 return NextResponse.json(
@@ -158,18 +182,21 @@ export async function POST(req: NextRequest) {
             }
 
             // Handle duplicate key errors
-            if (error.code === 11000) {
-                return NextResponse.json(
-                    {
-                        message: 'Duplicate value error',
-                        field: Object.keys(error.keyPattern)[0],
-                        value: error.keyValue[Object.keys(error.keyPattern)[0]],
-                    },
-                    { status: 400 }
-                );
+            if (error instanceof Error && error.name === 'MongooseError') {
+                const mongooseError = error as MongooseError;
+                if (mongooseError.code === 11000) {
+                    return NextResponse.json(
+                        {
+                            message: 'Duplicate value error',
+                            field: Object.keys(mongooseError.keyPattern || {})[0],
+                            value: mongooseError.keyValue?.[Object.keys(mongooseError.keyPattern || {})[0]],
+                        },
+                        { status: 400 }
+                    );
+                }
             }
 
-            return NextResponse.json({ message: error.message }, { status: 500 });
+            return NextResponse.json({ message: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
         }
     });
 } 

@@ -8,6 +8,7 @@ export type User = {
     name: string;
     email: string;
     role: string;
+    avatar: string;
 };
 
 // Define the auth state
