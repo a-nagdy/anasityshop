@@ -1,13 +1,20 @@
+import mongoose from "mongoose";
+
 export type CartItem = {
-    product: string;
+    product: {
+        _id: mongoose.Types.ObjectId;
+        name: string;
+        image: string;
+    };
     name: string;
-    image: string;
+    quantity: number;
+    price: number;
+    total: number;
     color: string;
     size: string;
-    price: number;
-    quantity: number;
-    totalPrice: number;
+    image: string;
 };
+
 
 export type Cart = {
     items: CartItem[];

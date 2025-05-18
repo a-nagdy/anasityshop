@@ -1,3 +1,4 @@
+import { CartItem } from '@/app/types/cart';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware } from '../../../middleware/authMiddleware';
@@ -5,21 +6,6 @@ import connectToDatabase from '../../../utils/db';
 import Cart from '../models/Cart';
 import Order from '../models/Order';
 import Product from '../models/Product';
-
-type CartItem = {
-    product: {
-        _id: mongoose.Types.ObjectId;
-        name: string;
-        image: string;
-    };
-    name: string;
-    quantity: number;
-    price: number;
-    totalPrice: number;
-    color: string;
-    size: string;
-    image: string;
-};
 
 // Get orders - Admins get all orders, users get only their own
 export function GET(req: NextRequest) {
@@ -71,6 +57,8 @@ export function GET(req: NextRequest) {
                 .limit(limit);
 
             // Return orders with pagination info
+
+            console.log(orders);
             return NextResponse.json({
                 orders,
                 pagination: {
@@ -117,14 +105,14 @@ export function POST(req: NextRequest) {
                         name: item.product.name,
                         quantity: item.quantity,
                         price: item.price,
-                        totalPrice: item.totalPrice,
+                        total: item.total,
                         color: item.color,
                         size: item.size,
                         image: item.product.image,
                     }));
 
                     // Set order prices from cart
-                    orderData.itemsPrice = cart.totalPrice;
+                    orderData.itemsPrice = cart.total;
                 }
 
                 // Set user ID if not provided
@@ -133,7 +121,7 @@ export function POST(req: NextRequest) {
                 }
 
                 // Calculate totals if not provided
-                if (!orderData.totalPrice) {
+                if (!orderData.total) {
                     // Calculate shipping price (simplified, could be more complex in real app)
                     const shippingPrice = orderData.shippingPrice || 10;
 
@@ -142,12 +130,12 @@ export function POST(req: NextRequest) {
                     const taxPrice = orderData.taxPrice || parseFloat((orderData.itemsPrice * taxRate).toFixed(2));
 
                     // Calculate total price
-                    const totalPrice = orderData.itemsPrice + shippingPrice + taxPrice;
+                    const total = orderData.itemsPrice + shippingPrice + taxPrice;
 
                     // Set prices
                     orderData.shippingPrice = shippingPrice;
                     orderData.taxPrice = taxPrice;
-                    orderData.totalPrice = totalPrice;
+                    orderData.total = total;
                 }
 
                 // Create new order
@@ -168,7 +156,7 @@ export function POST(req: NextRequest) {
                 if (!orderData.keepCart) {
                     await Cart.findOneAndUpdate(
                         { user: user._id },
-                        { items: [], totalItems: 0, totalPrice: 0 },
+                        { items: [], totalItems: 0, total: 0 },
                         { session }
                     );
                 }
