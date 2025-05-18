@@ -42,7 +42,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}api/products?limit=${limit}&page=${page}`
+          `/api/products?limit=${limit}&page=${page}`
         );
         const data = await response.data;
 
@@ -98,14 +98,11 @@ export default function ProductsPage() {
 
     setIsDeleting(true);
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}api/products/${productId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`/api/products/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       // Remove product from state
       setProducts(products.filter((product) => product._id !== productId));
       toast.success("Product deleted successfully");

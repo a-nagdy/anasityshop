@@ -41,7 +41,7 @@ export default function AddProductPage() {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}api/categories`
+          `/api/categories`
         );
         setCategories(response.data);
       } catch (error) {
@@ -112,7 +112,7 @@ export default function AddProductPage() {
 
       // Make API call to create product
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}api/products`,
+        `/api/products`,
         productData,
         {
           headers: {

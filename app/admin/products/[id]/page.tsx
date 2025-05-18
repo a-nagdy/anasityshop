@@ -70,16 +70,12 @@ export default function EditProductPage({
       setIsLoading(true);
       try {
         // Fetch product data
-        const productResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}api/products/${id}`
-        );
+        const productResponse = await axios.get(`/api/products/${id}`);
         const productData = productResponse.data;
         setProduct(productData);
 
         // Fetch categories
-        const categoriesResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}api/categories`
-        );
+        const categoriesResponse = await axios.get(`/api/categories`);
         setCategories(categoriesResponse.data);
 
         // Populate form data
@@ -167,15 +163,11 @@ export default function EditProductPage({
       };
 
       // Make API call to update product
-      await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}api/products/${id}`,
-        productData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(`/api/products/${id}`, productData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success("Product updated successfully!");
 

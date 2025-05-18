@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { initCronJobs } from "../utils/cron";
+import connectToDatabase from "../utils/db";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,6 +15,14 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+// Initialize database connection
+connectToDatabase();
+
+// Initialize cron jobs (in production only to avoid duplicate cron jobs in development)
+if (process.env.NODE_ENV === "production") {
+  initCronJobs();
+}
 
 export const metadata: Metadata = {
   title: "Create Next App",

@@ -16,7 +16,7 @@ const initialState: CategoryState = {
 // Get all categories
 export const fetchCategories = createAsyncThunk('categories/fetchAll', async (_, { rejectWithValue }) => {
   try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/categories`);
+    const response = await axios.get(`/api/categories`);
     return response.data;
   } catch (error: unknown) {
     const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to fetch categories' : 'Failed to fetch categories';
@@ -29,7 +29,7 @@ export const fetchCategoryById = createAsyncThunk(
   'categories/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/categories/${id}`);
+      const response = await axios.get(`/api/categories/${id}`);
       return response.data;
     } catch (error: unknown) {
       const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to fetch category' : 'Failed to fetch category';
@@ -43,10 +43,10 @@ export const createCategory = createAsyncThunk(
   'categories/create',
   async (categoryData: Partial<Category>, { rejectWithValue }) => {
     const token = getCookie('auth_token');
-    
+
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}api/categories`,
+        `/api/categories`,
         categoryData,
         {
           headers: {
@@ -54,7 +54,7 @@ export const createCategory = createAsyncThunk(
           },
         }
       );
-      
+
       toast.success('Category created successfully!');
       return response.data;
     } catch (error: unknown) {
@@ -70,10 +70,10 @@ export const updateCategory = createAsyncThunk(
   'categories/update',
   async ({ id, data }: { id: string; data: Partial<Category> }, { rejectWithValue }) => {
     const token = getCookie('auth_token');
-    
+
     try {
       const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}api/categories/${id}`,
+        `/api/categories/${id}`,
         data,
         {
           headers: {
@@ -81,7 +81,7 @@ export const updateCategory = createAsyncThunk(
           },
         }
       );
-      
+
       toast.success('Category updated successfully!');
       return response.data;
     } catch (error: unknown) {
@@ -97,14 +97,14 @@ export const deleteCategory = createAsyncThunk(
   'categories/delete',
   async (id: string, { rejectWithValue }) => {
     const token = getCookie('auth_token');
-    
+
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}api/categories/${id}`, {
+      await axios.delete(`/api/categories/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       toast.success('Category deleted successfully!');
       return id;
     } catch (error: unknown) {

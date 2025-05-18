@@ -32,7 +32,7 @@ export const loginUser = createAsyncThunk(
     async (credentials: { email: string; password: string }, { rejectWithValue }) => {
         try {
             const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL}api/auth/login`,
+                "/api/auth/login",
                 credentials
             );
 
@@ -85,7 +85,7 @@ export const checkAuthStatus = createAsyncThunk(
             // For now, we'll just simulate it
 
             const response = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_URL}api/auth/me`,
+                "/api/auth/me",
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
