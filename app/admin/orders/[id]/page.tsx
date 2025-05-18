@@ -25,6 +25,7 @@ export default function OrderDetailPage({
       const data = await response.json();
       setOrder(data);
     } catch (error) {
+      console.error("Error fetching order:", error);
       toast.error("Failed to load order details");
     } finally {
       setLoading(false);
