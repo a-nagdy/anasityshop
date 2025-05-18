@@ -1,8 +1,8 @@
+import { getUserById } from '@/app/api/models/User';
 import { User } from '@/app/types/user';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserById } from '../app/api/auth/authUtils';
 // Create JWT secret for verification
 const createSecretKey = () => {
     const secret = process.env.JWT_SECRET;

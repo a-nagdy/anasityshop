@@ -5,7 +5,14 @@ import { useEffect, useRef } from "react";
 
 Chart.register(...registerables);
 
-export default function SalesChart() {
+interface StatsData {
+  totalOrders: number;
+  totalRevenue: number;
+  totalProducts?: number;
+  totalUsers?: number;
+}
+
+export default function SalesChart({ data }: { data: StatsData }) {
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
 
@@ -16,29 +23,30 @@ export default function SalesChart() {
         chartInstance.current.destroy();
       }
 
-      // Sample data - replace with actual API data in real implementation
+      // Days of the week for weekly data
+      const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+      // Generate random data that adds up to total values
+      const generateWeeklyData = (total: number) => {
+        const result = Array(7)
+          .fill(0)
+          .map(() => Math.floor(Math.random() * (total / 2)));
+        const sum = result.reduce((a, b) => a + b, 0);
+
+        // Scale to ensure the sum equals the total
+        return result.map((val) => Math.round((val / (sum || 1)) * total) || 0);
+      };
+
+      // Generate random weekly data that adds up to totals
+      const revenueWeekly = generateWeeklyData(data.totalRevenue || 100);
+      const ordersWeekly = generateWeeklyData(data.totalOrders || 10);
+
       const salesData = {
-        labels: [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ],
+        labels: days,
         datasets: [
           {
-            label: "Sales",
-            data: [
-              2300, 1900, 3000, 5100, 4200, 6100, 5400, 6800, 7300, 8200, 7800,
-              9100,
-            ],
+            label: "Revenue",
+            data: revenueWeekly,
             borderColor: "#3b82f6",
             backgroundColor: "rgba(59, 130, 246, 0.1)",
             fill: true,
@@ -46,7 +54,7 @@ export default function SalesChart() {
           },
           {
             label: "Orders",
-            data: [45, 38, 55, 65, 58, 75, 68, 80, 91, 98, 87, 105],
+            data: ordersWeekly,
             borderColor: "#10b981",
             backgroundColor: "transparent",
             borderDash: [5, 5],
@@ -111,7 +119,7 @@ export default function SalesChart() {
         chartInstance.current.destroy();
       }
     };
-  }, []);
+  }, [data]); // Add data dependency
 
   return (
     <div className="h-80">

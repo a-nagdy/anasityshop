@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Don't re-create the model if it already exists
-const User = mongoose.models.User || mongoose.model('User', userSchema);
+ const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 // Create JWT token
 export const createToken = async (id: string) => {

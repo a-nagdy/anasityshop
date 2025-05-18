@@ -1,8 +1,13 @@
+import { Shipping } from "./checkout";
+
 export type User = {
     _id: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     email: string;
     password: string;
+    phone: string;
+    address: Shipping;
     role: string;
     createdAt: Date;
     updatedAt: Date;
@@ -13,4 +18,6 @@ export type User = {
     isPaymentVerified: boolean;
     isOrderVerified: boolean;
     isProductVerified: boolean;
+    isCustomer: boolean;
+    isAdmin: boolean;
 }

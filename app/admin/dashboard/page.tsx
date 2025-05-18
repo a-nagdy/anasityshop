@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { toast, ToastOptions } from "react-toastify";
 import RecentOrdersTable from "../components/RecentOrdersTable";
 import SalesChart from "../components/SalesChart";
 import StatCard from "../components/StatCard";
-
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -16,37 +16,36 @@ export default function AdminDashboard() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [statusData, setStatusData] = useState({
+    delivered: 0,
+    processing: 0,
+    pending: 0,
+    cancelled: 0,
+  });
+
   useEffect(() => {
-    // Simulate loading data from API
     const fetchData = async () => {
       try {
-        // In a real app, you would fetch from your API
-        // const response = await fetch('https://anasity-backend.vercel.app/api/orders/stats/summary');
-        // const data = await response.json();
+        const response = await fetch("/api/stats/summary");
+        const data = await response.json();
+        setStats({
+          totalOrders: data.totalOrders,
+          totalRevenue: data.totalRevenue,
+          totalProducts: data.totalProducts,
+          totalUsers: data.totalUsers,
+        });
+        setStatusData(data.orderStatusPercentages);
+        console.log(data);
 
-        // const response = await axios.get(
-        //   `${process.env.NEXT_PUBLIC_API_URL}/api/orders/stats/summary`
-        // );
-        // const data = await response.data;
-
-        // console.log(data);
-
-        // For now, using mock data
-        setTimeout(() => {
-          setStats({
-            totalOrders: 284,
-            totalRevenue: 15680.42,
-            totalProducts: 152,
-            totalUsers: 357,
-          });
-          setIsLoading(false);
-        }, 1500);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        toast.error(
+          "Error fetching dashboard data:",
+          error as unknown as ToastOptions
+        );
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -79,28 +78,28 @@ export default function AdminDashboard() {
           title="Total Orders"
           value={stats.totalOrders}
           icon="shopping-bag"
-          trend="+12.5%"
+          trend={`${stats.totalOrders - 100} orders`}
           trendDirection="up"
         />
         <StatCard
           title="Total Revenue"
           value={`$${stats.totalRevenue.toLocaleString()}`}
           icon="currency-dollar"
-          trend="+8.2%"
+          trend={`${stats.totalRevenue - 100} orders`}
           trendDirection="up"
         />
         <StatCard
           title="Total Products"
           value={stats.totalProducts}
           icon="cube"
-          trend="+3.1%"
+          trend={`${stats.totalProducts - 100} products`}
           trendDirection="up"
         />
         <StatCard
           title="Total Users"
           value={stats.totalUsers}
           icon="users"
-          trend="+5.4%"
+          trend={`${stats.totalUsers - 100} users`}
           trendDirection="up"
         />
       </motion.div>
@@ -115,7 +114,7 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
             Sales Overview
           </h2>
-          <SalesChart />
+          <SalesChart data={stats} />
         </motion.div>
 
         <motion.div
@@ -128,17 +127,18 @@ export default function AdminDashboard() {
             Order Status
           </h2>
           <div className="space-y-4">
-            {/* Order status chart/stats would go here */}
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Completed
+                Delivered
               </span>
-              <span className="text-sm font-medium">65%</span>
+              <span className="text-sm font-medium">
+                {statusData.delivered}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-green-600 h-2.5 rounded-full"
-                style={{ width: "65%" }}
+                style={{ width: `${statusData.delivered}%` }}
               ></div>
             </div>
 
@@ -146,12 +146,14 @@ export default function AdminDashboard() {
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Processing
               </span>
-              <span className="text-sm font-medium">20%</span>
+              <span className="text-sm font-medium">
+                {statusData.processing}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full"
-                style={{ width: "20%" }}
+                style={{ width: `${statusData.processing}%` }}
               ></div>
             </div>
 
@@ -159,12 +161,12 @@ export default function AdminDashboard() {
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Pending
               </span>
-              <span className="text-sm font-medium">10%</span>
+              <span className="text-sm font-medium">{statusData.pending}%</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-yellow-500 h-2.5 rounded-full"
-                style={{ width: "10%" }}
+                style={{ width: `${statusData.pending}%` }}
               ></div>
             </div>
 
@@ -172,12 +174,14 @@ export default function AdminDashboard() {
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Cancelled
               </span>
-              <span className="text-sm font-medium">5%</span>
+              <span className="text-sm font-medium">
+                {statusData.cancelled}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-red-600 h-2.5 rounded-full"
-                style={{ width: "5%" }}
+                style={{ width: `${statusData.cancelled}%` }}
               ></div>
             </div>
           </div>

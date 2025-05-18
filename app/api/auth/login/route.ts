@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '../../../../utils/db';
-import { comparePassword, createToken, getUserByEmail, setTokenCookie } from '../../auth/authUtils';
+import { comparePassword, createToken, getUserByEmail, setTokenCookie } from '../../models/User';
 
 export async function POST(req: NextRequest) {
     try {

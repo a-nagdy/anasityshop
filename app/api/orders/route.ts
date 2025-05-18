@@ -55,10 +55,7 @@ export function GET(req: NextRequest) {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit);
-
             // Return orders with pagination info
-
-            console.log(orders);
             return NextResponse.json({
                 orders,
                 pagination: {
