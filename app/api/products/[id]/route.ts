@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../../middleware/authMiddleware';
 import connectToDatabase from '../../../../utils/db';
-import { deleteFile, uploadFile } from '../../../../utils/fileUpload';
+import { deleteFile } from '../../../../utils/fileUpload';
+import { determineProductStatus } from '../../../../utils/productStatus';
 import { MongooseError, ProductData, ValidationError } from '../../../types/mongoose';
 import Product from '../../models/Product';
 // Get product by ID
@@ -70,24 +71,8 @@ export async function PUT(
                 );
             }
 
-            // Get form data
-            const formData = await req.formData();
-
-            // Parse product data
-            const updateData: ProductData = {};
-
-            // Extract fields from formData
-            formData.forEach((value, key) => {
-                // Skip files and special fields
-                if (
-                    key !== 'image' &&
-                    key !== 'images' &&
-                    key !== 'removeImages' &&
-                    !(value instanceof File)
-                ) {
-                    updateData[key] = value;
-                }
-            });
+            // Get JSON data
+            const updateData: ProductData = await req.json();
 
             // Handle slug update if name is changed but slug isn't provided
             if (updateData.name && !updateData.slug) {
@@ -108,42 +93,12 @@ export async function PUT(
                 );
             }
 
-            // Handle main image upload
-            const mainImage = formData.get('image') as File;
-            if (mainImage) {
-                try {
-                    // Delete old image if it exists
-                    if (product.image && product.imageId) {
-                        await deleteFile(product.image, product.imageId);
-                    } else if (product.image) {
-                        await deleteFile(product.image);
-                    }
-
-                    // Convert File to FileBuffer
-                    const arrayBuffer = await mainImage.arrayBuffer();
-                    const buffer = Buffer.from(arrayBuffer);
-                    const fileBuffer = {
-                        buffer,
-                        mimetype: mainImage.type,
-                        name: mainImage.name,
-                        file: mainImage
-                    };
-
-                    const uploadResult = await uploadFile(fileBuffer, 'products');
-                    updateData.image = uploadResult.url;
-                    updateData.imageId = uploadResult.publicId;
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
-            }
-
-            // Handle image removal if specified
-            const removeImages = formData.getAll('removeImages');
-            if (removeImages && removeImages.length > 0) {
-                const imagesToRemove = removeImages.map(item => item.toString());
+            // With JSON approach, we expect image URLs to be provided directly
+            // The actual file upload should be handled by the client using the upload API endpoint
+            
+            // Handle image removal if specified in the updateData
+            if (updateData.removeImages && Array.isArray(updateData.removeImages) && updateData.removeImages.length > 0) {
+                const imagesToRemove = updateData.removeImages;
                 const imageIdsToRemove: string[] = [];
 
                 // Build a map of image URLs to their IDs for faster lookup
@@ -158,11 +113,17 @@ export async function PUT(
                     }
                 }
 
-                // Delete the files
+                // Delete the files from Cloudinary
                 for (const imgPath of imagesToRemove) {
                     const imgId = imageMap[imgPath];
-                    await deleteFile(imgPath, imgId);
-                    if (imgId) imageIdsToRemove.push(imgId);
+                    if (imgPath) {
+                        try {
+                            await deleteFile(imgPath, imgId);
+                            if (imgId) imageIdsToRemove.push(imgId);
+                        } catch (error) {
+                            console.error('Error deleting image:', error);
+                        }
+                    }
                 }
 
                 // Update images array
@@ -178,45 +139,9 @@ export async function PUT(
                         );
                     }
                 }
-            }
-
-            // Handle new additional images
-            const additionalImages = formData.getAll('images');
-            if (additionalImages && additionalImages.length > 0) {
-                try {
-                    const uploadResults = await Promise.all(
-                        additionalImages.map(async (file) => {
-                            if (file instanceof File) {
-                                const arrayBuffer = await file.arrayBuffer();
-                                const buffer = Buffer.from(arrayBuffer);
-                                const fileBuffer = {
-                                    buffer,
-                                    mimetype: file.type,
-                                    name: file.name,
-                                    file
-                                };
-                                return uploadFile(fileBuffer, 'products');
-                            }
-                            throw new Error('Invalid file type');
-                        })
-                    );
-
-                    // Merge with existing images or create new arrays
-                    updateData.images = [
-                        ...(updateData.images || product.images || []),
-                        ...uploadResults.map(result => result.url)
-                    ];
-
-                    updateData.imageIds = [
-                        ...(updateData.imageIds || product.imageIds || []),
-                        ...uploadResults.map(result => result.publicId)
-                    ];
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
+                
+                // Remove the removeImages field as it's not part of the Product model
+                delete updateData.removeImages;
             }
 
             // Parse JSON strings if they exist
@@ -238,6 +163,13 @@ export async function PUT(
                 }
             }
 
+            // Update product status if quantity is changed
+            if (updateData.quantity !== undefined) {
+                const active = updateData.active !== undefined ? updateData.active : product.active;
+                
+                updateData.status = determineProductStatus(updateData.quantity as number, active as boolean);
+            }
+            
             // Update the product with new values
             const updatedProduct = await Product.findByIdAndUpdate(
                 id,

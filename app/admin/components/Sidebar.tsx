@@ -2,28 +2,77 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const menuItems = [
-  { name: "Dashboard", href: "/admin", icon: "home" },
-  { name: "Products", href: "/admin/products", icon: "cube" },
-  { name: "Orders", href: "/admin/orders", icon: "shopping-bag" },
-  { name: "Customers", href: "/admin/customers", icon: "users" },
-  { name: "Categories", href: "/admin/categories", icon: "folder" },
-  { name: "Settings", href: "/admin/settings", icon: "cog" },
+interface MenuGroup {
+  name: string;
+  items: {
+    name: string;
+    href: string;
+    icon: string;
+  }[];
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    name: "Catalog",
+    items: [
+      { name: "Products", href: "/admin/products", icon: "cube" },
+      { name: "Categories", href: "/admin/categories", icon: "folder" },
+    ],
+  },
+  {
+    name: "Sales",
+    items: [{ name: "Orders", href: "/admin/orders", icon: "shopping-bag" }],
+  },
+  {
+    name: "Users",
+    items: [{ name: "Customers", href: "/admin/customers", icon: "users" }],
+  },
+  {
+    name: "Settings",
+    items: [
+      { name: "Settings", href: "/admin/settings", icon: "cog" },
+      { name: "Home Page", href: "/admin/settings/homepage", icon: "home" },
+    ],
+  },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
+  // Automatically expand the group based on current pathname
+  useEffect(() => {
+    const currentGroup = menuGroups.find((group) =>
+      group.items.some((item) => item.href === pathname)
+    );
+    if (currentGroup) {
+      setExpandedGroups([currentGroup.name]);
+    }
+  }, [pathname]);
+
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups((prev) =>
+      prev.includes(groupName)
+        ? prev.filter((name) => name !== groupName)
+        : [...prev, groupName]
+    );
+  };
+
+  const handleNavigation = (href: string) => {
+    router.push(href);
+  };
 
   return (
     <>
       {/* Mobile sidebar backdrop */}
       {!isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setIsOpen(true)}
         ></div>
       )}
@@ -33,26 +82,27 @@ export default function Sidebar() {
         initial={{ x: -280 }}
         animate={{ x: isOpen ? 0 : -280 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform lg:translate-x-0 lg:static lg:inset-auto lg:h-full`}
+        className="fixed inset-y-0 left-0 z-50 w-72 bg-gray-900 shadow-xl transform lg:translate-x-0 lg:static lg:inset-auto lg:h-full"
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-            <Link href="/admin" className="flex items-center space-x-2">
-              <span className="text-xl font-semibold text-blue-600 dark:text-blue-400">
-                Anasity
-              </span>
+          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-800">
+            <Link
+              href="/admin"
+              className="flex items-center space-x-2"
+              onClick={() => handleNavigation("/admin")}
+            >
+              <span className="text-xl font-bold text-white">Anasity</span>
             </Link>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 text-gray-500 hover:text-gray-600 lg:hidden"
+              className="p-1 text-gray-400 hover:text-white lg:hidden"
             >
               <svg
                 className="w-6 h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
               >
                 <path
                   strokeLinecap="round"
@@ -65,53 +115,106 @@ export default function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`group relative flex items-center px-2 py-2 text-sm font-medium rounded-md transition duration-150 ease-in-out ${
-                    isActive
-                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700/30 dark:hover:text-white"
-                  }`}
+          <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+            {/* Dashboard Link */}
+            <Link
+              href="/admin"
+              onClick={() => handleNavigation("/admin")}
+              className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                pathname === "/admin"
+                  ? "bg-blue-600 text-white"
+                  : "text-gray-400 hover:bg-gray-800 hover:text-white"
+              }`}
+            >
+              <span className="flex items-center justify-center w-5 h-5 mr-3">
+                {getIcon("home")}
+              </span>
+              <span>Dashboard</span>
+              {pathname === "/admin" && (
+                <motion.div
+                  layoutId="activeNav"
+                  className="absolute inset-y-0 left-0 w-1 bg-blue-400 rounded-r-md"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+            </Link>
+
+            {/* Menu Groups */}
+            {menuGroups.map((group) => (
+              <div key={group.name} className="space-y-1">
+                <button
+                  onClick={() => toggleGroup(group.name)}
+                  className="flex items-center justify-between w-full px-2 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
                 >
-                  <span className="flex items-center justify-center w-5 h-5 mr-3">
-                    {getIcon(item.icon)}
-                  </span>
-                  <span>{item.name}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-y-0 left-0 w-1 bg-blue-600 dark:bg-blue-400 rounded-r-md"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                  <span className="uppercase tracking-wider">{group.name}</span>
+                  <svg
+                    className={`w-4 h-4 transform transition-transform ${
+                      expandedGroups.includes(group.name) ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
                     />
-                  )}
-                </Link>
-              );
-            })}
+                  </svg>
+                </button>
+                {expandedGroups.includes(group.name) && (
+                  <div className="space-y-1 pl-4">
+                    {group.items.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => handleNavigation(item.href)}
+                          className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                          }`}
+                        >
+                          <span className="flex items-center justify-center w-5 h-5 mr-3">
+                            {getIcon(item.icon)}
+                          </span>
+                          <span>{item.name}</span>
+                          {isActive && (
+                            <motion.div
+                              layoutId="activeNav"
+                              className="absolute inset-y-0 left-0 w-1 bg-blue-400 rounded-r-md"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                            />
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </nav>
 
           {/* User Profile */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-gray-800">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
                   A
                 </div>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Admin User
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  admin@anasity.com
-                </p>
+                <p className="text-sm font-medium text-white">Admin User</p>
+                <p className="text-xs text-gray-400">admin@anasity.com</p>
               </div>
             </div>
           </div>
@@ -122,14 +225,13 @@ export default function Sidebar() {
       <div className="lg:hidden fixed bottom-4 right-4 z-40">
         <button
           onClick={() => setIsOpen(true)}
-          className="p-2 text-white bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none"
+          className="p-3 text-white bg-blue-600 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none transition-colors"
         >
           <svg
             className="w-6 h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
           >
             <path
               strokeLinecap="round"
@@ -153,7 +255,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"
@@ -170,7 +271,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"
@@ -187,7 +287,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"
@@ -204,7 +303,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"
@@ -221,7 +319,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"
@@ -238,7 +335,6 @@ function getIcon(name: string) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
         >
           <path
             strokeLinecap="round"

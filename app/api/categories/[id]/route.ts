@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../../middleware/authMiddleware';
 import connectToDatabase from '../../../../utils/db';
-import { deleteFile, uploadFile } from '../../../../utils/fileUpload';
+import { deleteFile } from '../../../../utils/fileUpload';
 import Category from '../../models/Category';
 
 // Get category by ID
@@ -19,13 +19,19 @@ export async function GET(
     try {
         await connectToDatabase();
 
-        let category;
-        if (isObjectId) {
-            category = await Category.findById(id);
-        } else {
-            // Treat id as slug
-            category = await Category.findOne({ slug: id });
+        // Build the query based on whether we're looking up by ID or slug
+        const query = isObjectId ? Category.findById(id) : Category.findOne({ slug: id });
+        
+        // Populate parent field
+        let categoryQuery = query.populate('parent', 'name');
+        
+        // Only try to populate products if the Product model exists
+        if (mongoose.models.Product) {
+            categoryQuery = categoryQuery.populate('products');
         }
+        
+        // Execute the query
+        const category = await categoryQuery;
 
         if (!category) {
             return NextResponse.json(
@@ -34,7 +40,16 @@ export async function GET(
             );
         }
 
-        return NextResponse.json(category);
+        // Also fetch child categories if any
+        const childCategories = await Category.find({ parent: category._id })
+            .select('_id name slug image')
+            .sort({ name: 1 });
+
+        // Add child categories to the response
+        const responseData = category.toJSON();
+        responseData.children = childCategories;
+
+        return NextResponse.json(responseData);
     } catch (error: unknown) {
         return NextResponse.json(
             { message: error instanceof Error ? error.message : 'An error occurred' },
@@ -74,19 +89,8 @@ export async function PUT(
                 );
             }
 
-            // Get form data
-            const formData = await req.formData();
-
-            // Parse category data
-            const updateData: CategoryData = {};
-
-            // Extract fields from formData
-            formData.forEach((value, key) => {
-                // Skip files
-                if (key !== 'image' && !(value instanceof File)) {
-                    updateData[key] = value;
-                }
-            });
+            // Get JSON data
+            const updateData: CategoryData = await req.json();
 
             // Handle slug update if name is changed but slug isn't provided
             if (updateData.name && !updateData.slug) {
@@ -94,38 +98,6 @@ export async function PUT(
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)/g, '');
-            }
-
-            // Handle image upload if exists
-            const image = formData.get('image') as File;
-            if (image) {
-                try {
-                    // Delete old image if it exists
-                    if (category.image && category.imageId) {
-                        await deleteFile(category.image, category.imageId);
-                    } else if (category.image) {
-                        await deleteFile(category.image);
-                    }
-
-                    // Convert File to FileBuffer
-                    const arrayBuffer = await image.arrayBuffer();
-                    const buffer = Buffer.from(arrayBuffer);
-                    const fileBuffer = {
-                        buffer,
-                        mimetype: image.type,
-                        name: image.name,
-                        file: image
-                    };
-
-                    const uploadResult = await uploadFile(fileBuffer, 'categories');
-                    updateData.image = uploadResult.url;
-                    updateData.imageId = uploadResult.publicId;
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
             }
 
             // Update the category

@@ -2,7 +2,7 @@
 
 import { Order } from "@/app/types/orders";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { FaBoxOpen, FaReceipt, FaTruck, FaUser } from "react-icons/fa";
 import { toast } from "react-toastify";
 
@@ -17,7 +17,7 @@ export default function OrderDetailPage({
   const [updating, setUpdating] = useState(false);
   const { id } = use(params);
 
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/orders/${id}`);
@@ -30,11 +30,11 @@ export default function OrderDetailPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchOrder();
-  }, [id]);
+  }, [fetchOrder]);
 
   const handleStatusUpdate = async (newStatus: string) => {
     try {
@@ -353,6 +353,6 @@ export default function OrderDetailPage({
           )}
         </div>
       </div>
-    </div>
-  );
+        </div>
+    );
 }

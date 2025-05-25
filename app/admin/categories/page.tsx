@@ -17,13 +17,14 @@ export default function CategoriesPage() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<keyof Category>("name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    dispatch(fetchCategories());    
+    dispatch(fetchCategories());
   }, [dispatch]);
+
 
   useEffect(() => {
     if (error) {
@@ -35,27 +36,53 @@ export default function CategoriesPage() {
   const filteredCategories = categories.filter(
     (category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.slug?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category._id?.toLowerCase().includes(searchTerm.toLowerCase())
+      (category.slug && category.slug.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (category._id && category._id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Sort categories based on field and direction
-  const sortedCategories = [...filteredCategories].sort((a, b) => {
-    if (sortField === "name") {
-      return sortDirection === "asc" 
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name);
-    } else if (sortField === "products") {
-      const aValue = a.products || 0;
-      const bValue = b.products || 0;
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
-    } else if (sortField === "isActive") {
-      const aValue = a.isActive ? 1 : 0;
-      const bValue = b.isActive ? 1 : 0;
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+  // Create a manual sorting function to ensure proper ordering
+  const manualSort = (categories: Category[]) => {
+    
+    // Create a copy to avoid mutating the original array
+    const sorted = [...categories];
+    
+    // Sort based on the current field and direction
+    if (sortField === 'name') {
+      sorted.sort((a, b) => {
+        return sortDirection === 'asc' 
+          ? a.name.localeCompare(b.name) 
+          : b.name.localeCompare(a.name);
+      });
+    } 
+    else if (sortField === 'products') {
+      sorted.sort((a, b) => {
+        // Force conversion to number and handle undefined
+        const aProducts = a.products === undefined ? 0 : +a.products;
+        const bProducts = b.products === undefined ? 0 : +b.products;
+        
+        if (sortDirection === 'asc') {
+          return aProducts - bProducts;
+        } else {
+          return bProducts - aProducts;
+        }
+      });
     }
-    return 0;
-  });
+    else if (sortField === 'active') {
+      sorted.sort((a, b) => {
+        const aActive = a.active ? 1 : 0;
+        const bActive = b.active ? 1 : 0;
+        
+        return sortDirection === 'asc' 
+          ? aActive - bActive 
+          : bActive - aActive;
+      });
+    }
+    
+    return sorted;
+  };
+  
+  // Apply the manual sorting
+  const sortedCategories = manualSort(filteredCategories);
 
   // Pagination
   const totalPages = Math.ceil(sortedCategories.length / itemsPerPage);
@@ -65,11 +92,17 @@ export default function CategoriesPage() {
   );
 
   // Handle sort click
-  const handleSort = (field: keyof Category) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+  const handleSort = (field: string) => {
+    // Make sure field is a valid property of Category
+    const validField = field as keyof Category;
+    
+    if (validField === sortField) {
+      // Toggle direction if same field
+      const newDirection = sortDirection === "asc" ? "desc" : "asc";
+      setSortDirection(newDirection);
     } else {
-      setSortField(field);
+      // Set new field and reset direction to asc
+      setSortField(validField);
       setSortDirection("asc");
     }
   };
@@ -168,19 +201,19 @@ export default function CategoriesPage() {
                   onClick={() => handleSort("name")} 
                   className={`px-3 py-1 text-sm rounded-l-md ${sortField === "name" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 >
-                  Name {sortField === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+                  Name {sortField === "name" && (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
                 <button 
                   onClick={() => handleSort("products")} 
                   className={`px-3 py-1 text-sm ${sortField === "products" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 >
-                  Products {sortField === "products" && (sortDirection === "asc" ? "↑" : "↓")}
+                  Products {sortField === "products" && (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
                 <button 
-                  onClick={() => handleSort("isActive")} 
-                  className={`px-3 py-1 text-sm rounded-r-md ${sortField === "isActive" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                  onClick={() => handleSort("active")} 
+                  className={`px-3 py-1 text-sm rounded-r-md ${sortField === "active" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
                 >
-                  Status {sortField === "isActive" && (sortDirection === "asc" ? "↑" : "↓")}
+                  Status {sortField === "active" && (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
               </div>
             </div>
@@ -230,8 +263,8 @@ export default function CategoriesPage() {
                   )}
                 </div>
                 <div className="absolute top-2 right-2">
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${category.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-400'}`}>
-                    {category.isActive ? 'Active' : 'Inactive'}
+                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${category.active ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-400'}`}>
+                    {category.active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </div>

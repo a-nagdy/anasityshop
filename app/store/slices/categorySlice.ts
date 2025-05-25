@@ -17,6 +17,7 @@ const initialState: CategoryState = {
 export const fetchCategories = createAsyncThunk('categories/fetchAll', async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get(`/api/categories`);
+    console.log('Successfully fetched categories:', response.data);
     return response.data;
   } catch (error: unknown) {
     const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to fetch categories' : 'Failed to fetch categories';
@@ -51,6 +52,7 @@ export const createCategory = createAsyncThunk(
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         }
       );
@@ -78,6 +80,7 @@ export const updateCategory = createAsyncThunk(
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         }
       );

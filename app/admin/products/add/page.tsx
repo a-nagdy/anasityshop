@@ -41,7 +41,8 @@ export default function AddProductPage() {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `/api/categories`
+          `/api/categories`,
+         
         );
         setCategories(response.data);
       } catch (error) {
@@ -95,28 +96,53 @@ export default function AddProductPage() {
     setFormError("");
 
     try {
-      // Format the data for the API
-      const productData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity),
-        color: formData.color
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        size: formData.size
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-      };
+      // Create a FormData object for the API
+      const productFormData = new FormData();
+      
+      // Add basic fields
+      productFormData.append('name', formData.name);
+      productFormData.append('description', formData.description);
+      productFormData.append('price', formData.price);
+      productFormData.append('quantity', formData.quantity);
+      productFormData.append('category', formData.category);
+      productFormData.append('featured', String(formData.featured));
+      productFormData.append('shipping', String(formData.shipping));
+      productFormData.append('active', String(formData.active));
+      
+      // Handle arrays (color and size)
+      const colors = formData.color
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      
+      const sizes = formData.size
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      
+      // Add arrays as JSON strings
+      productFormData.append('color', JSON.stringify(colors));
+      productFormData.append('size', JSON.stringify(sizes));
+      
+      // Add image URLs if they exist
+      if (formData.image) {
+        productFormData.append('image', formData.image);
+      }
+      
+      if (formData.images && formData.images.length > 0) {
+        formData.images.forEach((imageUrl, index) => {
+          productFormData.append(`images[${index}]`, imageUrl);
+        });
+      }
 
-      // Make API call to create product
+      // Make API call to create product with FormData
       await axios.post(
         `/api/products`,
-        productData,
+        productFormData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            // Let axios set the correct content-type for FormData
           },
         }
       );

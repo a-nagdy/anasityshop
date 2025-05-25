@@ -2,8 +2,9 @@ import { CategoryData, MongooseError, ValidationError } from '@/app/types/mongoo
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
-import { uploadFile } from '../../../utils/fileUpload';
+// No longer using file upload with JSON approach
 import Category from '../models/Category';
+import mongoose from 'mongoose';
 
 // Get all categories
 export async function GET(req: NextRequest) {
@@ -13,9 +14,44 @@ export async function GET(req: NextRequest) {
         // Check if we should only return active categories
         const url = new URL(req.url);
         const activeOnly = url.searchParams.get('active') === 'true';
+        const parentOnly = url.searchParams.get('parentOnly') === 'true';
+        const categoryIds = url.searchParams.get('categoryIds');
+        const limit = url.searchParams.get('limit') || 6;
 
-        const query = activeOnly ? { active: true } : {};
-        const categories = await Category.find(query).sort({ name: 1 });
+        // Build query based on parameters
+        const query: { active?: boolean; parent?: null; _id?: { $in: string[] } | string ,limit?: number} = {};
+        let categoriesQuery;
+        if (activeOnly) {
+            query.active = true;
+        }
+        
+        if (parentOnly) {
+            query.parent = null; // Only root categories
+        }
+        if (categoryIds) {
+            const ids = categoryIds.split(',');
+            query._id = { $in: ids };
+            categoriesQuery = Category.find(query)
+            .populate('parent', 'name')
+            .populate({
+              path: 'products',
+              options: { limit: parseInt(limit) } 
+            })
+            .sort({ name: 1 });
+          }else{
+              // Populate the parent field to get parent category details
+               categoriesQuery = Category.find(query)
+                  .populate('parent', 'name')
+                  .sort({ name: 1 });
+                    
+        }
+            
+        // Only try to populate products if the Product model exists
+        if (mongoose.models.Product) {
+            categoriesQuery = categoriesQuery.populate('products');
+        }
+        
+        const categories = await categoriesQuery;
 
         if (!categories || categories.length === 0) {
             return NextResponse.json({ message: 'No categories found' }, { status: 404 });
@@ -37,19 +73,8 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
 
-            // Get form data
-            const formData = await req.formData();
-
-            // Parse category data
-            const categoryData: CategoryData = {};
-
-            // Extract fields from formData
-            formData.forEach((value, key) => {
-                // Skip files
-                if (key !== 'image' && !(value instanceof File)) {
-                    categoryData[key] = value;
-                }
-            });
+            // Get JSON data
+            const categoryData: CategoryData = await req.json();
 
             // Create a slug if not provided
             if (!categoryData.slug && categoryData.name) {
@@ -57,31 +82,6 @@ export async function POST(req: NextRequest) {
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)/g, '');
-            }
-
-            // Handle image upload if exists
-            const image = formData.get('image') as File;
-            if (image) {
-                try {
-                    // Convert File to FileBuffer
-                    const arrayBuffer = await image.arrayBuffer();
-                    const buffer = Buffer.from(arrayBuffer);
-                    const fileBuffer = {
-                        buffer,
-                        mimetype: image.type,
-                        name: image.name,
-                        file: image
-                    };
-
-                    const uploadResult = await uploadFile(fileBuffer, 'categories');
-                    categoryData.image = uploadResult.url;
-                    categoryData.imageId = uploadResult.publicId;
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
             }
 
             // Create a new category

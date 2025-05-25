@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { uploadFileToCloudinary } from "../utils/clientFileUpload";
 
 type ImageUploaderProps = {
   imageUrl: string;
@@ -19,11 +20,9 @@ const ImageUploader = ({
   preview = true,
   previewSize = "medium",
   label = "Image",
-  placeholder = "Enter image URL",
   className = "",
 }: ImageUploaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [urlInput, setUrlInput] = useState(imageUrl);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -36,58 +35,65 @@ const ImageUploader = ({
     large: "h-64 w-full",
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Create a preview URL for the selected image
+    // Create a temporary preview URL for the selected image
     const previewUrl = URL.createObjectURL(file);
-    onImageChange(previewUrl);
+    onImageChange(previewUrl); // Set temporary preview
 
     // If onFileUpload callback is provided, call it with the file
     if (onFileUpload) {
       onFileUpload(file);
     } else {
-      // Otherwise, simulate upload
-      simulateImageUpload(file);
+      // Otherwise, upload to Cloudinary
+      await uploadImageToCloudinary(file);
     }
 
     // Close dropdown after selection
     setIsDropdownOpen(false);
   };
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUrlInput(e.target.value);
-  };
 
-  const handleUrlSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (urlInput.trim()) {
-      onImageChange(urlInput.trim());
-      setIsDropdownOpen(false);
+  const uploadImageToCloudinary = async (file: File) => {
+    let progressInterval: NodeJS.Timeout | undefined;
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Start progress animation
+      progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          return prev < 90 ? prev + 10 : prev;
+        });
+      }, 300);
+
+      // Actually upload the file to Cloudinary
+      const result = await uploadFileToCloudinary(file, 'categories');
+      
+      // Update with the real Cloudinary URL
+      if (result && result.url) {
+        onImageChange(result.url);
+      }
+
+      // Complete the progress bar
+      if (progressInterval) clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
+
+      return result;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      if (progressInterval) clearInterval(progressInterval);
+      setIsUploading(false);
+      setUploadProgress(0);
+      alert('Failed to upload image. Please try again.');
     }
-  };
-
-  const simulateImageUpload = (file: File) => {
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    // Simulate progress updates
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        const newProgress = prev + 10;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsUploading(false);
-            setUploadProgress(0);
-            // Log the file name to use the parameter and avoid linting error
-            console.log(`Upload simulated for: ${file.name}`);
-          }, 500);
-        }
-        return newProgress;
-      });
-    }, 300);
   };
 
   return (
@@ -225,25 +231,7 @@ const ImageUploader = ({
               onChange={handleFileChange}
               className="hidden"
             />
-
-            {/* URL Input Option */}
-            <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
-              <form onSubmit={handleUrlSubmit} className="flex">
-                <input
-                  type="text"
-                  value={urlInput}
-                  onChange={handleUrlChange}
-                  placeholder={placeholder}
-                  className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-1 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-r-md"
-                >
-                  Add
-                </button>
-              </form>
-            </div>
+      
           </div>
         )}
       </div>
