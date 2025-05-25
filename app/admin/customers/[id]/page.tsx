@@ -1,13 +1,14 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 export default function EditCustomerPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const { id } = use(params);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ export default function EditCustomerPage({
   useEffect(() => {
     const fetchCustomer = async () => {
       try {
-        const res = await fetch(`/api/customers/${params.id}`);
+        const res = await fetch(`/api/customers/${id}`);
         const data = await res.json();
         setFormData({
           firstName: data.firstName,
@@ -45,13 +46,13 @@ export default function EditCustomerPage({
       }
     };
     fetchCustomer();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch(`/api/customers/${params.id}`, {
+      const res = await fetch(`/api/customers/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
