@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import connectToDatabase from "../utils/db";
+import Settings from "./api/models/Settings";
 import BackgroundWrapper from "./components/home/BackgroundWrapper";
 import CategorySlider from "./components/home/CategorySlider";
 import HeroSection from "./components/home/HeroSection";
@@ -14,7 +16,7 @@ import {
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-// Server component - use fetch API
+// Server component - use direct database access instead of fetch
 
 async function getHomepageSettings(): Promise<HomepageSettingsValue> {
   // Default settings to use if API call fails
@@ -30,70 +32,32 @@ async function getHomepageSettings(): Promise<HomepageSettingsValue> {
     animation3dEnabled: true,
   };
 
-  // In build time, return default settings to avoid dynamic server usage
-  if (
-    process.env.NODE_ENV === "production" &&
-    !process.env.NEXT_PUBLIC_BASE_URL
-  ) {
-    return defaultSettings;
-  }
-
   try {
-    // Make a direct call to the API route
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const response = await fetch(`${baseUrl}/api/settings/homepage`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "force-cache",
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
+    // Direct database access instead of HTTP fetch
+    await connectToDatabase();
 
-    if (!response.ok) {
-      console.warn(`Homepage settings API error: ${response.status}`);
+    // Try to get homepage settings
+    const homepageSettings = await Settings.findOne({ name: "homepage" });
+
+    // If not found, return default settings
+    if (!homepageSettings || !homepageSettings.value) {
       return defaultSettings;
     }
 
-    const data = await response.json();
+    const settings = homepageSettings.value as HomepageSettingsValue;
 
-    // The settings are in the 'value' property of the response
-    if (data && data.value) {
-      const settings = data.value as HomepageSettingsValue;
-      // Ensure all required properties exist
-      return {
-        heroBanners: settings.heroBanners || [],
-        categorySliders: settings.categorySliders || [],
-        productSliders: settings.productSliders || [],
-        showFeaturedCategories: settings.showFeaturedCategories ?? true,
-        showNewArrivals: settings.showNewArrivals ?? true,
-        showBestsellers: settings.showBestsellers ?? true,
-        backgroundColor: settings.backgroundColor || "#ffffff",
-        accentColor: settings.accentColor || "#3b82f6",
-        animation3dEnabled: settings.animation3dEnabled ?? true,
-      };
-    }
-
-    // If no value property, try using the data directly
-    if (
-      data &&
-      (data.heroBanners || data.categorySliders || data.productSliders)
-    ) {
-      return {
-        heroBanners: data.heroBanners || [],
-        categorySliders: data.categorySliders || [],
-        productSliders: data.productSliders || [],
-        showFeaturedCategories: data.showFeaturedCategories ?? true,
-        showNewArrivals: data.showNewArrivals ?? true,
-        showBestsellers: data.showBestsellers ?? true,
-        backgroundColor: data.backgroundColor || "#ffffff",
-        accentColor: data.accentColor || "#3b82f6",
-        animation3dEnabled: data.animation3dEnabled ?? true,
-      };
-    }
-
-    // If we get here, return default settings
-    return defaultSettings;
+    // Ensure all required properties exist
+    return {
+      heroBanners: settings.heroBanners || [],
+      categorySliders: settings.categorySliders || [],
+      productSliders: settings.productSliders || [],
+      showFeaturedCategories: settings.showFeaturedCategories ?? true,
+      showNewArrivals: settings.showNewArrivals ?? true,
+      showBestsellers: settings.showBestsellers ?? true,
+      backgroundColor: settings.backgroundColor || "#ffffff",
+      accentColor: settings.accentColor || "#3b82f6",
+      animation3dEnabled: settings.animation3dEnabled ?? true,
+    };
   } catch (error) {
     console.error("Error in getHomepageSettings:", error);
     return defaultSettings;
