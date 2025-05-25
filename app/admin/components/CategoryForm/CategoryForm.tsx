@@ -1,10 +1,8 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
 import ImageUploader from "@/app/components/ImageUploader";
-import { CategoryFormProps } from "@/app/types/categoryTypes";
-import { Category } from "@/app/types/categoryTypes";
-
+import { Category, CategoryFormProps } from "@/app/types/categoryTypes";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 export default function CategoryForm({
   initialData = {},
@@ -18,7 +16,7 @@ export default function CategoryForm({
     description: initialData.description || "",
     image: initialData.image || "",
     parent: initialData.parent || null,
-    isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+    active: initialData.active !== undefined ? initialData.active : true,
   });
 
   const handleChange = (
@@ -110,14 +108,14 @@ export default function CategoryForm({
           <div className="flex items-center">
             <input
               type="checkbox"
-              id="isActive"
-              name="isActive"
-              checked={formData.isActive}
+              id="active"
+              name="active"
+              checked={formData.active}
               onChange={handleChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
             <label
-              htmlFor="isActive"
+              htmlFor="active"
               className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
             >
               Active

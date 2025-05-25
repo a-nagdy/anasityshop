@@ -55,9 +55,16 @@ export default function CategorySlider({
       setIsLoading(true);
       setError("");
 
-      const response = await fetch(apiUrl, { cache: "force-cache" });
+      const response = await fetch(apiUrl, {
+        cache: "force-cache",
+        next: { revalidate: 3600 },
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to fetch categories");
+        console.error(
+          `Categories API error: ${response.status} ${response.statusText}`
+        );
+        throw new Error(`Failed to fetch categories: ${response.status}`);
       }
 
       const data = await response.json();

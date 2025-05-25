@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
         const categories = await categoriesQuery;
 
         if (!categories || categories.length === 0) {
-            return NextResponse.json({ message: 'No categories found' }, { status: 404 });
+            return NextResponse.json({ categories: [] });
         }
 
         return NextResponse.json({ categories });

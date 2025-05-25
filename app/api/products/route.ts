@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
             .sort({ createdAt: -1 }); // Sort by newest first
 
         if (!products || products.length === 0) {
-            return NextResponse.json({ message: 'No products found' }, { status: 404 });
+            return NextResponse.json({ products: [] });
         }
 
         const totalProducts = await Product.countDocuments(query);

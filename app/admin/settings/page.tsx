@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
-import { motion } from "framer-motion";
-import HomepageSettingsForm from "./components/HomepageSettingsForm";
-import { HomepageSettingsValue, SettingsDocument } from "../../api/models/Settings";
 import { LoadingSpinner } from "@/app/components/ui/LoadingSpinner";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import {
+  HomepageSettingsValue,
+  SettingsDocument,
+} from "../../api/models/Settings";
+import HomepageSettingsForm from "./components/HomepageSettingsForm";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsDocument | null>(null);
@@ -112,7 +115,7 @@ export default function SettingsPage() {
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         {activeTab === "homepage" && (
           <HomepageSettingsForm
-            settings={settings?.value || {}}
+            settings={settings?.value as HomepageSettingsValue}
             onSave={handleSaveSettings}
             isSaving={isSaving}
           />

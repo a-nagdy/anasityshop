@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest) {
         // Find banners that are being removed
         const removedBanners = currentBanners.filter(
           (banner: HeroBanner) => !newBanners.some((newBanner: HeroBanner) => 
-            newBanner._id && newBanner._id.toString() === banner._id.toString()
+            newBanner._id && newBanner._id.toString() === banner._id?.toString()
           )
         );
         

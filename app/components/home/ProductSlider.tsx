@@ -73,6 +73,7 @@ export default function ProductSlider({
 
       const response = await fetch(apiUrl, {
         cache: "force-cache",
+        next: { revalidate: 3600 },
         signal,
       });
 

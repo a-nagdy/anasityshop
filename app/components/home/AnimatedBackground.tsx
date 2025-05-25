@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { motion } from "framer-motion";
+import { useRef, useState } from "react";
 import * as THREE from "three";
-import { Sphere, MeshDistortMaterial } from "@react-three/drei";
-
 
 interface AnimatedBackgroundProps {
   accentColor: string;
@@ -47,7 +46,9 @@ function AnimatedSphere({ color }: { color: string }) {
 // Create custom motion components for Three.js
 const MotionGroup = motion.create("group");
 
-export default function AnimatedBackground({ accentColor }: AnimatedBackgroundProps) {
+export default function AnimatedBackground({
+  accentColor,
+}: AnimatedBackgroundProps) {
   // Convert hex to RGB for better control
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -62,15 +63,22 @@ export default function AnimatedBackground({ accentColor }: AnimatedBackgroundPr
 
   const rgb = hexToRgb(accentColor);
   const primaryColor = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-  const secondaryColor = `rgb(${Math.max(0, rgb.r - 40)}, ${Math.max(0, rgb.g - 20)}, ${Math.min(255, rgb.b + 40)})`;
+  const secondaryColor = `rgb(${Math.max(0, rgb.r - 40)}, ${Math.max(
+    0,
+    rgb.g - 20
+  )}, ${Math.min(255, rgb.b + 40)})`;
 
   return (
     <div className="fixed inset-0 w-full h-full -z-10">
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
-        <directionalLight position={[-10, -10, -5]} intensity={0.5} color={secondaryColor} />
-        
+        <directionalLight
+          position={[-10, -10, -5]}
+          intensity={0.5}
+          color={secondaryColor}
+        />
+
         <MotionGroup
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -95,10 +103,10 @@ export default function AnimatedBackground({ accentColor }: AnimatedBackgroundPr
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
-          position={[0, -5, -15]}
-          scale={3}
         >
-          <AnimatedSphere color={primaryColor} />
+          <group position={[0, 0, -5]}>
+            <AnimatedSphere color={primaryColor} />
+          </group>
         </MotionGroup>
       </Canvas>
     </div>
