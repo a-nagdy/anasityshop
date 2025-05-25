@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
 // No longer using file upload with JSON approach
-import Category from '../models/Category';
 import mongoose from 'mongoose';
+import Category from '../models/Category';
 
 // Get all categories
 export async function GET(req: NextRequest) {
@@ -15,49 +15,56 @@ export async function GET(req: NextRequest) {
         const url = new URL(req.url);
         const activeOnly = url.searchParams.get('active') === 'true';
         const parentOnly = url.searchParams.get('parentOnly') === 'true';
+        const featured = url.searchParams.get('featured') === 'true';
         const categoryIds = url.searchParams.get('categoryIds');
         const limit = url.searchParams.get('limit') || 6;
 
         // Build query based on parameters
-        const query: { active?: boolean; parent?: null; _id?: { $in: string[] } | string ,limit?: number} = {};
+        const query: { active?: boolean; parent?: null; _id?: { $in: string[] } | string, limit?: number } = {};
         let categoriesQuery;
         if (activeOnly) {
             query.active = true;
         }
-        
+
         if (parentOnly) {
             query.parent = null; // Only root categories
         }
+
+        if (featured) {
+            // For featured categories, return active categories with images
+            query.active = true;
+        }
+
         if (categoryIds) {
             const ids = categoryIds.split(',');
             query._id = { $in: ids };
             categoriesQuery = Category.find(query)
-            .populate('parent', 'name')
-            .populate({
-              path: 'products',
-              options: { limit: parseInt(limit) } 
-            })
-            .sort({ name: 1 });
-          }else{
-              // Populate the parent field to get parent category details
-               categoriesQuery = Category.find(query)
-                  .populate('parent', 'name')
-                  .sort({ name: 1 });
-                    
+                .populate('parent', 'name')
+                .populate({
+                    path: 'products',
+                    options: { limit: parseInt(limit as string) }
+                })
+                .sort({ name: 1 });
+        } else {
+            // Populate the parent field to get parent category details
+            categoriesQuery = Category.find(query)
+                .populate('parent', 'name')
+                .sort({ name: 1 });
+
         }
-            
+
         // Only try to populate products if the Product model exists
         if (mongoose.models.Product) {
             categoriesQuery = categoriesQuery.populate('products');
         }
-        
+
         const categories = await categoriesQuery;
 
         if (!categories || categories.length === 0) {
             return NextResponse.json({ message: 'No categories found' }, { status: 404 });
         }
 
-        return NextResponse.json(categories);
+        return NextResponse.json({ categories });
     } catch (error: unknown) {
         return NextResponse.json({ message: error instanceof Error ? error.message : 'An error occurred' }, { status: 500 });
     }

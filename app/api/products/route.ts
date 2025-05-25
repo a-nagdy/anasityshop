@@ -16,16 +16,59 @@ export async function GET(req: NextRequest) {
         const limit = parseInt(url.searchParams.get('limit') || '10');
         const skip = (page - 1) * limit;
 
-        const products = await Product.find()
+        // Get query parameters for filtering
+        const featured = url.searchParams.get('featured') === 'true';
+        const bestseller = url.searchParams.get('bestseller') === 'true';
+        const newProducts = url.searchParams.get('new') === 'true';
+        const sale = url.searchParams.get('sale') === 'true';
+        const productIds = url.searchParams.get('productIds');
+
+        // Build query based on parameters
+        const query: { active?: boolean; parent?: null; _id?: { $in: string[] } | string, limit?: number, sold?: { $gte: number }, createdAt?: { $gte: Date }, discountPrice?: { $exists: boolean, $ne: null }, status?: { $ne: string }, featured?: boolean } = {};
+        if (featured) {
+            query.featured = true;
+        }
+
+        if (bestseller) {
+            // Assuming bestsellers are products with high sold count
+            // You can adjust this logic based on your business requirements
+            query.sold = { $gte: 10 }; // Products sold 10 or more times
+        }
+
+        if (newProducts) {
+            // Products created in the last 30 days
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            query.createdAt = { $gte: thirtyDaysAgo };
+        }
+
+        if (sale) {
+            // Products with discount price
+            query.discountPrice = { $exists: true, $ne: null };
+        }
+
+        if (productIds) {
+            const ids = productIds.split(',');
+            query._id = { $in: ids };
+        }
+
+        // Only show active products unless specifically querying by IDs
+        if (!productIds) {
+            query.active = true;
+            query.status = { $ne: 'draft' };
+        }
+
+        const products = await Product.find(query)
             .populate('category', 'name')
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .sort({ createdAt: -1 }); // Sort by newest first
 
         if (!products || products.length === 0) {
             return NextResponse.json({ message: 'No products found' }, { status: 404 });
         }
 
-        const totalProducts = await Product.countDocuments();
+        const totalProducts = await Product.countDocuments(query);
         const pagination = {
             currentPage: page,
             totalPages: Math.ceil(totalProducts / limit),
@@ -71,7 +114,7 @@ export async function POST(req: NextRequest) {
 
             // With JSON approach, we expect image URLs to be provided directly
             // The actual file upload should be handled by the client using the upload API endpoint
-            
+
             // Set product status based on quantity and active state
             if (productData.quantity !== undefined) {
                 const active = productData.active !== undefined ? productData.active : true;

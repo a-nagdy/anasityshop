@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
 import { uploadFileToCloudinary } from "../../../utils/clientFileUpload";
 
 interface HeroBanner {
@@ -47,7 +47,11 @@ export default function HeroBannerSection({
     setExpandedBanner(null);
   };
 
-  const handleBannerChange = (index: number, field: keyof HeroBanner, value: any) => {
+  const handleBannerChange = (
+    index: number,
+    field: keyof HeroBanner,
+    value: string | boolean | string[]
+  ) => {
     const updatedBanners = [...banners];
     updatedBanners[index] = {
       ...updatedBanners[index],
@@ -94,7 +98,7 @@ export default function HeroBannerSection({
       <div className="space-y-4">
         {banners.length === 0 ? (
           <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-            No banners added yet. Click "Add Banner" to create one.
+            No banners added yet. Click &quot;Add Banner&quot; to create one.
           </div>
         ) : (
           banners.map((banner, index) => (
@@ -109,9 +113,7 @@ export default function HeroBannerSection({
                 <div className="flex items-center">
                   <div
                     className={`w-4 h-4 mr-2 ${
-                      banner.active
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                      banner.active ? "bg-green-500" : "bg-red-500"
                     } rounded-full`}
                   ></div>
                   <h4 className="font-medium text-gray-900 dark:text-white">
@@ -183,7 +185,11 @@ export default function HeroBannerSection({
                           type="text"
                           value={banner.subtitle}
                           onChange={(e) =>
-                            handleBannerChange(index, "subtitle", e.target.value)
+                            handleBannerChange(
+                              index,
+                              "subtitle",
+                              e.target.value
+                            )
                           }
                           className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-800 dark:text-white"
                         />

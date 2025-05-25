@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface Product {
   _id: string;
@@ -36,25 +36,26 @@ export default function ProductSlider({
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-
   // Create a stable URL string that only changes when dependencies change
   const apiUrl = useMemo(() => {
-    let url = "/api/products";
-    console.log(productIds)
+    const url = "/api/products";
+    const params = new URLSearchParams();
+
     if (type === "custom" && productIds && productIds.length > 0) {
-      url += `/${productIds[0]}`;
+      params.append("productIds", productIds.join(","));
     } else if (type === "featured") {
-      url += "?featured=true";
+      params.append("featured", "true");
     } else if (type === "bestseller") {
-      url += "?bestseller=true";
+      params.append("bestseller", "true");
     } else if (type === "new") {
-      url += "?new=true";
+      params.append("new", "true");
     } else if (type === "sale") {
-      url += "?sale=true";
+      params.append("sale", "true");
     }
 
-    // url += "&limit=12"; // Limit the number of products
-    return url;
+    params.append("limit", "12"); // Limit the number of products
+
+    return `${url}?${params.toString()}`;
   }, [type, productIds]);
 
   const fetchProducts = useCallback(async () => {
@@ -62,44 +63,44 @@ export default function ProductSlider({
     if (!isLoading && products.length > 0) {
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError("");
 
       const controller = new AbortController();
       const signal = controller.signal;
-      
-      const response = await fetch(apiUrl, { 
-        cache: 'force-cache',
-        signal
+
+      const response = await fetch(apiUrl, {
+        cache: "force-cache",
+        signal,
       });
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch products");
       }
 
       const data = await response.json();
-      
+
       // Check if products exist in the response
       if (!data.products || !Array.isArray(data.products)) {
         setProducts([]);
         return;
       }
-      
+
       // Filter out products with no images
       const validProducts = data.products.filter(
         (product: Product) => product.images && product.images.length > 0
       );
 
-      console.log(validProducts)
-      
+      console.log(validProducts);
+
       setProducts(validProducts);
 
       return () => controller.abort();
     } catch (err) {
       // Ignore abort errors as they're expected when component unmounts
-      if (err instanceof Error && err.name !== 'AbortError') {
+      if (err instanceof Error && err.name !== "AbortError") {
         console.error("Error fetching products:", err);
         setError("Failed to load products");
       }
@@ -118,8 +119,6 @@ export default function ProductSlider({
       initialFetchRef.current = true;
     }
   }, [fetchProducts]);
-
-
 
   // Mouse event handlers for draggable slider
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -257,42 +256,44 @@ export default function ProductSlider({
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
-                        
+
                         {/* Product badges */}
                         {product.status === "out of stock" && (
                           <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
                             Sold Out
                           </div>
                         )}
-                        
+
                         {product.status === "low stock" && (
                           <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded">
                             Low Stock
                           </div>
                         )}
-                        
-                        {product.comparePrice && product.comparePrice > product.price && (
-                          <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                            Sale
-                          </div>
-                        )}
+
+                        {product.comparePrice &&
+                          product.comparePrice > product.price && (
+                            <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                              Sale
+                            </div>
+                          )}
                       </div>
-                      
+
                       <div className="p-4">
                         <h3 className="font-medium text-gray-900 dark:text-white mb-1 truncate">
                           {product.name}
                         </h3>
-                        
+
                         <div className="flex items-end">
                           <span className="text-lg font-bold text-gray-900 dark:text-white">
                             {formatPrice(product.price)}
                           </span>
-                          
-                          {product.comparePrice && product.comparePrice > product.price && (
-                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 line-through">
-                              {formatPrice(product.comparePrice)}
-                            </span>
-                          )}
+
+                          {product.comparePrice &&
+                            product.comparePrice > product.price && (
+                              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 line-through">
+                                {formatPrice(product.comparePrice)}
+                              </span>
+                            )}
                         </div>
                       </div>
                     </div>

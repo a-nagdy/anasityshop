@@ -1,12 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import HeroBannerSection from "./HeroBannerSection";
+import { useEffect, useState } from "react";
+import {
+  CategorySlider,
+  HeroBanner,
+  HomepageSettingsValue,
+  ProductSlider,
+} from "../../../api/models/Settings";
 import CategorySliderSection from "./CategorySliderSection";
-import ProductSliderSection from "./ProductSliderSection";
 import ColorSettings from "./ColorSettings";
-import { HomepageSettingsValue } from "../../../api/models/Settings";
+import HeroBannerSection from "./HeroBannerSection";
+import ProductSliderSection from "./ProductSliderSection";
 
 interface HomepageSettingsFormProps {
   settings: HomepageSettingsValue;
@@ -57,28 +61,31 @@ export default function HomepageSettingsForm({
     }));
   };
 
-  const updateHeroBanners = (heroBanners: any[]) => {
+  const updateHeroBanners = (heroBanners: HeroBanner[]) => {
     setFormData((prev) => ({
       ...prev,
       heroBanners,
     }));
   };
 
-  const updateCategorySliders = (categorySliders: any[]) => {
+  const updateCategorySliders = (categorySliders: CategorySlider[]) => {
     setFormData((prev) => ({
       ...prev,
       categorySliders,
     }));
   };
 
-  const updateProductSliders = (productSliders: any[]) => {
+  const updateProductSliders = (productSliders: ProductSlider[]) => {
     setFormData((prev) => ({
       ...prev,
       productSliders,
     }));
   };
 
-  const updateColors = (colors: { backgroundColor: string; accentColor: string }) => {
+  const updateColors = (colors: {
+    backgroundColor: string;
+    accentColor: string;
+  }) => {
     setFormData((prev) => ({
       ...prev,
       backgroundColor: colors.backgroundColor,
@@ -137,7 +144,9 @@ export default function HomepageSettingsForm({
                 <label
                   htmlFor="showFeaturedCategories"
                   className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                    formData.showFeaturedCategories ? "bg-blue-500" : "bg-gray-300"
+                    formData.showFeaturedCategories
+                      ? "bg-blue-500"
+                      : "bg-gray-300"
                   }`}
                 ></label>
               </div>

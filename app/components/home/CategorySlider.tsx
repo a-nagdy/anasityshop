@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface Category {
   _id: string;
@@ -26,7 +26,6 @@ export default function CategorySlider({
   categoryIds = [],
   featured = false,
 }: CategorySliderProps) {
-
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,39 +45,35 @@ export default function CategorySlider({
     return url;
   }, [featured, categoryIds]);
 
-
-
   const fetchCategories = useCallback(async () => {
     // Skip fetching if we've already loaded data for this URL
     if (!isLoading && categories.length > 0) {
       return;
     }
-    
+
     try {
       setIsLoading(true);
       setError("");
 
-      const response = await fetch(apiUrl, { cache: 'force-cache' });
+      const response = await fetch(apiUrl, { cache: "force-cache" });
       if (!response.ok) {
         throw new Error("Failed to fetch categories");
       }
 
-      console.log(response.json())
-
       const data = await response.json();
-      
+
       // Check if categories exist in the response
       if (!data.categories || !Array.isArray(data.categories)) {
         setCategories([]);
         return;
       }
-      
+
       // Filter out categories with no image
       const validCategories = data.categories.filter(
         (cat: Category) => cat.image && cat.image.length > 0
       );
-      console.log("data",data)
-      console.log("validCategories",validCategories)
+      console.log("data", data);
+      console.log("validCategories", validCategories);
       setCategories(validCategories);
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -187,7 +182,9 @@ export default function CategorySlider({
       ) : error ? (
         <div className="text-center text-red-500 py-8">{error}</div>
       ) : categories.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">No categories found</div>
+        <div className="text-center text-gray-500 py-8">
+          No categories found
+        </div>
       ) : (
         <div className="relative">
           <div

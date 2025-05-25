@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { Category } from "@/app/types/categoryTypes";
+import { useEffect, useState } from "react";
 
 interface CategorySlider {
   _id?: string;
@@ -20,7 +20,7 @@ export default function CategorySliderSection({
   sliders,
   onChange,
 }: CategorySliderSectionProps) {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSlider, setExpandedSlider] = useState<number | null>(null);
 
@@ -62,7 +62,11 @@ export default function CategorySliderSection({
     setExpandedSlider(null);
   };
 
-  const handleSliderChange = (index: number, field: keyof CategorySlider, value: any) => {
+  const handleSliderChange = (
+    index: number,
+    field: keyof CategorySlider,
+    value: string | boolean | string[]
+  ) => {
     const updatedSliders = [...sliders];
     updatedSliders[index] = {
       ...updatedSliders[index],
@@ -78,9 +82,9 @@ export default function CategorySliderSection({
   const handleCategoryToggle = (sliderIndex: number, categoryId: string) => {
     const slider = sliders[sliderIndex];
     const updatedCategories = slider.categories.includes(categoryId)
-      ? slider.categories.filter(id => id !== categoryId)
+      ? slider.categories.filter((id) => id !== categoryId)
       : [...slider.categories, categoryId];
-    
+
     handleSliderChange(sliderIndex, "categories", updatedCategories);
   };
 
@@ -102,7 +106,8 @@ export default function CategorySliderSection({
       <div className="space-y-4">
         {sliders.length === 0 ? (
           <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-            No category sliders added yet. Click "Add Category Slider" to create one.
+            No category sliders added yet. Click &quot;Add Category
+            Sliders&quot; to create one.
           </div>
         ) : (
           sliders.map((slider, index) => (
@@ -117,9 +122,7 @@ export default function CategorySliderSection({
                 <div className="flex items-center">
                   <div
                     className={`w-4 h-4 mr-2 ${
-                      slider.active
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                      slider.active ? "bg-green-500" : "bg-red-500"
                     } rounded-full`}
                   ></div>
                   <h4 className="font-medium text-gray-900 dark:text-white">
@@ -221,8 +224,12 @@ export default function CategorySliderSection({
                               <input
                                 type="checkbox"
                                 id={`category-${index}-${category._id}`}
-                                checked={slider.categories.includes(category._id)}
-                                onChange={() => handleCategoryToggle(index, category._id)}
+                                checked={slider.categories.includes(
+                                  category._id
+                                )}
+                                onChange={() =>
+                                  handleCategoryToggle(index, category._id)
+                                }
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                               />
                               <label

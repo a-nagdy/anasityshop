@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { ProductData } from "@/app/types/mongoose";
+import { useEffect, useState } from "react";
 
 interface ProductSlider {
   _id?: string;
   title: string;
   subtitle?: string;
   products: string[];
-  type: 'featured' | 'bestseller' | 'new' | 'sale' | 'custom';
+  type: "featured" | "bestseller" | "new" | "sale" | "custom";
   active: boolean;
 }
 
@@ -20,7 +21,7 @@ export default function ProductSliderSection({
   sliders,
   onChange,
 }: ProductSliderSectionProps) {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<ProductData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSlider, setExpandedSlider] = useState<number | null>(null);
 
@@ -63,7 +64,11 @@ export default function ProductSliderSection({
     setExpandedSlider(null);
   };
 
-  const handleSliderChange = (index: number, field: keyof ProductSlider, value: any) => {
+  const handleSliderChange = (
+    index: number,
+    field: keyof ProductSlider,
+    value: string | boolean | string[]
+  ) => {
     const updatedSliders = [...sliders];
     updatedSliders[index] = {
       ...updatedSliders[index],
@@ -79,9 +84,9 @@ export default function ProductSliderSection({
   const handleProductToggle = (sliderIndex: number, productId: string) => {
     const slider = sliders[sliderIndex];
     const updatedProducts = slider.products.includes(productId)
-      ? slider.products.filter(id => id !== productId)
+      ? slider.products.filter((id) => id !== productId)
       : [...slider.products, productId];
-    
+
     handleSliderChange(sliderIndex, "products", updatedProducts);
   };
 
@@ -103,7 +108,8 @@ export default function ProductSliderSection({
       <div className="space-y-4">
         {sliders.length === 0 ? (
           <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-            No product sliders added yet. Click "Add Product Slider" to create one.
+            No product sliders added yet. Click &quot;Add Product Slider&quot;
+            to create one.
           </div>
         ) : (
           sliders.map((slider, index) => (
@@ -118,9 +124,7 @@ export default function ProductSliderSection({
                 <div className="flex items-center">
                   <div
                     className={`w-4 h-4 mr-2 ${
-                      slider.active
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                      slider.active ? "bg-green-500" : "bg-red-500"
                     } rounded-full`}
                   ></div>
                   <h4 className="font-medium text-gray-900 dark:text-white">
@@ -249,8 +253,15 @@ export default function ProductSliderSection({
                                 <input
                                   type="checkbox"
                                   id={`product-${index}-${product._id}`}
-                                  checked={slider.products.includes(product._id)}
-                                  onChange={() => handleProductToggle(index, product._id)}
+                                  checked={slider.products.includes(
+                                    product?._id || ""
+                                  )}
+                                  onChange={() =>
+                                    handleProductToggle(
+                                      index,
+                                      product?._id || ""
+                                    )
+                                  }
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                 />
                                 <label

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Document, Schema } from 'mongoose';
 
 // Define the interface for the Hero Banner
 export interface HeroBanner {
@@ -47,7 +47,7 @@ export interface HomepageSettingsValue {
 // Define the interface for Settings document
 export interface SettingsDocument extends Document {
   name: string;
-  value: HomepageSettingsValue | any;
+  value: HomepageSettingsValue;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,8 +76,8 @@ const ProductSliderSchema = new Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
   products: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
-  type: { 
-    type: String, 
+  type: {
+    type: String,
     enum: ['featured', 'bestseller', 'new', 'sale', 'custom'],
     default: 'featured'
   },
@@ -108,4 +108,5 @@ const SettingsSchema = new Schema(
 
 // Create and export the Settings model
 const Settings = mongoose.models.Settings || mongoose.model<SettingsDocument>('Settings', SettingsSchema);
+export const HomepageSettings = mongoose.models.HomepageSettings || mongoose.model('HomepageSettings', HomepageSettingsSchema);
 export default Settings;

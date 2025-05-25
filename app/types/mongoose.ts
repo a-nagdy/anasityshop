@@ -36,6 +36,15 @@ export interface ProductData {
     stock?: number;
     active?: boolean;
     [key: string]: string | string[] | number | boolean | undefined;
+    parent?: string;
+    discountPrice?: number;
+    sold?: number;
+    featured?: boolean;
+    bestseller?: boolean;
+    new?: boolean;
+    sale?: boolean;
+    _id?: string;
+
 }
 
 export interface CategoryData {
