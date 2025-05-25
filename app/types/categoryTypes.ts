@@ -7,7 +7,8 @@ export type Category = {
   image?: string;
   imageId?: string;
   parent?: string | null;
-  isActive: boolean;
+  active: boolean;
+  hasChildren?: boolean;
   children?: Category[];
   createdAt?: string;
   updatedAt?: string;

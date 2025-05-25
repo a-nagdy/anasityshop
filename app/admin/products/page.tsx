@@ -48,6 +48,8 @@ export default function ProductsPage() {
         );
         const data = await response.data;
 
+        console.log(response);
+
         setProducts(data.products);
         setIsLoading(false);
       } catch (error) {
@@ -121,36 +123,36 @@ export default function ProductsPage() {
     {
       header: "Product",
       accessor: (product: Product) => (
-        <div className="flex items-center">
-          <div className="flex-shrink-0 h-10 w-10">
-            <Image
-              className="h-10 w-10 rounded-md object-cover"
-              src={
-                product?.image ||
-                product?.images?.[0] ||
-                "https://placehold.co/50x50"
-              }
-              alt={product.name}
-              width={40}
-              height={40}
-            />
-          </div>
-          <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900 dark:text-white">
-              {product.name}
-            </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              {product.id}
-            </div>
-          </div>
-        </div>
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <Image
+                          className="h-10 w-10 rounded-md object-cover"
+                          src={
+                            product?.image ||
+                            product?.images?.[0] ||
+                            "https://placehold.co/50x50"
+                          }
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {product.name}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {product.id}
+                        </div>
+                      </div>
+                    </div>
       ),
     },
     {
       header: "Category",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {product.category?.name || "Uncategorized"}
+                    {product.category?.name || "Uncategorized"}
         </div>
       ),
     },
@@ -158,7 +160,7 @@ export default function ProductsPage() {
       header: "Price",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-900 dark:text-white">
-          ${product.price ? product.price.toFixed(2) : "0.00"}
+                    ${product.price ? product.price.toFixed(2) : "0.00"}
         </div>
       ),
     },
@@ -166,20 +168,20 @@ export default function ProductsPage() {
       header: "Inventory",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-900 dark:text-white">
-          {product.inventory || product.quantity || 0}
+                    {product.inventory || product.quantity || 0}
         </div>
       ),
     },
     {
       header: "Status",
       accessor: (product: Product) => (
-        <span
-          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-            product.status
-          )}`}
-        >
-          {product.status}
-        </span>
+                    <span
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                        product.status
+                      )}`}
+                    >
+                      {product.status}
+                    </span>
       ),
     },
   ];
@@ -226,7 +228,7 @@ export default function ProductsPage() {
         <option value={50}>50 per page</option>
         <option value={100}>100 per page</option>
       </select>
-    </div>
+        </div>
   );
 
   const actions = (

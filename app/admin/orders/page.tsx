@@ -3,7 +3,7 @@
 import { Order } from "@/app/types/orders";
 import { Pagination } from "@/app/types/shared";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DataTable from "../components/DataTable";
 
@@ -49,7 +49,7 @@ export default function OrdersPage() {
   });
   const router = useRouter();
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams({
@@ -65,17 +65,18 @@ export default function OrdersPage() {
       const data = await response.json();
       setOrders(data.orders);
       setPagination(data.pagination);
+      console.log(data);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, filters]);
 
   useEffect(() => {
     fetchOrders();
-  }, [pagination.currentPage, filters]);
+  }, [fetchOrders]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -352,5 +353,5 @@ export default function OrdersPage() {
       }}
       pageActions={pageActions}
     />
-  );
+    );
 }

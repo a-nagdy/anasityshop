@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
-import { uploadFile } from '../../../utils/fileUpload';
+import { determineProductStatus } from '../../../utils/productStatus';
 import Product from '../models/Product';
 
 // Get all products
@@ -48,19 +48,8 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
 
-            // Get form data
-            const formData = await req.formData();
-
-            // Parse product data
-            const productData: ProductData = {};
-
-            // Extract fields from formData
-            formData.forEach((value, key) => {
-                // Skip files
-                if (key !== 'image' && key !== 'images' && !(value instanceof File)) {
-                    productData[key] = value;
-                }
-            });
+            // Get JSON data
+            const productData: ProductData = await req.json();
 
             // Create a slug if not provided
             if (!productData.slug && productData.name) {
@@ -80,66 +69,13 @@ export async function POST(req: NextRequest) {
                 }
             }
 
-            // Handle main image upload
-            const mainImage = formData.get('image') as File;
-            if (mainImage) {
-                try {
-                    // Convert File to FileBuffer
-                    const arrayBuffer = await mainImage.arrayBuffer();
-                    const buffer = Buffer.from(arrayBuffer);
-                    const fileBuffer = {
-                        buffer,
-                        mimetype: mainImage.type,
-                        name: mainImage.name,
-                        file: mainImage
-                    };
-
-                    const uploadResult = await uploadFile(fileBuffer, 'products');
-                    productData.image = uploadResult.url;
-                    productData.imageId = uploadResult.publicId;
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
-            }
-
-            // Handle multiple images
-            const additionalImages = formData.getAll('images');
-            if (additionalImages && additionalImages.length > 0) {
-                try {
-                    const uploadResults = await Promise.all(
-                        additionalImages.map(async (file) => {
-                            if (file instanceof File) {
-                                const arrayBuffer = await file.arrayBuffer();
-                                const buffer = Buffer.from(arrayBuffer);
-                                const fileBuffer = {
-                                    buffer,
-                                    mimetype: file.type,
-                                    name: file.name,
-                                    file
-                                };
-                                return uploadFile(fileBuffer, 'products');
-                            }
-                            throw new Error('Invalid file type');
-                        })
-                    );
-
-                    productData.images = uploadResults.map(result => result.url) as string[];
-                    productData.imageIds = uploadResults.map(result => result.publicId) as string[];
-
-                    // If main image is missing but we have images, use the first one
-                    if (!productData.image && uploadResults.length > 0) {
-                        productData.image = uploadResults[0].url;
-                        productData.imageId = uploadResults[0].publicId;
-                    }
-                } catch (uploadError: unknown) {
-                    return NextResponse.json(
-                        { message: uploadError instanceof Error ? uploadError.message : 'An error occurred' },
-                        { status: 400 }
-                    );
-                }
+            // With JSON approach, we expect image URLs to be provided directly
+            // The actual file upload should be handled by the client using the upload API endpoint
+            
+            // Set product status based on quantity and active state
+            if (productData.quantity !== undefined) {
+                const active = productData.active !== undefined ? productData.active : true;
+                productData.status = determineProductStatus(productData.quantity as number, active as boolean);
             }
 
             // Parse JSON strings if they exist

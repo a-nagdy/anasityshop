@@ -3,6 +3,13 @@ import connectToDatabase from '../../../utils/db';
 
 const orderItemSchema = new mongoose.Schema(
     {
+        orderNumber: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            
+        },
         product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',

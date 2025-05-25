@@ -8,7 +8,7 @@ export const determineProductStatus = (quantity: number, active: boolean): strin
         return 'out of stock';
     }
 
-    if (quantity <= 5) {
+    if (quantity <= 5 && quantity > 0) {
         return 'low stock';
     }
 
