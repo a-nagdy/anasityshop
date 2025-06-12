@@ -40,11 +40,16 @@ export default function AddProductPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(
-          `/api/categories`,
-         
-        );
-        setCategories(response.data);
+        const response = await axios.get(`/api/categories`);
+        const data = response.data;
+
+        // Check if categories exist in the response and is an array
+        if (data && data.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        } else {
+          console.error("Invalid categories data structure:", data);
+          setCategories([]);
+        }
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to load categories");
@@ -98,37 +103,37 @@ export default function AddProductPage() {
     try {
       // Create a FormData object for the API
       const productFormData = new FormData();
-      
+
       // Add basic fields
-      productFormData.append('name', formData.name);
-      productFormData.append('description', formData.description);
-      productFormData.append('price', formData.price);
-      productFormData.append('quantity', formData.quantity);
-      productFormData.append('category', formData.category);
-      productFormData.append('featured', String(formData.featured));
-      productFormData.append('shipping', String(formData.shipping));
-      productFormData.append('active', String(formData.active));
-      
+      productFormData.append("name", formData.name);
+      productFormData.append("description", formData.description);
+      productFormData.append("price", formData.price);
+      productFormData.append("quantity", formData.quantity);
+      productFormData.append("category", formData.category);
+      productFormData.append("featured", String(formData.featured));
+      productFormData.append("shipping", String(formData.shipping));
+      productFormData.append("active", String(formData.active));
+
       // Handle arrays (color and size)
       const colors = formData.color
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
-      
+
       const sizes = formData.size
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
-      
+
       // Add arrays as JSON strings
-      productFormData.append('color', JSON.stringify(colors));
-      productFormData.append('size', JSON.stringify(sizes));
-      
+      productFormData.append("color", JSON.stringify(colors));
+      productFormData.append("size", JSON.stringify(sizes));
+
       // Add image URLs if they exist
       if (formData.image) {
-        productFormData.append('image', formData.image);
+        productFormData.append("image", formData.image);
       }
-      
+
       if (formData.images && formData.images.length > 0) {
         formData.images.forEach((imageUrl, index) => {
           productFormData.append(`images[${index}]`, imageUrl);
@@ -136,16 +141,12 @@ export default function AddProductPage() {
       }
 
       // Make API call to create product with FormData
-      await axios.post(
-        `/api/products`,
-        productFormData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            // Let axios set the correct content-type for FormData
-          },
-        }
-      );
+      await axios.post(`/api/products`, productFormData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Let axios set the correct content-type for FormData
+        },
+      });
 
       toast.success("Product created successfully!");
 

@@ -34,7 +34,6 @@ const menuGroups: MenuGroup[] = [
     name: "Settings",
     items: [
       { name: "Settings", href: "/admin/settings", icon: "cog" },
-      { name: "Home Page", href: "/admin/settings/homepage", icon: "home" },
     ],
   },
 ];

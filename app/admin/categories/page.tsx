@@ -1,7 +1,10 @@
 "use client";
 
 import { AppDispatch, RootState } from "@/app/store";
-import { deleteCategory, fetchCategories } from "@/app/store/slices/categorySlice";
+import {
+  deleteCategory,
+  fetchCategories,
+} from "@/app/store/slices/categorySlice";
 import { Category } from "@/app/types/categoryTypes";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -25,7 +28,6 @@ export default function CategoriesPage() {
     dispatch(fetchCategories());
   }, [dispatch]);
 
-
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -33,54 +35,52 @@ export default function CategoriesPage() {
   }, [error]);
 
   // Filter categories based on search
-  const filteredCategories = categories.filter(
+  console.log(categories);
+  const filteredCategories = categories?.filter(
     (category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (category.slug && category.slug.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (category._id && category._id.toLowerCase().includes(searchTerm.toLowerCase()))
+      (category.slug &&
+        category.slug.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (category._id &&
+        category._id.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Create a manual sorting function to ensure proper ordering
   const manualSort = (categories: Category[]) => {
-    
     // Create a copy to avoid mutating the original array
     const sorted = [...categories];
-    
+
     // Sort based on the current field and direction
-    if (sortField === 'name') {
+    if (sortField === "name") {
       sorted.sort((a, b) => {
-        return sortDirection === 'asc' 
-          ? a.name.localeCompare(b.name) 
+        return sortDirection === "asc"
+          ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
       });
-    } 
-    else if (sortField === 'products') {
+    } else if (sortField === "products") {
       sorted.sort((a, b) => {
         // Force conversion to number and handle undefined
         const aProducts = a.products === undefined ? 0 : +a.products;
         const bProducts = b.products === undefined ? 0 : +b.products;
-        
-        if (sortDirection === 'asc') {
+
+        if (sortDirection === "asc") {
           return aProducts - bProducts;
         } else {
           return bProducts - aProducts;
         }
       });
-    }
-    else if (sortField === 'active') {
+    } else if (sortField === "active") {
       sorted.sort((a, b) => {
         const aActive = a.active ? 1 : 0;
         const bActive = b.active ? 1 : 0;
-        
-        return sortDirection === 'asc' 
-          ? aActive - bActive 
-          : bActive - aActive;
+
+        return sortDirection === "asc" ? aActive - bActive : bActive - aActive;
       });
     }
-    
+
     return sorted;
   };
-  
+
   // Apply the manual sorting
   const sortedCategories = manualSort(filteredCategories);
 
@@ -95,7 +95,7 @@ export default function CategoriesPage() {
   const handleSort = (field: string) => {
     // Make sure field is a valid property of Category
     const validField = field as keyof Category;
-    
+
     if (validField === sortField) {
       // Toggle direction if same field
       const newDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -192,34 +192,56 @@ export default function CategoriesPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex items-center">
-              <label className="text-sm text-gray-600 dark:text-gray-400 mr-2">Sort by:</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400 mr-2">
+                Sort by:
+              </label>
               <div className="flex">
-                <button 
-                  onClick={() => handleSort("name")} 
-                  className={`px-3 py-1 text-sm rounded-l-md ${sortField === "name" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                <button
+                  onClick={() => handleSort("name")}
+                  className={`px-3 py-1 text-sm rounded-l-md ${
+                    sortField === "name"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  }`}
                 >
-                  Name {sortField === "name" && (sortDirection === "desc" ? "↑" : "↓")}
+                  Name{" "}
+                  {sortField === "name" &&
+                    (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
-                <button 
-                  onClick={() => handleSort("products")} 
-                  className={`px-3 py-1 text-sm ${sortField === "products" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                <button
+                  onClick={() => handleSort("products")}
+                  className={`px-3 py-1 text-sm ${
+                    sortField === "products"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  }`}
                 >
-                  Products {sortField === "products" && (sortDirection === "desc" ? "↑" : "↓")}
+                  Products{" "}
+                  {sortField === "products" &&
+                    (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
-                <button 
-                  onClick={() => handleSort("active")} 
-                  className={`px-3 py-1 text-sm rounded-r-md ${sortField === "active" ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"}`}
+                <button
+                  onClick={() => handleSort("active")}
+                  className={`px-3 py-1 text-sm rounded-r-md ${
+                    sortField === "active"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  }`}
                 >
-                  Status {sortField === "active" && (sortDirection === "desc" ? "↑" : "↓")}
+                  Status{" "}
+                  {sortField === "active" &&
+                    (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
               </div>
             </div>
-            
+
             <div className="flex items-center">
-              <label className="text-sm text-gray-600 dark:text-gray-400 mr-2">Per page:</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400 mr-2">
+                Per page:
+              </label>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
@@ -248,7 +270,11 @@ export default function CategoriesPage() {
               transition={{ duration: 0.3 }}
             >
               <div className="relative">
-                <div className={`h-36 w-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center ${!category.image ? 'text-gray-400 dark:text-gray-500' : ''}`}>
+                <div
+                  className={`h-36 w-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center ${
+                    !category.image ? "text-gray-400 dark:text-gray-500" : ""
+                  }`}
+                >
                   {category.image ? (
                     <Image
                       src={category.image}
@@ -257,46 +283,76 @@ export default function CategoriesPage() {
                       className="object-cover"
                     />
                   ) : (
-                    <svg className="w-12 h-12" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg
+                      className="w-12 h-12"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
                     </svg>
                   )}
                 </div>
                 <div className="absolute top-2 right-2">
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${category.active ? 'bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-400'}`}>
-                    {category.active ? 'Active' : 'Inactive'}
+                  <span
+                    className={`px-2 py-1 text-xs font-bold rounded-full ${
+                      category.active
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-400"
+                        : "bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-400"
+                    }`}
+                  >
+                    {category.active ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>
 
               <div className="p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{category.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                    {category.name}
+                  </h3>
                 </div>
-                
+
                 <div className="mb-3">
                   <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                     {category.slug}
                   </p>
                 </div>
-                
+
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <svg
+                      className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                      />
                     </svg>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {category.products || 0} Products
                     </span>
                   </div>
-                  
+
                   {category.parent && (
                     <div className="text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
                       Sub-category
                     </div>
                   )}
                 </div>
-                
+
                 <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-600 flex justify-between">
                   <Link
                     href={`/admin/categories/${category._id}`}
@@ -304,7 +360,7 @@ export default function CategoriesPage() {
                   >
                     Edit
                   </Link>
-                  
+
                   <button
                     onClick={() => handleDeleteCategory(category._id)}
                     disabled={isSubmitting}
@@ -320,12 +376,26 @@ export default function CategoriesPage() {
 
         {displayedCategories.length === 0 && (
           <div className="text-center py-8 px-4 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No categories found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              No categories found
+            </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Try adjusting your search or filter to find what you&apos;re looking for.
+              Try adjusting your search or filter to find what you&apos;re
+              looking for.
             </p>
           </div>
         )}
@@ -334,29 +404,29 @@ export default function CategoriesPage() {
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between">
           <div className="text-sm text-gray-700 dark:text-gray-400 mb-4 sm:mb-0">
             Showing{" "}
-            <span className="font-medium">{
-              displayedCategories.length > 0 
-                ? (currentPage - 1) * itemsPerPage + 1 
-                : 0
-            }</span>
-            {" "}to{" "}
-            <span className="font-medium">{
-              Math.min(currentPage * itemsPerPage, filteredCategories.length)
-            }</span>
-            {" "}of{" "}
-            <span className="font-medium">{filteredCategories.length}</span> categories
+            <span className="font-medium">
+              {displayedCategories.length > 0
+                ? (currentPage - 1) * itemsPerPage + 1
+                : 0}
+            </span>{" "}
+            to{" "}
+            <span className="font-medium">
+              {Math.min(currentPage * itemsPerPage, filteredCategories.length)}
+            </span>{" "}
+            of <span className="font-medium">{filteredCategories.length}</span>{" "}
+            categories
           </div>
-          
+
           {totalPages > 1 && (
             <div className="flex space-x-1">
               <button
-                onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
+                onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 disabled:opacity-50"
               >
                 Previous
               </button>
-              
+
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 // Show pages around current page
                 let pageNum = 1;
@@ -369,14 +439,14 @@ export default function CategoriesPage() {
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
-                
+
                 return (
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
                     className={`w-8 h-8 rounded-md ${
-                      currentPage === pageNum 
-                        ? "bg-blue-600 text-white" 
+                      currentPage === pageNum
+                        ? "bg-blue-600 text-white"
                         : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     }`}
                   >
@@ -384,9 +454,11 @@ export default function CategoriesPage() {
                   </button>
                 );
               })}
-              
+
               <button
-                onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((page) => Math.min(page + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 disabled:opacity-50"
               >

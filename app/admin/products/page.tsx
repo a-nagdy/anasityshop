@@ -95,7 +95,7 @@ export default function ProductsPage() {
       products.map((product) => product.category?.name).filter(Boolean)
     ),
   ];
-
+console.log(categories)
   const handleDeleteProduct = async (productId: string) => {
     const token = getCookie("auth_token");
     toast.info("Deleting product...");

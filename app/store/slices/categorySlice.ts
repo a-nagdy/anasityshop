@@ -137,9 +137,9 @@ const categorySlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchCategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
+      .addCase(fetchCategories.fulfilled, (state, action: PayloadAction<{ categories: Category[] }>) => {
         state.isLoading = false;
-        state.categories = action.payload;
+        state.categories = action.payload.categories;
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.isLoading = false;

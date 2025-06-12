@@ -76,7 +76,19 @@ export default function EditProductPage({
 
         // Fetch categories
         const categoriesResponse = await axios.get(`/api/categories`);
-        setCategories(categoriesResponse.data);
+        const categoriesData = categoriesResponse.data;
+
+        // Check if categories exist in the response and is an array
+        if (
+          categoriesData &&
+          categoriesData.categories &&
+          Array.isArray(categoriesData.categories)
+        ) {
+          setCategories(categoriesData.categories);
+        } else {
+          console.error("Invalid categories data structure:", categoriesData);
+          setCategories([]);
+        }
 
         // Populate form data
         setFormData({
