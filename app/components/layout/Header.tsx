@@ -1,22 +1,60 @@
 "use client";
 
+import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  image?: string;
+  active: boolean;
+}
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
 
   const navigation = [
     { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
-    { name: "Categories", href: "/categories" },
+    { name: "Categories", href: "/categories", isDropdown: true },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const response = await axios.get("/api/categories");
+
+        // Handle the response format
+        const categoriesData = Array.isArray(response.data)
+          ? response.data
+          : response.data.data || response.data.categories || [];
+
+        // Only show active categories
+        const activeCategories = categoriesData.filter(
+          (cat: Category) => cat.active
+        );
+        setCategories(activeCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <header className="bg-white dark:bg-gray-900 shadow-sm fixed w-full top-0 z-50">
@@ -33,19 +71,79 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden sm:flex sm:space-x-8">
+          <div className="hidden sm:flex sm:space-x-8 items-center">
             {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                  isActive(item.href)
-                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                    : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
-                }`}
-              >
-                {item.name}
-              </Link>
+              <div key={item.name}>
+                {item.isDropdown ? (
+                  /* Categories Dropdown */
+                  <div className="relative group">
+                    <div
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
+                        pathname.startsWith("/categories")
+                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                          : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      }`}
+                    >
+                      {item.name}
+                      <svg
+                        className="ml-1 h-4 w-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+                      <div className="py-2">
+                        {/* Loading State */}
+                        {categoriesLoading && (
+                          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                            Loading categories...
+                          </div>
+                        )}
+
+                        {/* Category Links */}
+                        {categories.map((category) => (
+                          <Link
+                            key={category._id}
+                            href={`/categories/${category.slug}`}
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            <span className="truncate">{category.name}</span>
+                          </Link>
+                        ))}
+
+                        {/* Empty State */}
+                        {!categoriesLoading && categories.length === 0 && (
+                          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                            No categories available
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Regular Navigation Link */
+                  <Link
+                    href={item.href}
+                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                      isActive(item.href)
+                        ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                        : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
 
@@ -127,19 +225,42 @@ export default function Header() {
           <div className="sm:hidden py-2">
             <div className="space-y-1">
               {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block px-3 py-2 text-base font-medium ${
-                    isActive(item.href)
-                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/50"
-                      : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
-                  }`}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
+                <div key={item.name}>
+                  {item.isDropdown ? (
+                    /* Mobile Categories Section */
+                    <div>
+                      <div className="px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200">
+                        {item.name}
+                      </div>
+
+                      {categories.map((category) => (
+                        <Link
+                          key={category._id}
+                          href={`/categories/${category.slug}`}
+                          className="block px-6 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Regular Mobile Link */
+                    <Link
+                      href={item.href}
+                      className={`block px-3 py-2 text-base font-medium ${
+                        isActive(item.href)
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/50"
+                          : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
               ))}
+
               <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
                 <Link
                   href="/cart"

@@ -19,7 +19,7 @@ export default function CustomersPage() {
       setLoading(true);
       const res = await fetch(`/api/customers?page=${page}&search=${search}`);
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
       setCustomers(data.customers);
       setTotalPages(data.totalPages);
       setLoading(false);

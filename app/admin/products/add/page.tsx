@@ -87,7 +87,7 @@ export default function AddProductPage() {
   // Simulate file upload
   const handleFileUpload = (file: File) => {
     // In a real implementation, upload the file to your server/cloud storage
-    console.log("File to upload:", file.name);
+    // console.log("File to upload:", file.name);
 
     // For simulation purposes only
     setTimeout(() => {

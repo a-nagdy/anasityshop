@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import connectToDatabase from '../../../utils/db';
 import Category from '../models/Category';
 import Product from '../models/Product';
 import Settings from '../models/Settings';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         await connectToDatabase();
 
@@ -14,7 +14,6 @@ export async function GET(req: NextRequest) {
         if (!homepageSettings) {
             return NextResponse.json({ error: 'Homepage settings not found' }, { status: 404 });
         }
-        console.log(req)
         const { value: settings } = homepageSettings;
         const {
             heroBanners,

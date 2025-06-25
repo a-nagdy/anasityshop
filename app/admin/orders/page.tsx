@@ -65,7 +65,7 @@ export default function OrdersPage() {
       const data = await response.json();
       setOrders(data.orders);
       setPagination(data.pagination);
-      console.log(data);
+      // console.log(data);
     } catch (error) {
       console.error("Error fetching orders:", error);
       toast.error("Failed to load orders");

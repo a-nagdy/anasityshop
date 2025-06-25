@@ -1,5 +1,5 @@
-import { MongooseError, ProductData, ValidationError } from '@/app/types/mongoose';
-import mongoose, { PipelineStage } from 'mongoose';
+import { ProductData } from '@/app/types/mongoose';
+import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
 import { ApiResponseHelper } from '../../../utils/apiResponse';
@@ -9,19 +9,8 @@ import { determineProductStatus } from '../../../utils/productStatus';
 import { Validator } from '../../../utils/validation';
 import Product from '../models/Product';
 
-// Validation schemas
-const productQuerySchema = {
-    page: { type: 'number' as const, min: 1 },
-    limit: { type: 'number' as const, min: 1, max: 100 },
-    featured: { type: 'boolean' as const },
-    bestseller: { type: 'boolean' as const },
-    new: { type: 'boolean' as const },
-    sale: { type: 'boolean' as const },
-    category: { type: 'objectId' as const },
-    search: { type: 'string' as const, min: 1, max: 100 },
-    sort: { type: 'string' as const },
-    status: { type: 'string' as const }
-};
+// Validation schemas - removing unused schema
+// const productQuerySchema = { ... } // Removed unused variable
 
 const productCreateSchema = {
     name: { required: true, type: 'string' as const, min: 1, max: 100 },
@@ -34,7 +23,7 @@ const productCreateSchema = {
     active: { type: 'boolean' as const }
 };
 
-// Get all products with optimized queries and caching
+// Get all products with simplified queries for better reliability
 export async function GET(req: NextRequest) {
     try {
         await connectToDatabase();
@@ -57,168 +46,132 @@ export async function GET(req: NextRequest) {
             productIds: queryParams.productIds?.split(',')
         };
 
-        // Validate query parameters
-        const { isValid, errors } = Validator.validate(processedParams, productQuerySchema);
-        if (!isValid) {
-            return NextResponse.json(
-                ApiResponseHelper.validationError(errors),
-                { status: 400 }
-            );
-        }
+        console.log('Products API - Query params:', processedParams);
 
         const { page, limit, featured, bestseller, new: newProducts, sale, category, search, sort, status, productIds } = processedParams;
         const skip = (page - 1) * limit;
 
         // Generate cache key
-        const cacheKey = cacheHelper.keys.products(processedParams);
+        const cacheKey = `products_${JSON.stringify(processedParams)}`;
 
-        // Try to get from cache first
+        // Try to get from cache first (reduced cache time for debugging)
         const cachedResult = await cacheHelper.withCache(
             cacheKey,
             async () => {
-                // Build aggregation pipeline for better performance
-                const pipeline: PipelineStage[] = [];
+                // Build query filter
+                const filter: Record<string, unknown> = {};
 
-                // Match stage
-                const matchStage: PipelineStage = {
-                    $match: {
-                        active: true,
-                        status: { $ne: 'draft' }
-                    }
-                };
-
+                // Basic filters
                 if (productIds && productIds.length > 0) {
-                    matchStage.$match._id = { $in: productIds.map(id => new mongoose.Types.ObjectId(id)) };
+                    filter._id = { $in: productIds.map(id => new mongoose.Types.ObjectId(id)) };
                 } else {
-                    matchStage.$match.active = true;
-                    matchStage.$match.status = { $ne: 'draft' };
+                    // Only apply active/status filters if not fetching specific product IDs
+                    filter.active = true;
+                    if (status) {
+                        filter.status = status;
+                    } else {
+                        filter.status = { $ne: 'draft' };
+                    }
                 }
 
-                if (featured) matchStage.$match.featured = true;
-                if (category) matchStage.$match.category = new mongoose.Types.ObjectId(category);
-                if (status) matchStage.$match.status = status;
+                if (featured) filter.featured = true;
+                if (category) {
+                    try {
+                        filter.category = new mongoose.Types.ObjectId(category);
+                    } catch {
+                        console.error('Invalid category ID:', category);
+                        // Return empty result for invalid category ID
+                        return { products: [], pagination: { page, limit, total: 0, totalPages: 0 } };
+                    }
+                }
 
                 // Handle special filters
                 if (bestseller) {
-                    matchStage.$match.sold = { $gte: 10 };
+                    filter.sold = { $gte: 10 };
                 }
                 if (newProducts) {
                     const thirtyDaysAgo = new Date();
                     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    matchStage.$match.createdAt = { $gte: thirtyDaysAgo };
+                    filter.createdAt = { $gte: thirtyDaysAgo };
                 }
                 if (sale) {
-                    matchStage.$match.discountPrice = { $exists: true, $ne: null };
+                    filter.discountPrice = { $exists: true, $ne: null };
                 }
 
                 // Search functionality
                 if (search) {
-                    matchStage.$match.$text = { $search: search };
+                    filter.$or = [
+                        { name: { $regex: search, $options: 'i' } },
+                        { description: { $regex: search, $options: 'i' } }
+                    ];
                 }
 
-                pipeline.push({ $match: matchStage });
-
-                // Lookup category information
-                pipeline.push({
-                    $lookup: {
-                        from: 'categories',
-                        localField: 'category',
-                        foreignField: '_id',
-                        as: 'category',
-                        pipeline: [{ $project: { name: 1, slug: 1 } }]
-                    }
-                });
-
-                // Unwind category
-                pipeline.push({
-                    $unwind: { path: '$category', preserveNullAndEmptyArrays: true }
-                });
-
-                // Add computed fields
-                pipeline.push({
-                    $addFields: {
-                        finalPrice: { $ifNull: ['$discountPrice', '$price'] },
-                        hasDiscount: { $ne: ['$discountPrice', null] },
-                        discountPercentage: {
-                            $cond: {
-                                if: { $ne: ['$discountPrice', null] },
-                                then: {
-                                    $multiply: [
-                                        { $divide: [{ $subtract: ['$price', '$discountPrice'] }, '$price'] },
-                                        100
-                                    ]
-                                },
-                                else: 0
-                            }
-                        }
-                    }
-                });
-
-                // Sort stage
-                const sortStage: PipelineStage = {
-                    $sort: {
-                        finalPrice: 1,
-                        name: 1,
-                        sold: -1,
-                        createdAt: -1
-                    }
-                };
-                switch (sort) {
-                    case 'price_asc':
-                        sortStage.$sort.finalPrice = 1;
-                        break;
-                    case 'price_desc':
-                        sortStage.$sort.finalPrice = -1;
-                        break;
-                    case 'name_asc':
-                        sortStage.$sort.name = 1;
-                        break;
-                    case 'name_desc':
-                        sortStage.$sort.name = -1;
-                        break;
-                    case 'popular':
-                        sortStage.$sort.sold = -1;
-                        break;
-                    default:
-                        sortStage.$sort.createdAt = -1;
-                }
-                pipeline.push({ $sort: sortStage.$sort });
+                console.log('Products API - Filter:', JSON.stringify(filter, null, 2));
 
                 // Count total documents
-                const countPipeline = [...pipeline, { $count: 'total' }];
-                const countResult = await Product.aggregate(countPipeline);
-                const total = countResult[0]?.total || 0;
+                const total = await Product.countDocuments(filter);
 
-                // Add pagination
-                pipeline.push({ $skip: skip });
-                pipeline.push({ $limit: limit });
+                // Build sort object
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let sortObj: any = { createdAt: -1 };
+                switch (sort) {
+                    case 'price_asc':
+                        sortObj = { price: 1 };
+                        break;
+                    case 'price_desc':
+                        sortObj = { price: -1 };
+                        break;
+                    case 'name_asc':
+                        sortObj = { name: 1 };
+                        break;
+                    case 'name_desc':
+                        sortObj = { name: -1 };
+                        break;
+                    case 'popular':
+                        sortObj = { sold: -1 };
+                        break;
+                    case '-createdAt':
+                    default:
+                        sortObj = { createdAt: -1 };
+                }
 
-                // Select fields to return
-                pipeline.push({
-                    $project: {
+                // Execute query with population
+                const products = await Product.find(filter)
+                    .populate('category', 'name slug')
+                    .sort(sortObj)
+                    .skip(skip)
+                    .limit(limit)
+                    .select({
                         name: 1,
                         slug: 1,
                         description: 1,
                         price: 1,
                         discountPrice: 1,
-                        finalPrice: 1,
-                        hasDiscount: 1,
-                        discountPercentage: 1,
                         image: 1,
-                        images: { $slice: ['$images', 3] }, // Limit images for list view
+                        images: 1,
                         category: 1,
                         status: 1,
                         quantity: 1,
                         sold: 1,
                         featured: 1,
-                        ratings: { $size: { $ifNull: ['$ratings', []] } },
+                        ratings: 1,
                         totalRating: 1,
-                        createdAt: 1
-                    }
-                });
+                        createdAt: 1,
+                        active: 1,
+                        color: 1,
+                        size: 1
+                    })
+                    .lean();
 
-                // Execute query
-                const products = await Product.aggregate(pipeline);
+                // Add computed fields
+                const enrichedProducts = products.map(product => ({
+                    ...product,
+                    finalPrice: product.discountPrice || product.price,
+                    hasDiscount: Boolean(product.discountPrice),
+                    discountPercentage: product.discountPrice
+                        ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+                        : 0
+                }));
 
                 const pagination = {
                     page,
@@ -227,23 +180,30 @@ export async function GET(req: NextRequest) {
                     totalPages: Math.ceil(total / limit)
                 };
 
-                return { products, pagination };
+                console.log(`Products API - Found ${enrichedProducts.length} products, total: ${total}`);
+
+                return { products: enrichedProducts, pagination };
             },
-            300000 // Cache for 5 minutes
+            60000 // Cache for 1 minute (reduced for debugging)
         );
 
-        return NextResponse.json(
-            ApiResponseHelper.success(
-                cachedResult.products,
-                'Products retrieved successfully',
-                cachedResult.pagination
-            )
-        );
+        return NextResponse.json({
+            success: true,
+            message: 'Products retrieved successfully',
+            data: {
+                products: cachedResult.products,
+                pagination: cachedResult.pagination
+            }
+        });
 
     } catch (error: unknown) {
         console.error('Products GET error:', error);
         return NextResponse.json(
-            ApiResponseHelper.serverError('Failed to retrieve products'),
+            {
+                success: false,
+                message: 'Failed to retrieve products',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            },
             { status: 500 }
         );
     }
@@ -324,13 +284,15 @@ export async function POST(req: NextRequest) {
                 }
             }
 
-            // Create product
-            const product = await Product.create(productData);
+            // Create the product
+            const product = new Product(productData);
+            await product.save();
 
-            // Invalidate related caches
-            cacheHelper.invalidateByPattern('products:.*');
-            cacheHelper.invalidateByPattern('categories:.*');
-            cacheHelper.invalidateByPattern('homepage:.*');
+            // Populate category information
+            await product.populate('category', 'name slug');
+
+            // Clear cache
+            cacheHelper.invalidateByPattern('products_*');
 
             return NextResponse.json(
                 ApiResponseHelper.success(product, 'Product created successfully'),
@@ -340,30 +302,11 @@ export async function POST(req: NextRequest) {
         } catch (error: unknown) {
             console.error('Product creation error:', error);
 
-            // Handle validation errors
-            if (error instanceof Error && error.name === 'ValidationError') {
-                const mongooseError = error as ValidationError;
-                const errors: Record<string, string> = {};
-                Object.keys(mongooseError.errors).forEach((field) => {
-                    errors[field] = mongooseError.errors[field].message;
-                });
-
+            if (error instanceof Error) {
                 return NextResponse.json(
-                    ApiResponseHelper.validationError(errors),
+                    ApiResponseHelper.error(error.message),
                     { status: 400 }
                 );
-            }
-
-            // Handle duplicate key errors
-            if (error instanceof Error && error.name === 'MongooseError') {
-                const mongooseError = error as MongooseError;
-                if (mongooseError.code === 11000) {
-                    const field = Object.keys(mongooseError.keyPattern || {})[0];
-                    return NextResponse.json(
-                        ApiResponseHelper.error(`${field} already exists`),
-                        { status: 400 }
-                    );
-                }
             }
 
             return NextResponse.json(

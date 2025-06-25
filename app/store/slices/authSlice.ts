@@ -50,10 +50,10 @@ export const loginUser = createAsyncThunk(
                 path: '/',
             });
 
-            console.log(response);
-            console.log(user);
-            console.log(token);
-            console.log(response.data);
+            // console.log(response);
+            // console.log(user);
+            // console.log(token);
+            // console.log(response.data);
 
             return { user, token };
         } catch (error) {

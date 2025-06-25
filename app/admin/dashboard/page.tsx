@@ -35,7 +35,7 @@ export default function AdminDashboard() {
           totalUsers: data.totalUsers,
         });
         setStatusData(data.orderStatusPercentages);
-        console.log(data);
+        // console.log(data);
 
         setIsLoading(false);
       } catch (error) {
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
         />
         <StatCard
           title="Total Revenue"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
+          value={`$${stats.totalRevenue?.toLocaleString() || 0}`}
           icon="currency-dollar"
           trend={`${stats.totalRevenue - 100} orders`}
           trendDirection="up"

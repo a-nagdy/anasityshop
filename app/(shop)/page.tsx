@@ -76,7 +76,7 @@ export default function Home() {
           throw new Error(`Failed to fetch homepage data: ${response.status}`);
         }
         const data = await response.json();
-        console.log("Homepage settings:", data.settings);
+        // console.log("Homepage settings:", data.settings);
         setData(data);
       } catch (err) {
         console.error("Error fetching homepage data:", err);

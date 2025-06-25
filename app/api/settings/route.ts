@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     if (name) {
       // Get specific setting
       const setting = await Settings.findOne({ name });
-      console.log(setting)
+      // console.log(setting)
       
       if (!setting) {
         return NextResponse.json(

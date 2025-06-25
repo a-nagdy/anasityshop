@@ -43,17 +43,40 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const response = await axios.get(
           `/api/products?limit=${limit}&page=${page}`
         );
-        const data = await response.data;
 
-        console.log(response);
+        console.log("Admin products API response:", response.data);
 
-        setProducts(data.products);
-        setIsLoading(false);
+        // Handle both old and new API response formats
+        let productsData: Product[] = [];
+        if (response.data.data?.products) {
+          // New API format
+          productsData = response.data.data.products;
+        } else if (response.data.products) {
+          // Legacy format
+          productsData = response.data.products;
+        } else if (Array.isArray(response.data)) {
+          // Direct array
+          productsData = response.data;
+        }
+
+        // Ensure we have an array and add fallback ID field
+        const processedProducts = (productsData || []).map(
+          (product: Product) => ({
+            ...product,
+            id: product.id || product._id, // Ensure id field exists
+          })
+        );
+
+        setProducts(processedProducts);
       } catch (error) {
         console.error("Error fetching products:", error);
+        toast.error("Failed to fetch products");
+        setProducts([]); // Set empty array on error
+      } finally {
         setIsLoading(false);
       }
     };
@@ -76,10 +99,11 @@ export default function ProductsPage() {
     }
   };
 
-  const filteredProducts = products
+  // Ensure products is always an array before filtering
+  const filteredProducts = (products || [])
     .filter(
       (product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product._id?.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -89,13 +113,16 @@ export default function ProductsPage() {
         product.category?.name === selectedCategory
     );
 
+  // Extract categories safely
   const categories = [
     "All",
     ...new Set(
-      products.map((product) => product.category?.name).filter(Boolean)
+      (products || []).map((product) => product.category?.name).filter(Boolean)
     ),
   ];
-console.log(categories)
+
+  console.log("Categories:", categories);
+
   const handleDeleteProduct = async (productId: string) => {
     const token = getCookie("auth_token");
     toast.info("Deleting product...");
@@ -108,7 +135,9 @@ console.log(categories)
         },
       });
       // Remove product from state
-      setProducts(products.filter((product) => product._id !== productId));
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product._id !== productId)
+      );
       toast.success("Product deleted successfully");
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -123,36 +152,36 @@ console.log(categories)
     {
       header: "Product",
       accessor: (product: Product) => (
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <Image
-                          className="h-10 w-10 rounded-md object-cover"
-                          src={
-                            product?.image ||
-                            product?.images?.[0] ||
-                            "https://placehold.co/50x50"
-                          }
-                          alt={product.name}
-                          width={40}
-                          height={40}
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {product.name}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {product.id}
-                        </div>
-                      </div>
-                    </div>
+        <div className="flex items-center">
+          <div className="flex-shrink-0 h-10 w-10">
+            <Image
+              className="h-10 w-10 rounded-md object-cover"
+              src={
+                product?.image ||
+                product?.images?.[0] ||
+                "https://placehold.co/50x50"
+              }
+              alt={product.name || "Product"}
+              width={40}
+              height={40}
+            />
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-900 dark:text-white">
+              {product.name}
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {product.id || product._id}
+            </div>
+          </div>
+        </div>
       ),
     },
     {
       header: "Category",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {product.category?.name || "Uncategorized"}
+          {product.category?.name || "Uncategorized"}
         </div>
       ),
     },
@@ -160,7 +189,7 @@ console.log(categories)
       header: "Price",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-900 dark:text-white">
-                    ${product.price ? product.price.toFixed(2) : "0.00"}
+          ${product.price ? product.price.toFixed(2) : "0.00"}
         </div>
       ),
     },
@@ -168,20 +197,20 @@ console.log(categories)
       header: "Inventory",
       accessor: (product: Product) => (
         <div className="text-sm text-gray-900 dark:text-white">
-                    {product.inventory || product.quantity || 0}
+          {product.inventory || product.quantity || 0}
         </div>
       ),
     },
     {
       header: "Status",
       accessor: (product: Product) => (
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                        product.status
-                      )}`}
-                    >
-                      {product.status}
-                    </span>
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+            product.status
+          )}`}
+        >
+          {product.status}
+        </span>
       ),
     },
   ];
@@ -228,7 +257,7 @@ console.log(categories)
         <option value={50}>50 per page</option>
         <option value={100}>100 per page</option>
       </select>
-        </div>
+    </div>
   );
 
   const actions = (
@@ -267,8 +296,8 @@ console.log(categories)
         actions={actions}
         pagination={{
           currentPage: page,
-          totalPages: Math.ceil(products.length / limit),
-          totalItems: products.length,
+          totalPages: Math.ceil((products || []).length / limit),
+          totalItems: (products || []).length,
           onPageChange: setPage,
         }}
         emptyMessage={{

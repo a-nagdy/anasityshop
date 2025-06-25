@@ -35,7 +35,7 @@ export default function CategoriesPage() {
   }, [error]);
 
   // Filter categories based on search
-  console.log(categories);
+  // console.log(categories);
   const filteredCategories = categories?.filter(
     (category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
