@@ -1,4 +1,4 @@
-import { CartItem } from '@/app/types/cart';
+import { CartItem, PopulatedProduct } from '@/app/types/cart';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware } from '../../../middleware/authMiddleware';
@@ -99,13 +99,13 @@ export function POST(req: NextRequest) {
                     // Transform cart items to order items
                     orderData.items = cart.items.map((item: CartItem) => ({
                         product: item.product._id,
-                        name: item.product.name,
+                        name: (item.product as PopulatedProduct).name,
                         quantity: item.quantity,
                         price: item.price,
-                        total: item.total,
+                        total: item.totalPrice,
                         color: item.color,
                         size: item.size,
-                        image: item.product.image,
+                        image: (item.product as PopulatedProduct).image,
                     }));
 
                     // Set order prices from cart

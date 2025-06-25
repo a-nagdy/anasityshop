@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { initCronJobs } from "../utils/cron";
 import connectToDatabase from "../utils/db";
+import { initializeOptimizations } from "../utils/initOptimizations";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,13 +17,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Initialize database connection
-connectToDatabase();
+// Initialize database connection and optimizations
+async function initializeApp() {
+  try {
+    await connectToDatabase();
+    await initializeOptimizations();
 
-// Initialize cron jobs (in production only to avoid duplicate cron jobs in development)
-if (process.env.NODE_ENV === "production") {
-  initCronJobs();
+    // Initialize cron jobs (in production only to avoid duplicate cron jobs in development)
+    if (process.env.NODE_ENV === "production") {
+      initCronJobs();
+    }
+  } catch (error) {
+    console.error("Failed to initialize app:", error);
+  }
 }
+
+// Initialize app
+initializeApp();
 
 export const metadata: Metadata = {
   title: "Create Next App",
