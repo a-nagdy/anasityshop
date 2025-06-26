@@ -23,6 +23,7 @@ export default function AddProductPage() {
 
   const [formData, setFormData] = useState({
     name: "",
+    sku: "",
     description: "",
     price: "",
     category: "",
@@ -35,6 +36,15 @@ export default function AddProductPage() {
     image: "",
     images: [] as string[],
   });
+
+  // Helper function to generate SKU from name
+  const generateSKU = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters except spaces
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+  };
 
   // Fetch categories on component mount
   useEffect(() => {
@@ -70,7 +80,13 @@ export default function AddProductPage() {
       const { checked } = e.target as HTMLInputElement;
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (name === "name") {
+        // Auto-generate SKU when name changes
+        const generatedSKU = generateSKU(value);
+        setFormData((prev) => ({ ...prev, [name]: value, sku: generatedSKU }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
     }
   };
 
@@ -101,50 +117,28 @@ export default function AddProductPage() {
     setFormError("");
 
     try {
-      // Create a FormData object for the API
-      const productFormData = new FormData();
+      // Format the data for the API as JSON
+      const productData = {
+        name: formData.name,
+        sku: formData.sku,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        quantity: parseInt(formData.quantity),
+        category: formData.category,
+        featured: formData.featured,
+        shipping: formData.shipping,
+        active: formData.active,
+        image: formData.image,
+        images: Array.isArray(formData.images) ? formData.images : [],
+        color: formData.color,
+        size: formData.size,
+      };
 
-      // Add basic fields
-      productFormData.append("name", formData.name);
-      productFormData.append("description", formData.description);
-      productFormData.append("price", formData.price);
-      productFormData.append("quantity", formData.quantity);
-      productFormData.append("category", formData.category);
-      productFormData.append("featured", String(formData.featured));
-      productFormData.append("shipping", String(formData.shipping));
-      productFormData.append("active", String(formData.active));
-
-      // Handle arrays (color and size)
-      const colors = formData.color
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-
-      const sizes = formData.size
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
-
-      // Add arrays as JSON strings
-      productFormData.append("color", JSON.stringify(colors));
-      productFormData.append("size", JSON.stringify(sizes));
-
-      // Add image URLs if they exist
-      if (formData.image) {
-        productFormData.append("image", formData.image);
-      }
-
-      if (formData.images && formData.images.length > 0) {
-        formData.images.forEach((imageUrl, index) => {
-          productFormData.append(`images[${index}]`, imageUrl);
-        });
-      }
-
-      // Make API call to create product with FormData
-      await axios.post(`/api/products`, productFormData, {
+      // Make API call to create product with JSON
+      await axios.post(`/api/products`, productData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          // Let axios set the correct content-type for FormData
+          "Content-Type": "application/json",
         },
       });
 
@@ -239,6 +233,22 @@ export default function AddProductPage() {
                 onChange={handleChange}
                 required
                 className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+              />
+            </div>
+
+            {/* SKU */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                SKU (Auto-generated)*
+              </label>
+              <input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                required
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+                placeholder="Auto-generated from product name"
               />
             </div>
 

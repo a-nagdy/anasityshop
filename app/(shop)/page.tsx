@@ -155,7 +155,7 @@ export default function HomePage() {
 
   if (!mounted || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -166,61 +166,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Global background effects */}
-      <div className="fixed inset-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: homepageSettings?.backgroundColor || "#0a0a0f",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(0,245,255,0.15),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,0,128,0.15),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_40%,rgba(57,255,20,0.08),transparent)]" />
-
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-30">
-          <div
-            className="absolute inset-0 bg-[linear-gradient(rgba(0,245,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,245,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px]"
-            style={{
-              backgroundImage: `linear-gradient(${
-                homepageSettings?.accentColor || "#00f5ff"
-              }1a 1px, transparent 1px), linear-gradient(90deg, ${
-                homepageSettings?.accentColor || "#00f5ff"
-              }1a 1px, transparent 1px)`,
-            }}
-          />
-        </div>
-
-        {/* Floating particles */}
-        {homepageSettings?.animation3dEnabled && (
-          <div className="absolute inset-0">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 rounded-full"
-                style={{
-                  backgroundColor: homepageSettings?.accentColor || "#00f5ff",
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  y: [0, -100, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
+    <div className="min-h-screen relative overflow-hidden">
       {/* Content */}
       <div className="relative z-10">
         {/* Hero Section */}
@@ -284,7 +230,12 @@ export default function HomePage() {
               viewport={{ once: true }}
               className="mb-16"
             >
-              <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+              <h2
+                className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent"
+                style={{
+                  backgroundImage: "var(--theme-gradient-primary)",
+                }}
+              >
                 Why Choose Anasity?
               </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -318,10 +269,31 @@ export default function HomePage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.2 }}
                   viewport={{ once: true }}
-                  className="group p-8 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl backdrop-blur-sm border border-white/10 hover:border-cyan-400/50 transition-all duration-300"
+                  className="group p-8 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl backdrop-blur-sm border border-white/10 transition-all duration-300"
+                  style={{
+                    borderColor: "rgba(255, 255, 255, 0.1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor =
+                      "rgba(255, 255, 255, 0.1)";
+                  }}
                 >
                   <div className="text-4xl mb-4">{feature.icon}</div>
-                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                  <h3
+                    className="text-2xl font-bold text-white mb-4 transition-colors"
+                    style={{
+                      color: "white",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = "var(--theme-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = "white";
+                    }}
+                  >
                     {feature.title}
                   </h3>
                   <p className="text-gray-300">{feature.description}</p>

@@ -40,6 +40,14 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const router = useRouter();
 
+  // Simple auth check
+  useEffect(() => {
+    const token = getCookie("auth_token");
+    if (!token) {
+      router.push("/admin");
+    }
+  }, [router]);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -126,7 +134,6 @@ export default function ProductsPage() {
   const handleDeleteProduct = async (productId: string) => {
     const token = getCookie("auth_token");
     toast.info("Deleting product...");
-
     setIsDeleting(true);
     try {
       await axios.delete(`/api/products/${productId}`, {

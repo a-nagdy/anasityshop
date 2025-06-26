@@ -56,7 +56,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Don't re-create the model if it already exists
- const User = mongoose.models.User || mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 // Create JWT token
 export const createToken = async (id: string) => {
@@ -77,9 +77,9 @@ export const createToken = async (id: string) => {
 // Set cookie with token for an existing response
 export const setTokenCookie = (response: NextResponse, token: string) => {
     response.cookies.set({
-        name: 'adminToken',
+        name: 'auth_token',
         value: token,
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript to read this cookie for frontend auth
         secure: process.env.NODE_ENV === 'production',
         maxAge: 30 * 24 * 60 * 60, // 30 days
         path: '/',

@@ -23,6 +23,7 @@ export interface UploadResult {
 
 export interface ProductData {
     name?: string;
+    sku?: string;
     slug?: string;
     description?: string;
     price?: number;
@@ -33,7 +34,12 @@ export interface ProductData {
     imageIds?: string[];
     color?: string | string[];
     size?: string | string[];
+    weight?: string;
+    dimensions?: string;
+    material?: string;
+    warranty?: string;
     stock?: number;
+    quantity?: number;
     active?: boolean;
     [key: string]: string | string[] | number | boolean | undefined;
     parent?: string;
@@ -44,7 +50,7 @@ export interface ProductData {
     new?: boolean;
     sale?: boolean;
     _id?: string;
-
+    removeImages?: string[];
 }
 
 export interface CategoryData {

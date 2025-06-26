@@ -300,6 +300,16 @@ body {
   }
 }
 
+@keyframes grid-move {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(50px, 50px);
+  }
+}
+
 /* Custom utility classes */
 .animate-spin-slow {
   animation: spin-slow 8s linear infinite;

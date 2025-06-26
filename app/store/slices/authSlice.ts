@@ -1,14 +1,22 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axios, { AxiosError } from 'axios';
-import { getCookie, setCookie } from 'cookies-next';
+import { getCookie } from 'cookies-next';
 
 // Define user type
 export type User = {
-    id: string;
-    name: string;
+    _id: string;
+    firstName: string;
+    lastName: string;
     email: string;
     role: string;
-    avatar: string;
+    avatar?: string;
+    active: boolean;
+    verified: boolean;
+    isVerified: boolean;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    lastLogin?: string;
 };
 
 // Define the auth state
@@ -37,18 +45,18 @@ export const loginUser = createAsyncThunk(
                 credentials
             );
 
-            const { token, user } = response.data;
+            const { user, token } = response.data.data; // Extract from data.data
 
             // Check if user has admin role
             if (user.role !== 'admin' && user.role !== 'super-admin') {
                 return rejectWithValue('You don\'t have permission to access the admin area');
             }
 
-            // Store token in cookies
-            setCookie('auth_token', token, {
-                maxAge: 60 * 60 * 24 * 7, // 1 week
-                path: '/',
-            });
+            // Store token in cookies - removed since server already sets the cookie
+            // setCookie('auth_token', token, {
+            //     maxAge: 60 * 60 * 24 * 7, // 1 week
+            //     path: '/',
+            // });
 
             // console.log(response);
             // console.log(user);

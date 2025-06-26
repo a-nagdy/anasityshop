@@ -8,7 +8,7 @@ export async function POST() {
     );
 
     // Clear the admin token cookie
-    response.cookies.delete('adminToken');
+    response.cookies.delete('auth_token');
 
     return response;
 } 

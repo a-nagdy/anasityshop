@@ -415,29 +415,118 @@ export function useTheme() {
   });
 
   useEffect(() => {
-    const fetchThemeSettings = async () => {
+    // Fetch both theme settings and homepage settings (same logic as main ThemeProvider)
+    const fetchAllSettings = async () => {
       try {
-        const response = await fetch("/api/settings/website-theme");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data && data.data.value) {
-            setThemeSettings(data.data.value);
+        // Fetch both website theme and homepage settings
+        const [themeResponse, homepageResponse] = await Promise.all([
+          fetch("/api/settings/website-theme"),
+          fetch("/api/settings/homepage"),
+        ]);
+
+        let baseThemeSettings = { ...themeSettings };
+        let homepageSettings: HomepageSettings | null = null;
+
+        // Process website theme settings
+        if (themeResponse.ok) {
+          const themeData = await themeResponse.json();
+          if (themeData.data && themeData.data.value) {
+            baseThemeSettings = themeData.data.value;
           }
+        }
+
+        // Process homepage settings
+        if (homepageResponse.ok) {
+          const homepageData = await homepageResponse.json();
+          if (homepageData.data) {
+            homepageSettings = homepageData.data;
+          }
+        }
+
+        // Helper function to convert color to RGB
+        const hexToRgb = (hex: string) => {
+          // Handle rgba/rgb strings
+          if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
+            return hex;
+          }
+
+          // Handle hex colors
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result
+            ? `${parseInt(result[1], 16)}, ${parseInt(
+                result[2],
+                16
+              )}, ${parseInt(result[3], 16)}`
+            : "0, 245, 255";
+        };
+
+        // Merge settings - homepage settings override theme settings for key colors
+        if (homepageSettings) {
+          const mergedSettings = {
+            ...baseThemeSettings,
+            // Use homepage colors as primary theme colors
+            primaryColor:
+              homepageSettings.accentColor || baseThemeSettings.primaryColor,
+            accentColor:
+              homepageSettings.accentColor || baseThemeSettings.accentColor,
+            backgroundColor:
+              homepageSettings.backgroundColor ||
+              baseThemeSettings.backgroundColor,
+
+            // Update button colors to use homepage accent
+            buttonPrimaryColor:
+              homepageSettings.accentColor ||
+              baseThemeSettings.buttonPrimaryColor,
+            buttonHoverColor:
+              homepageSettings.accentColor ||
+              baseThemeSettings.buttonHoverColor,
+
+            // Update header border and footer link to use homepage accent
+            headerBorderColor: `rgba(${hexToRgb(
+              homepageSettings.accentColor || baseThemeSettings.primaryColor
+            )}, 0.2)`,
+            footerLinkColor:
+              homepageSettings.accentColor || baseThemeSettings.footerLinkColor,
+
+            // Update shadow color to use homepage accent
+            shadowColor: `rgba(${hexToRgb(
+              homepageSettings.accentColor || baseThemeSettings.primaryColor
+            )}, 0.2)`,
+
+            // Use homepage animation setting
+            animation3dEnabled:
+              homepageSettings.animation3dEnabled !== undefined
+                ? homepageSettings.animation3dEnabled
+                : baseThemeSettings.animation3dEnabled,
+          };
+
+          setThemeSettings(mergedSettings);
+        } else {
+          setThemeSettings(baseThemeSettings);
         }
       } catch (error) {
         console.error("Error fetching theme settings:", error);
       }
     };
 
-    fetchThemeSettings();
+    fetchAllSettings();
 
-    // Listen for theme update events
+    // Listen for both theme and homepage update events
     const handleThemeUpdate = () => {
-      fetchThemeSettings();
+      fetchAllSettings();
+    };
+
+    const handleHomepageUpdate = () => {
+      fetchAllSettings();
     };
 
     window.addEventListener("themeUpdated", handleThemeUpdate);
-    return () => window.removeEventListener("themeUpdated", handleThemeUpdate);
+    window.addEventListener("homepageUpdated", handleHomepageUpdate);
+
+    return () => {
+      window.removeEventListener("themeUpdated", handleThemeUpdate);
+      window.removeEventListener("homepageUpdated", handleHomepageUpdate);
+    };
   }, []);
 
   return themeSettings;

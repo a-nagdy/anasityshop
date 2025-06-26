@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { initCronJobs } from "../utils/cron";
 import connectToDatabase from "../utils/db";
 import { initializeOptimizations } from "../utils/initOptimizations";
+import GlobalBackground from "./components/GlobalBackground";
 import ThemeProvider from "./components/ThemeProvider";
 import "./globals.css";
 
@@ -54,7 +55,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          {children}
+          <GlobalBackground />
+          <div className="relative z-10">{children}</div>
           <ToastContainer
             position="top-right"
             autoClose={3000}

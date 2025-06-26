@@ -15,7 +15,7 @@ interface Category {
   description?: string;
   image?: string;
   active: boolean;
-  productsCount?: number;
+  products?: number;
 }
 
 export default function CategoriesPage() {
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">
@@ -75,42 +75,7 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen theme-bg-primary relative overflow-hidden">
-      {/* Futuristic Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="h-full w-full cyber-grid"
-            style={{
-              animation: "grid-move 20s linear infinite",
-            }}
-          />
-        </div>
-
-        {/* Floating particles */}
-        <div className="absolute inset-0">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full theme-accent opacity-20 animate-float"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${4 + Math.random() * 8}px`,
-                height: `${4 + Math.random() * 8}px`,
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${10 + Math.random() * 20}s`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/40" />
-        <div className="absolute inset-0 theme-bg-radial" />
-      </div>
-
+    <div className="min-h-screen relative overflow-hidden">
       {/* Hero Section */}
       <div className="relative h-80 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/60" />
@@ -315,7 +280,7 @@ function CategoryCard({ category }: CategoryCardProps) {
               <div className="flex items-center space-x-2 text-gray-400">
                 <FiUsers className="text-sm" />
                 <span className="text-sm">
-                  {category.productsCount || 0} products
+                  {category.products || 0} products
                 </span>
               </div>
 

@@ -26,7 +26,7 @@ export async function authMiddleware(
             token = authHeader.split(' ')[1];
         } else {
             const cookieStore = await cookies();
-            token = cookieStore.get('adminToken')?.value;
+            token = cookieStore.get('auth_token')?.value;
         }
 
         if (!token) {

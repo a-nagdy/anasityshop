@@ -18,7 +18,12 @@ const productCreateSchema = {
     price: { required: true, type: 'number' as const, min: 0 },
     category: { required: true, type: 'objectId' as const },
     quantity: { required: true, type: 'number' as const, min: 0 },
+    sku: { type: 'string' as const, min: 3, max: 50 },
     discountPrice: { type: 'number' as const, min: 0 },
+    weight: { type: 'string' as const, max: 50 },
+    dimensions: { type: 'string' as const, max: 100 },
+    material: { type: 'string' as const, max: 100 },
+    warranty: { type: 'string' as const, max: 100 },
     featured: { type: 'boolean' as const },
     active: { type: 'boolean' as const }
 };
@@ -46,7 +51,7 @@ export async function GET(req: NextRequest) {
             productIds: queryParams.productIds?.split(',')
         };
 
-        console.log('Products API - Query params:', processedParams);
+        // Debug: console.log('Products API - Query params:', processedParams);
 
         const { page, limit, featured, bestseller, new: newProducts, sale, category, search, sort, status, productIds } = processedParams;
         const skip = (page - 1) * limit;
@@ -89,14 +94,14 @@ export async function GET(req: NextRequest) {
                 if (bestseller) {
                     filter.sold = { $gte: 10 };
                 }
-        if (newProducts) {
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                if (newProducts) {
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                     filter.createdAt = { $gte: thirtyDaysAgo };
-        }
-        if (sale) {
+                }
+                if (sale) {
                     filter.discountPrice = { $exists: true, $ne: null };
-        }
+                }
 
                 // Search functionality
                 if (search) {
@@ -104,9 +109,9 @@ export async function GET(req: NextRequest) {
                         { name: { $regex: search, $options: 'i' } },
                         { description: { $regex: search, $options: 'i' } }
                     ];
-        }
+                }
 
-                console.log('Products API - Filter:', JSON.stringify(filter, null, 2));
+                // Debug: console.log('Products API - Filter:', JSON.stringify(filter, null, 2));
 
                 // Count total documents
                 const total = await Product.countDocuments(filter);
@@ -133,16 +138,17 @@ export async function GET(req: NextRequest) {
                     case '-createdAt':
                     default:
                         sortObj = { createdAt: -1 };
-        }
+                }
 
                 // Execute query with population
                 const products = await Product.find(filter)
                     .populate('category', 'name slug')
                     .sort(sortObj)
-            .skip(skip)
-            .limit(limit)
+                    .skip(skip)
+                    .limit(limit)
                     .select({
                         name: 1,
+                        sku: 1,
                         slug: 1,
                         description: 1,
                         price: 1,
@@ -154,6 +160,10 @@ export async function GET(req: NextRequest) {
                         quantity: 1,
                         sold: 1,
                         featured: 1,
+                        weight: 1,
+                        dimensions: 1,
+                        material: 1,
+                        warranty: 1,
                         ratings: 1,
                         totalRating: 1,
                         createdAt: 1,
@@ -173,7 +183,7 @@ export async function GET(req: NextRequest) {
                         : 0
                 }));
 
-        const pagination = {
+                const pagination = {
                     page,
                     limit,
                     total,
@@ -213,6 +223,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     return authMiddleware(req, async (req, user) => {
         // Check if user is admin
+        console.log("user", user);
         const adminCheckResult = isAdmin(user);
         if (adminCheckResult) return adminCheckResult;
 
@@ -221,7 +232,10 @@ export async function POST(req: NextRequest) {
 
             // Get and sanitize JSON data
             const rawData = await req.json();
+            console.log('Raw data received:', JSON.stringify(rawData, null, 2));
+
             const productData = Validator.sanitizeInput(rawData) as ProductData;
+            console.log('After sanitization:', JSON.stringify(productData, null, 2));
 
             // Validate input
             const { isValid, errors } = Validator.validate(productData, productCreateSchema);
@@ -267,22 +281,51 @@ export async function POST(req: NextRequest) {
                 productData.status = determineProductStatus(Number(productData.quantity), active);
             }
 
-            // Parse color and size arrays if they're strings
-            if (typeof productData.color === 'string') {
-                try {
-                    productData.color = JSON.parse(productData.color || '[]');
-                } catch {
-                    productData.color = [productData.color as string];
+            // Add debug logging for images
+            console.log('Before parsing - images:', typeof productData.images, JSON.stringify(productData.images));
+
+            // Sanitize images array - ensure it's always an array of strings
+            if (productData.images) {
+                if (typeof productData.images === 'string') {
+                    try {
+                        productData.images = JSON.parse(productData.images);
+                    } catch {
+                        productData.images = productData.images.split(',').map(img => img.trim());
+                    }
                 }
+
+                // Ensure it's an array and filter out invalid entries
+                if (Array.isArray(productData.images)) {
+                    productData.images = productData.images
+                        .filter(img => typeof img === 'string' && img.trim() !== '')
+                        .map(img => img.trim());
+                } else {
+                    productData.images = [];
+                }
+            } else {
+                productData.images = [];
             }
 
-            if (typeof productData.size === 'string') {
-                try {
-                    productData.size = JSON.parse(productData.size || '[]');
-                } catch {
-                    productData.size = [productData.size as string];
-                }
+            console.log('After parsing - images:', typeof productData.images, JSON.stringify(productData.images));
+
+            // Parse color and size arrays if they're strings
+            console.log('Before parsing - color:', typeof productData.color, productData.color);
+            console.log('Before parsing - size:', typeof productData.size, productData.size);
+
+            if (typeof productData.color === 'string' && productData.color.trim()) {
+                productData.color = productData.color.split(',').map(item => item.trim()).filter(Boolean);
+            } else if (!Array.isArray(productData.color)) {
+                productData.color = [];
             }
+
+            if (typeof productData.size === 'string' && productData.size.trim()) {
+                productData.size = productData.size.split(',').map(item => item.trim()).filter(Boolean);
+            } else if (!Array.isArray(productData.size)) {
+                productData.size = [];
+            }
+
+            console.log('After parsing - color:', typeof productData.color, productData.color);
+            console.log('After parsing - size:', typeof productData.size, productData.size);
 
             // Create the product
             const product = new Product(productData);
@@ -309,7 +352,7 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-                    return NextResponse.json(
+            return NextResponse.json(
                 ApiResponseHelper.serverError('Failed to create product'),
                 { status: 500 }
             );

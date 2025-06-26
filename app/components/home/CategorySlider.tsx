@@ -55,8 +55,18 @@ export default function CategorySlider({
     <section className="py-20 relative overflow-hidden" ref={ref}>
       {/* Background Effects */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div
+          className="absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: "rgba(var(--theme-secondary-rgb), 0.1)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: "rgba(var(--theme-primary-rgb), 0.1)",
+          }}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -67,7 +77,12 @@ export default function CategorySlider({
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+          <h2
+            className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent"
+            style={{
+              backgroundImage: "var(--theme-gradient-primary)",
+            }}
+          >
             {title}
           </h2>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">{subtitle}</p>
@@ -92,7 +107,19 @@ export default function CategorySlider({
               className="group relative"
             >
               <Link href={`/categories/${category.slug}`}>
-                <div className="relative h-80 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10 hover:border-cyan-400/50 transition-all duration-500">
+                <div
+                  className="relative h-80 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10 transition-all duration-500"
+                  style={{
+                    borderColor: "rgba(255, 255, 255, 0.1)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "var(--theme-primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor =
+                      "rgba(255, 255, 255, 0.1)";
+                  }}
+                >
                   {/* Category Image */}
                   {category.image && (
                     <div className="absolute inset-0">
@@ -107,7 +134,13 @@ export default function CategorySlider({
                   )}
 
                   {/* Hover Effects */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div
+                    className="absolute inset-0 bg-gradient-to-t to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                    style={{
+                      background:
+                        "linear-gradient(to top, rgba(var(--theme-primary-rgb), 0.2), transparent)",
+                    }}
+                  />
 
                   {/* Glowing Border */}
                   <motion.div
@@ -126,10 +159,19 @@ export default function CategorySlider({
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     {/* Category Name */}
                     <motion.h3
-                      className="text-2xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-300"
+                      className="text-2xl font-bold text-white mb-2 transition-colors duration-300"
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: index * 0.1 }}
+                      style={{
+                        color: "white",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = "var(--theme-primary)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = "white";
+                      }}
                     >
                       {category.name}
                     </motion.h3>
@@ -152,7 +194,14 @@ export default function CategorySlider({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg text-sm">
+                      <span
+                        className="inline-flex items-center gap-2 px-4 py-2 text-white font-semibold rounded-lg text-sm"
+                        style={{
+                          background: "var(--theme-gradient-primary)",
+                          boxShadow:
+                            "0 4px 15px rgba(var(--theme-primary-rgb), 0.3)",
+                        }}
+                      >
                         Explore
                         <motion.span
                           animate={{ x: [0, 5, 0] }}
@@ -165,8 +214,18 @@ export default function CategorySlider({
                   </div>
 
                   {/* Corner Accent */}
-                  <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-cyan-400/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-purple-400/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div
+                    className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      borderColor: "var(--theme-primary)",
+                    }}
+                  />
+                  <div
+                    className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      borderColor: "var(--theme-accent)",
+                    }}
+                  />
                 </div>
               </Link>
             </motion.div>
@@ -182,13 +241,29 @@ export default function CategorySlider({
         >
           <Link
             href="/categories"
-            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600/20 to-cyan-600/20 hover:from-purple-600/40 hover:to-cyan-600/40 text-white font-semibold rounded-xl border border-white/10 hover:border-cyan-400/50 transition-all duration-300 backdrop-blur-sm"
+            className="group inline-flex items-center gap-3 px-8 py-4 text-white font-semibold rounded-xl border border-white/10 transition-all duration-300 backdrop-blur-sm"
+            style={{
+              background: "var(--theme-gradient-accent)",
+              borderColor: "var(--theme-border)",
+              boxShadow: "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
+              e.currentTarget.style.boxShadow =
+                "0 8px 25px rgba(var(--theme-primary-rgb), 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--theme-border)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)";
+            }}
           >
             View All Categories
             <motion.span
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              className="group-hover:text-cyan-400 transition-colors"
+              className="transition-colors"
+              style={{ color: "var(--theme-primary)" }}
             >
               →
             </motion.span>

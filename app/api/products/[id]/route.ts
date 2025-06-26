@@ -6,23 +6,91 @@ import { deleteFile } from '../../../../utils/fileUpload';
 import { determineProductStatus } from '../../../../utils/productStatus';
 import { MongooseError, ProductData, ValidationError } from '../../../types/mongoose';
 import Product from '../../models/Product';
-// Get product by ID
+// Get product by ID or SKU
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id) {
         return NextResponse.json(
-            { message: 'Invalid product ID format' },
+            { message: 'Product ID or SKU is required' },
             { status: 400 }
         );
     }
 
     try {
         await connectToDatabase();
-        const product = await Product.findById(id).populate('category', 'name');
+
+        let product;
+
+        // Check if it's a valid MongoDB ObjectId
+        if (mongoose.Types.ObjectId.isValid(id)) {
+            // Search by ID
+            product = await Product.findById(id)
+                .populate('category', 'name slug')
+                .select({
+                    name: 1,
+                    sku: 1,
+                    slug: 1,
+                    description: 1,
+                    price: 1,
+                    discountPrice: 1,
+                    image: 1,
+                    images: 1,
+                    category: 1,
+                    status: 1,
+                    quantity: 1,
+                    sold: 1,
+                    featured: 1,
+                    weight: 1,
+                    dimensions: 1,
+                    material: 1,
+                    warranty: 1,
+                    ratings: 1,
+                    totalRating: 1,
+                    reviewCount: 1,
+                    createdAt: 1,
+                    active: 1,
+                    color: 1,
+                    size: 1
+                });
+        } else {
+            // Search by SKU
+            product = await Product.findOne({
+                sku: id.toLowerCase(),
+                active: true,
+                status: { $ne: 'draft' }
+            })
+                .populate('category', 'name slug')
+                .select({
+                    name: 1,
+                    sku: 1,
+                    slug: 1,
+                    description: 1,
+                    price: 1,
+                    discountPrice: 1,
+                    image: 1,
+                    images: 1,
+                    category: 1,
+                    status: 1,
+                    quantity: 1,
+                    sold: 1,
+                    featured: 1,
+                    weight: 1,
+                    dimensions: 1,
+                    material: 1,
+                    warranty: 1,
+                    ratings: 1,
+                    totalRating: 1,
+                    reviewCount: 1,
+                    createdAt: 1,
+                    active: 1,
+                    color: 1,
+                    size: 1
+                });
+        }
 
         if (!product) {
             return NextResponse.json(
@@ -31,7 +99,17 @@ export async function GET(
             );
         }
 
-        return NextResponse.json(product);
+        // Add computed fields
+        const enrichedProduct = {
+            ...product.toObject(),
+            finalPrice: product.discountPrice || product.price,
+            hasDiscount: Boolean(product.discountPrice),
+            discountPercentage: product.discountPrice
+                ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
+                : 0
+        };
+
+        return NextResponse.json(enrichedProduct);
     } catch (error: unknown) {
         return NextResponse.json(
             { message: error instanceof Error ? error.message : 'An error occurred' },
@@ -95,7 +173,7 @@ export async function PUT(
 
             // With JSON approach, we expect image URLs to be provided directly
             // The actual file upload should be handled by the client using the upload API endpoint
-            
+
             // Handle image removal if specified in the updateData
             if (updateData.removeImages && Array.isArray(updateData.removeImages) && updateData.removeImages.length > 0) {
                 const imagesToRemove = updateData.removeImages;
@@ -139,37 +217,50 @@ export async function PUT(
                         );
                     }
                 }
-                
+
                 // Remove the removeImages field as it's not part of the Product model
                 delete updateData.removeImages;
             }
 
             // Parse JSON strings if they exist
-            if (typeof updateData.color === 'string') {
-                try {
-                    updateData.color = JSON.parse(updateData.color);
-                } catch {
-                    // If it's not valid JSON, treat it as a single value
-                    updateData.color = [updateData.color as string];
+            // Handle images array
+            if (updateData.images) {
+                if (typeof updateData.images === 'string') {
+                    try {
+                        updateData.images = JSON.parse(updateData.images);
+                    } catch {
+                        updateData.images = updateData.images.split(',').map(img => img.trim());
+                    }
+                }
+
+                if (Array.isArray(updateData.images)) {
+                    updateData.images = updateData.images
+                        .filter(img => typeof img === 'string' && img.trim() !== '')
+                        .map(img => img.trim());
+                } else {
+                    updateData.images = [];
                 }
             }
 
-            if (typeof updateData.size === 'string') {
-                try {
-                    updateData.size = JSON.parse(updateData.size);
-                } catch {
-                    // If it's not valid JSON, treat it as a single value
-                    updateData.size = [updateData.size as string];
-                }
+            if (typeof updateData.color === 'string' && updateData.color.trim()) {
+                updateData.color = updateData.color.split(',').map(item => item.trim()).filter(Boolean);
+            } else if (!Array.isArray(updateData.color)) {
+                updateData.color = [];
+            }
+
+            if (typeof updateData.size === 'string' && updateData.size.trim()) {
+                updateData.size = updateData.size.split(',').map(item => item.trim()).filter(Boolean);
+            } else if (!Array.isArray(updateData.size)) {
+                updateData.size = [];
             }
 
             // Update product status if quantity is changed
             if (updateData.quantity !== undefined) {
                 const active = updateData.active !== undefined ? updateData.active : product.active;
-                
+
                 updateData.status = determineProductStatus(updateData.quantity as number, active as boolean);
             }
-            
+
             // Update the product with new values
             const updatedProduct = await Product.findByIdAndUpdate(
                 id,

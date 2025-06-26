@@ -37,14 +37,18 @@ const MultiImageUploader = ({
 
       const imageUrl = URL.createObjectURL(file);
 
-      // If onFileUpload callback is provided, call it with the file
+      // Always use simulation since onFileUpload doesn't return URLs
+      simulateImageUpload(file, (uploadedUrl) => {
+        // Use functional update to get current images state
+        onImagesChange((currentImages) => [
+          ...currentImages,
+          uploadedUrl || imageUrl,
+        ]);
+      });
+
+      // Call onFileUpload for side effects (like showing toast)
       if (onFileUpload) {
         onFileUpload(file);
-      } else {
-        // Otherwise, simulate upload
-        simulateImageUpload(file, (uploadedUrl) => {
-          onImagesChange([...images, uploadedUrl || imageUrl]);
-        });
       }
     });
 

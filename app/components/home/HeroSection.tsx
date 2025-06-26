@@ -167,7 +167,10 @@ export default function HeroSection({ banners }: HeroSectionProps) {
         {/* Dynamic Gradient Orbs */}
         <motion.div
           className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{ backgroundColor: `rgba(${accentRgb}, 0.2)` }}
+          style={{
+            backgroundColor: `rgba(var(--theme-primary-rgb), 0.2)`,
+            boxShadow: `0 0 100px rgba(var(--theme-primary-rgb), 0.3)`,
+          }}
           animate={{
             scale: [1, 1.3, 1],
             opacity: [0.3, 0.7, 0.3],
@@ -177,7 +180,11 @@ export default function HeroSection({ banners }: HeroSectionProps) {
           transition={{ duration: 6, repeat: Infinity }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: `rgba(var(--theme-accent-rgb), 0.2)`,
+            boxShadow: `0 0 100px rgba(var(--theme-accent-rgb), 0.3)`,
+          }}
           animate={{
             scale: [1.3, 1, 1.3],
             opacity: [0.7, 0.3, 0.7],
@@ -193,9 +200,10 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             key={i}
             className="absolute w-2 h-2 rounded-full"
             style={{
-              backgroundColor: `rgba(${accentRgb}, 0.4)`,
+              backgroundColor: `var(--theme-primary)`,
               left: `${10 + i * 7}%`,
               top: `${5 + i * 9}%`,
+              boxShadow: `0 0 10px var(--theme-primary)`,
             }}
             animate={{
               scale: [0.5, 1.5, 0.5],
@@ -218,7 +226,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
               className="absolute h-px w-full"
               style={{
                 top: `${i * 12.5}%`,
-                background: `linear-gradient(to right, transparent, ${accentColor}, transparent)`,
+                background: `linear-gradient(to right, transparent, var(--theme-primary), transparent)`,
               }}
               animate={{
                 opacity: [0.1, 0.5, 0.1],
@@ -237,7 +245,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
               className="absolute w-px h-full"
               style={{
                 left: `${i * 16.66}%`,
-                background: `linear-gradient(to bottom, transparent, #8b5cf6, transparent)`,
+                background: `linear-gradient(to bottom, transparent, var(--theme-secondary), transparent)`,
               }}
               animate={{
                 opacity: [0.1, 0.5, 0.1],
@@ -267,9 +275,10 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             {/* Main Title */}
             <div className="relative inline-block mb-8">
               <motion.h1
-                className="text-6xl md:text-8xl lg:text-9xl font-extrabold bg-gradient-to-r bg-clip-text text-transparent mb-4"
+                className="text-6xl md:text-8xl lg:text-9xl font-extrabold bg-clip-text text-transparent mb-4"
                 style={{
-                  backgroundImage: `linear-gradient(45deg, ${accentColor}, #ffffff, ${accentColor})`,
+                  backgroundImage: "var(--theme-gradient-primary)",
+                  backgroundSize: "200% 200%",
                 }}
                 animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -281,7 +290,8 @@ export default function HeroSection({ banners }: HeroSectionProps) {
               <motion.div
                 className="absolute -inset-4 rounded-lg blur-xl"
                 style={{
-                  background: `linear-gradient(to right, rgba(${accentRgb}, 0.2), rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2))`,
+                  background: `var(--theme-gradient-primary)`,
+                  opacity: 0.3,
                 }}
                 animate={{
                   opacity: [0.3, 0.8, 0.3],
@@ -304,8 +314,12 @@ export default function HeroSection({ banners }: HeroSectionProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 + index * 0.1 }}
-                  className={index % 2 === 0 ? "text-white" : "text-purple-400"}
-                  style={index % 2 === 0 ? { color: accentColor } : {}}
+                  className={index % 2 === 0 ? "text-white" : ""}
+                  style={
+                    index % 2 === 0
+                      ? { color: "var(--theme-primary)" }
+                      : { color: "white" }
+                  }
                 >
                   {word}{" "}
                 </motion.span>
@@ -328,14 +342,17 @@ export default function HeroSection({ banners }: HeroSectionProps) {
                 href={normalizedBanner.ctaLink}
                 className="group relative px-10 py-5 text-white font-bold rounded-xl text-lg transition-all duration-300 hover:scale-105 overflow-hidden"
                 style={{
-                  background: `linear-gradient(135deg, ${accentColor}, rgba(${accentRgb}, 0.8))`,
-                  boxShadow: `0 4px 15px rgba(${accentRgb}, 0.4), 0 0 50px rgba(${accentRgb}, 0.2)`,
+                  background: "var(--theme-gradient-primary)",
+                  boxShadow:
+                    "0 4px 15px rgba(var(--theme-primary-rgb), 0.4), 0 0 50px rgba(var(--theme-primary-rgb), 0.2)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = `0 8px 25px rgba(${accentRgb}, 0.6), 0 0 60px rgba(${accentRgb}, 0.4)`;
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 25px rgba(var(--theme-primary-rgb), 0.6), 0 0 60px rgba(var(--theme-primary-rgb), 0.4)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = `0 4px 15px rgba(${accentRgb}, 0.4), 0 0 50px rgba(${accentRgb}, 0.2)`;
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 15px rgba(var(--theme-primary-rgb), 0.4), 0 0 50px rgba(var(--theme-primary-rgb), 0.2)";
                 }}
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -344,7 +361,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   style={{
-                    background: `linear-gradient(135deg, rgba(${accentRgb}, 0.9), ${accentColor})`,
+                    background: "var(--theme-gradient-accent)",
                   }}
                 />
               </Link>
@@ -353,17 +370,18 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             {normalizedBanner.showSecondaryButton && (
               <Link
                 href="/products"
-                className="group relative px-10 py-5 border-2 text-purple-400 hover:text-white font-bold rounded-xl text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                className="group relative px-10 py-5 border-2 font-bold rounded-xl text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
                 style={{
-                  borderColor: "#8b5cf6",
+                  borderColor: "var(--theme-secondary)",
+                  color: "var(--theme-secondary)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = "#a855f7";
+                  e.currentTarget.style.color = "white";
                   e.currentTarget.style.backgroundColor =
-                    "rgba(139, 92, 246, 0.2)";
+                    "var(--theme-secondary)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "#8b5cf6";
+                  e.currentTarget.style.color = "var(--theme-secondary)";
                   e.currentTarget.style.backgroundColor = "transparent";
                 }}
               >

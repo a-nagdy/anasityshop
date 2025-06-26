@@ -63,10 +63,20 @@ export default function BannerSection({
 
   return (
     <section className="py-20 relative overflow-hidden" ref={ref}>
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+      {/* Global Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: "rgba(var(--theme-secondary-rgb), 0.05)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl"
+          style={{
+            backgroundColor: "rgba(var(--theme-primary-rgb), 0.05)",
+          }}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -78,7 +88,12 @@ export default function BannerSection({
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h2
+              className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent"
+              style={{
+                backgroundImage: "var(--theme-gradient-primary)",
+              }}
+            >
               {title}
             </h2>
             <p className="text-xl text-gray-300 max-w-2xl mx-auto">
@@ -140,16 +155,22 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
       {/* Futuristic Effects */}
       <div className="absolute inset-0">
         <motion.div
-          className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-purple-400"
+          className="absolute top-0 left-0 w-full h-1"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: index * 0.2, duration: 1 }}
+          style={{
+            background: "var(--theme-gradient-primary)",
+          }}
         />
         <motion.div
-          className="absolute bottom-0 right-0 w-full h-1 bg-gradient-to-l from-cyan-400 to-purple-400"
+          className="absolute bottom-0 right-0 w-full h-1"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ delay: index * 0.2 + 0.5, duration: 1 }}
+          style={{
+            background: "var(--theme-gradient-primary)",
+          }}
         />
       </div>
 
@@ -170,7 +191,8 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 + 0.2 }}
-              className="text-xl md:text-2xl text-cyan-400 mb-4"
+              className="text-xl md:text-2xl mb-4"
+              style={{ color: "var(--theme-primary)" }}
             >
               {banner.subtitle}
             </motion.p>
@@ -195,7 +217,19 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
             >
               <Link
                 href={banner.ctaLink}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,245,255,0.4)]"
+                className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105"
+                style={{
+                  background: "var(--theme-gradient-primary)",
+                  boxShadow: "0 8px 32px rgba(var(--theme-primary-rgb), 0.3)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 0 30px rgba(var(--theme-primary-rgb), 0.6)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 32px rgba(var(--theme-primary-rgb), 0.3)";
+                }}
               >
                 {banner.ctaText}
                 <motion.span
@@ -232,7 +266,8 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.1 + 0.2 }}
-            className="text-xl text-cyan-400 mb-4"
+            className="text-xl mb-4"
+            style={{ color: "var(--theme-primary)" }}
           >
             {banner.subtitle}
           </motion.p>
@@ -257,7 +292,19 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
           >
             <Link
               href={banner.ctaLink}
-              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105"
+              style={{
+                background: "var(--theme-gradient-accent)",
+                boxShadow: "0 8px 32px rgba(var(--theme-accent-rgb), 0.3)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow =
+                  "0 0 30px rgba(var(--theme-accent-rgb), 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow =
+                  "0 8px 32px rgba(var(--theme-accent-rgb), 0.3)";
+              }}
             >
               {banner.ctaText}
               <motion.span
@@ -318,7 +365,17 @@ function GridBanners({ banners }: { banners: Banner[] }) {
             {banner.ctaText && banner.ctaLink && (
               <Link
                 href={banner.ctaLink}
-                className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-semibold"
+                className="transition-colors text-sm font-semibold"
+                style={{
+                  color: "var(--theme-primary)",
+                  textShadow: "0 0 10px rgba(var(--theme-primary-rgb), 0.5)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--theme-accent)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "var(--theme-primary)";
+                }}
               >
                 {banner.ctaText} →
               </Link>

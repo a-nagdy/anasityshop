@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 interface Product {
   _id: string;
   name: string;
+  sku?: string;
   slug: string;
   description: string;
   price: number;
@@ -346,52 +347,8 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden theme-bg-primary">
-      {/* Futuristic Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Animated grid pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="h-full w-full"
-            style={{
-              backgroundImage: `
-                linear-gradient(var(--theme-primary) 1px, transparent 1px),
-                linear-gradient(90deg, var(--theme-primary) 1px, transparent 1px)
-              `,
-              backgroundSize: "50px 50px",
-              animation: "grid-move 20s linear infinite",
-            }}
-          />
-        </div>
-
-        {/* Floating particles */}
-        <div className="absolute inset-0">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full opacity-20 animate-float"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${4 + Math.random() * 8}px`,
-                height: `${4 + Math.random() * 8}px`,
-                backgroundColor: "var(--theme-primary)",
-                animationDelay: `${Math.random() * 10}s`,
-                animationDuration: `${10 + Math.random() * 20}s`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/40" />
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-transparent"
-          style={{
-            background: `radial-gradient(circle at 20% 50%, rgba(var(--theme-primary-rgb), 0.1) 0%, transparent 50%)`,
-          }}
-        />
-      </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Global background will handle all effects */}
 
       {/* Hero Section with enhanced effects */}
       <div className="relative h-80 overflow-hidden">
@@ -1160,25 +1117,6 @@ export default function CategoryPage() {
 
       {/* Enhanced CSS */}
       <style jsx>{`
-        @keyframes grid-move {
-          0% {
-            transform: translate(0, 0);
-          }
-          100% {
-            transform: translate(50px, 50px);
-          }
-        }
-
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-        }
-
         @keyframes hologram {
           0% {
             transform: translateX(-100%);
@@ -1186,10 +1124,6 @@ export default function CategoryPage() {
           100% {
             transform: translateX(100%);
           }
-        }
-
-        .animate-float {
-          animation: float linear infinite;
         }
 
         /* Custom Slider Styles */
@@ -1335,67 +1269,71 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
       />
 
       {/* Product Image */}
-      <div
-        className={`relative overflow-hidden ${
-          viewMode === "list" ? "w-48 h-48" : "h-64"
-        }`}
-      >
-        <Image
-          src={product.image || product.images?.[0] || "/placeholder.jpg"}
-          alt={product.name}
-          fill
-          className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
-            isOutOfStock ? "grayscale" : ""
-          }`}
-        />
-
-        {/* Out of stock overlay */}
-        {isOutOfStock && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white font-bold text-lg bg-red-600 px-4 py-2 rounded-lg">
-              Out of Stock
-            </span>
-          </div>
-        )}
-
-        {/* Holographic overlay */}
+      <Link href={`/products/${product.sku || product._id}`}>
         <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
-          style={{
-            background: `linear-gradient(45deg, transparent 30%, rgba(var(--theme-accent-rgb), 0.4) 50%, transparent 70%)`,
-            animation: isHovered ? "hologram 2s ease-in-out infinite" : "none",
-          }}
-        />
+          className={`relative overflow-hidden ${
+            viewMode === "list" ? "w-48 h-48" : "h-64"
+          }`}
+        >
+          <Image
+            src={product.image || product.images?.[0] || "/placeholder.jpg"}
+            alt={product.name}
+            fill
+            className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
+              isOutOfStock ? "grayscale" : ""
+            }`}
+          />
 
-        {/* Floating action buttons */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-8 group-hover:translate-x-0">
-          <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
-            <FiHeart className="text-sm" />
-          </button>
-          <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
-            <FiEye className="text-sm" />
-          </button>
-        </div>
+          {/* Out of stock overlay */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <span className="text-white font-bold text-lg bg-red-600 px-4 py-2 rounded-lg">
+                Out of Stock
+              </span>
+            </div>
+          )}
 
-        {/* Status badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
-          {product.hasDiscount && (
-            <span className="px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm bg-gradient-to-r from-red-500 to-pink-500 shadow-lg">
-              -{Math.round(product.discountPercentage)}%
-            </span>
-          )}
-          {product.featured && (
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white backdrop-blur-sm shadow-lg">
-              ⭐ Featured
-            </span>
-          )}
-          {isLowStock && !isOutOfStock && (
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white backdrop-blur-sm shadow-lg">
-              Low Stock
-            </span>
-          )}
+          {/* Holographic overlay */}
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+            style={{
+              background: `linear-gradient(45deg, transparent 30%, rgba(var(--theme-accent-rgb), 0.4) 50%, transparent 70%)`,
+              animation: isHovered
+                ? "hologram 2s ease-in-out infinite"
+                : "none",
+            }}
+          />
+
+          {/* Floating action buttons */}
+          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-8 group-hover:translate-x-0">
+            <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
+              <FiHeart className="text-sm" />
+            </button>
+            <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
+              <FiEye className="text-sm" />
+            </button>
+          </div>
+
+          {/* Status badges */}
+          <div className="absolute top-4 left-4 flex flex-col gap-2">
+            {product.hasDiscount && (
+              <span className="px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm bg-gradient-to-r from-red-500 to-pink-500 shadow-lg">
+                -{Math.round(product.discountPercentage)}%
+              </span>
+            )}
+            {product.featured && (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white backdrop-blur-sm shadow-lg">
+                ⭐ Featured
+              </span>
+            )}
+            {isLowStock && !isOutOfStock && (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white backdrop-blur-sm shadow-lg">
+                Low Stock
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      </Link>
 
       {/* Product Info */}
       <div
@@ -1404,9 +1342,11 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
         }`}
       >
         <div>
-          <h3 className="font-bold text-lg text-white mb-2 group-hover:text-theme-gradient transition-all duration-300">
-            {product.name}
-          </h3>
+          <Link href={`/products/${product.sku || product._id}`}>
+            <h3 className="font-bold text-lg text-white mb-2 group-hover:text-theme-gradient transition-all duration-300 cursor-pointer">
+              {product.name}
+            </h3>
+          </Link>
 
           <p className="text-gray-400 text-sm mb-4 line-clamp-2">
             {product.description}

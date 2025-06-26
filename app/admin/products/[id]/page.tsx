@@ -52,12 +52,17 @@ export default function EditProductPage({
 
   const [formData, setFormData] = useState({
     name: "",
+    sku: "",
     description: "",
     price: "",
     category: "",
     quantity: "",
     color: "",
     size: "",
+    weight: "",
+    dimensions: "",
+    material: "",
+    warranty: "",
     featured: false,
     shipping: true,
     active: true,
@@ -99,11 +104,16 @@ export default function EditProductPage({
           quantity: productData.quantity?.toString() || "",
           color: productData.color?.join(", ") || "",
           size: productData.size?.join(", ") || "",
+          weight: productData.weight || "",
+          dimensions: productData.dimensions || "",
+          material: productData.material || "",
+          warranty: productData.warranty || "",
           featured: productData.featured || false,
           shipping: productData.shipping !== false,
           active: productData.active !== false,
           image: productData.image || "",
           images: productData.images || [],
+          sku: productData.sku || "",
         });
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -128,7 +138,13 @@ export default function EditProductPage({
       const { checked } = e.target as HTMLInputElement;
       setFormData((prev) => ({ ...prev, [name]: checked }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (name === "name") {
+        // Auto-generate SKU when name changes
+        const generatedSKU = autoGenerateSKU(value);
+        setFormData((prev) => ({ ...prev, [name]: value, sku: generatedSKU }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
     }
   };
 
@@ -164,14 +180,21 @@ export default function EditProductPage({
         ...formData,
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
-        color: formData.color
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        size: formData.size
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        images: Array.isArray(formData.images) ? formData.images : [],
+        color:
+          typeof formData.color === "string"
+            ? formData.color
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean)
+            : [],
+        size:
+          typeof formData.size === "string"
+            ? formData.size
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean)
+            : [],
       };
 
       // Make API call to update product
@@ -194,6 +217,13 @@ export default function EditProductPage({
     }
   };
 
+  const autoGenerateSKU = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, "") // Remove special characters except spaces
+      .replace(/\s+/g, "-") // Replace spaces with hyphens
+      .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+  };
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -283,6 +313,22 @@ export default function EditProductPage({
               />
             </div>
 
+            {/* SKU */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                SKU (Auto-generated)*
+              </label>
+              <input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                required
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+                placeholder="Auto-generated from product name"
+              />
+            </div>
+
             {/* Price */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -367,31 +413,64 @@ export default function EditProductPage({
               />
             </div>
 
-            {/* Status (read-only, determined by backend) */}
+            {/* Weight */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Status
+                Weight
               </label>
-              <div className="p-2.5 bg-gray-100 dark:bg-gray-600 rounded-md">
-                <span
-                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                    ${
-                      product?.status === "in stock"
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : product?.status === "out of stock"
-                        ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                        : product?.status === "low stock"
-                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                        : "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
-                    }
-                  `}
-                >
-                  {product?.status || "Unknown"}
-                </span>
-                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                  (Auto-determined based on quantity and active state)
-                </span>
-              </div>
+              <input
+                type="text"
+                name="weight"
+                value={formData.weight}
+                onChange={handleChange}
+                placeholder="e.g., 1.5kg"
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+              />
+            </div>
+
+            {/* Dimensions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Dimensions
+              </label>
+              <input
+                type="text"
+                name="dimensions"
+                value={formData.dimensions}
+                onChange={handleChange}
+                placeholder="e.g., 10cm x 20cm x 5cm"
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+              />
+            </div>
+
+            {/* Material */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Material
+              </label>
+              <input
+                type="text"
+                name="material"
+                value={formData.material}
+                onChange={handleChange}
+                placeholder="e.g., Plastic, Metal"
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+              />
+            </div>
+
+            {/* Warranty */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Warranty
+              </label>
+              <input
+                type="text"
+                name="warranty"
+                value={formData.warranty}
+                onChange={handleChange}
+                placeholder="e.g., 2 years"
+                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+              />
             </div>
           </div>
 

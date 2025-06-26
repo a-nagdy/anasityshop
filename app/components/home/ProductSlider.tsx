@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 interface Product {
   _id: string;
   name: string;
+  sku?: string;
   price: number;
   salePrice?: number;
   image: string;
@@ -48,7 +49,7 @@ export default function ProductSlider({
   subtitle = "Discover our top picks",
   type = "featured",
 }: ProductSliderProps) {
-  console.log(products);
+  // Debug: console.log(products);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [homepageSettings, setHomepageSettings] =
@@ -236,7 +237,7 @@ export default function ProductSlider({
               >
                 <div className="relative bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10 hover:border-white/30 transition-all duration-500 h-full flex flex-col">
                   {/* Product Image */}
-                  <Link href={`/products/${product._id}`}>
+                  <Link href={`/products/${product.sku || product._id}`}>
                     <div className="relative h-64 flex-shrink-0 overflow-hidden">
                       <Image
                         src={product.image}
@@ -310,7 +311,7 @@ export default function ProductSlider({
                     </p>
 
                     {/* Product Name */}
-                    <Link href={`/products/${product._id}`}>
+                    <Link href={`/products/${product.sku || product._id}`}>
                       <h3
                         className="text-xl font-bold text-white mb-3 transition-colors duration-300 line-clamp-2 cursor-pointer min-h-[3.5rem] flex-shrink-0"
                         style={{
