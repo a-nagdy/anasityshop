@@ -52,7 +52,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white dark:bg-gray-900">
+    <footer className="footer-theme">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <nav
           className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-8"
@@ -60,10 +60,7 @@ export default function Footer() {
         >
           {navigation.main.map((item) => (
             <div key={item.name}>
-              <Link
-                href={item.href}
-                className="text-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              >
+              <Link href={item.href} className="footer-link-theme text-base">
                 {item.name}
               </Link>
             </div>
@@ -72,11 +69,7 @@ export default function Footer() {
         <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 md:flex md:items-center md:justify-between">
           <div className="flex space-x-6 md:order-2">
             {navigation.social.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-              >
+              <a key={item.name} href={item.href} className="footer-link-theme">
                 <span className="sr-only">{item.name}</span>
                 <item.icon className="h-6 w-6" aria-hidden="true" />
               </a>

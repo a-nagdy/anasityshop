@@ -183,4 +183,28 @@ export async function runMaintenanceTasks(): Promise<void> {
     } catch (error) {
         console.error('❌ Error running maintenance tasks:', error);
     }
-} 
+}
+
+// Database optimization functions
+export const optimizeDatabase = async (): Promise<void> => {
+    try {
+        console.log('🚀 Initializing performance optimizations...');
+
+        // Import database utilities
+        const { maintainDatabaseIndexes } = await import('./dbIndexes.js');
+
+        console.log('✅ Database connection established');
+
+        // Run database index maintenance (cleanup + optimization)
+        const indexResult = await maintainDatabaseIndexes();
+
+        if (indexResult.success) {
+            console.log('✅ Database indexes optimized');
+        } else {
+            console.warn('⚠️ Some database indexes could not be optimized');
+        }
+
+    } catch (error) {
+        console.error('Error optimizing database:', error);
+    }
+}; 

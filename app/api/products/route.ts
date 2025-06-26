@@ -89,14 +89,14 @@ export async function GET(req: NextRequest) {
                 if (bestseller) {
                     filter.sold = { $gte: 10 };
                 }
-                if (newProducts) {
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        if (newProducts) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                     filter.createdAt = { $gte: thirtyDaysAgo };
-                }
-                if (sale) {
+        }
+        if (sale) {
                     filter.discountPrice = { $exists: true, $ne: null };
-                }
+        }
 
                 // Search functionality
                 if (search) {
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
                         { name: { $regex: search, $options: 'i' } },
                         { description: { $regex: search, $options: 'i' } }
                     ];
-                }
+        }
 
                 console.log('Products API - Filter:', JSON.stringify(filter, null, 2));
 
@@ -133,14 +133,14 @@ export async function GET(req: NextRequest) {
                     case '-createdAt':
                     default:
                         sortObj = { createdAt: -1 };
-                }
+        }
 
                 // Execute query with population
                 const products = await Product.find(filter)
                     .populate('category', 'name slug')
                     .sort(sortObj)
-                    .skip(skip)
-                    .limit(limit)
+            .skip(skip)
+            .limit(limit)
                     .select({
                         name: 1,
                         slug: 1,
@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
                         : 0
                 }));
 
-                const pagination = {
+        const pagination = {
                     page,
                     limit,
                     total,
@@ -309,7 +309,7 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            return NextResponse.json(
+                    return NextResponse.json(
                 ApiResponseHelper.serverError('Failed to create product'),
                 { status: 500 }
             );

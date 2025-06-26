@@ -57,15 +57,12 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-white dark:bg-gray-900 shadow-sm fixed w-full top-0 z-50">
+    <header className="nav-theme shadow-sm fixed w-full top-0 z-50">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link
-              href="/"
-              className="text-2xl font-bold text-gray-900 dark:text-white"
-            >
+            <Link href="/" className="text-2xl font-bold text-theme-gradient">
               Anasity
             </Link>
           </div>
@@ -78,10 +75,8 @@ export default function Header() {
                   /* Categories Dropdown */
                   <div className="relative group">
                     <div
-                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer ${
-                        pathname.startsWith("/categories")
-                          ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                          : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer nav-link-theme ${
+                        pathname.startsWith("/categories") ? "active" : ""
                       }`}
                     >
                       {item.name}
@@ -134,10 +129,8 @@ export default function Header() {
                   /* Regular Navigation Link */
                   <Link
                     href={item.href}
-                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
-                      isActive(item.href)
-                        ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                        : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium nav-link-theme ${
+                      isActive(item.href) ? "active" : ""
                     }`}
                   >
                     {item.name}

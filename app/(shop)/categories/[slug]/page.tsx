@@ -18,17 +18,6 @@ import {
 } from "react-icons/fi";
 import { toast } from "react-toastify";
 
-// Helper function to convert hex to RGB
-function hexToRgb(hex: string): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
-        result[3],
-        16
-      )}`
-    : "6, 182, 212";
-}
-
 // Types
 interface Product {
   _id: string;
@@ -123,13 +112,6 @@ export default function CategoryPage() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Homepage settings for background color
-  const [homepageSettings, setHomepageSettings] = useState<{
-    backgroundColor: string;
-    accentColor: string;
-    animation3dEnabled: boolean;
-  } | null>(null);
-
   // UI State
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [currentPage, setCurrentPage] = useState(1);
@@ -178,26 +160,6 @@ export default function CategoryPage() {
       fetchCategory();
     }
   }, [slug]);
-
-  // Fetch homepage settings for background color
-  useEffect(() => {
-    const fetchHomepageSettings = async () => {
-      try {
-        const response = await axios.get("/api/homepage");
-        setHomepageSettings(response.data.settings);
-      } catch (error) {
-        console.error("Error fetching homepage settings:", error);
-        // Use defaults if failed
-        setHomepageSettings({
-          backgroundColor: "#0f172a",
-          accentColor: "#06b6d4",
-          animation3dEnabled: true,
-        });
-      }
-    };
-
-    fetchHomepageSettings();
-  }, []);
 
   // Fetch products with corrected sort parameter
   useEffect(() => {
@@ -349,24 +311,14 @@ export default function CategoryPage() {
     });
   };
 
-  const dynamicStyles = homepageSettings
-    ? {
-        backgroundColor: homepageSettings.backgroundColor,
-        "--accent-color": homepageSettings.accentColor,
-        "--accent-rgb": hexToRgb(homepageSettings.accentColor),
-      }
-    : {
-        backgroundColor: "#0f172a",
-        "--accent-color": "#06b6d4",
-        "--accent-rgb": "6, 182, 212",
-      };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-cyan-100">Loading category...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">
+            Loading category...
+          </p>
         </div>
       </div>
     );
@@ -374,9 +326,9 @@ export default function CategoryPage() {
 
   if (error || !category) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-400 mb-4">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
             Category Not Found
           </h1>
           <p className="text-slate-300 mb-6">
@@ -394,10 +346,7 @@ export default function CategoryPage() {
   }
 
   return (
-    <div
-      className="min-h-screen relative overflow-hidden"
-      style={dynamicStyles as React.CSSProperties}
-    >
+    <div className="min-h-screen relative overflow-hidden theme-bg-primary">
       {/* Futuristic Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Animated grid pattern */}
@@ -406,8 +355,8 @@ export default function CategoryPage() {
             className="h-full w-full"
             style={{
               backgroundImage: `
-                linear-gradient(var(--accent-color) 1px, transparent 1px),
-                linear-gradient(90deg, var(--accent-color) 1px, transparent 1px)
+                linear-gradient(var(--theme-primary) 1px, transparent 1px),
+                linear-gradient(90deg, var(--theme-primary) 1px, transparent 1px)
               `,
               backgroundSize: "50px 50px",
               animation: "grid-move 20s linear infinite",
@@ -426,7 +375,7 @@ export default function CategoryPage() {
                 top: `${Math.random() * 100}%`,
                 width: `${4 + Math.random() * 8}px`,
                 height: `${4 + Math.random() * 8}px`,
-                backgroundColor: homepageSettings?.accentColor || "#06b6d4",
+                backgroundColor: "var(--theme-primary)",
                 animationDelay: `${Math.random() * 10}s`,
                 animationDuration: `${10 + Math.random() * 20}s`,
               }}
@@ -439,9 +388,7 @@ export default function CategoryPage() {
         <div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-transparent"
           style={{
-            background: `radial-gradient(circle at 20% 50%, rgba(${hexToRgb(
-              homepageSettings?.accentColor || "#06b6d4"
-            )}, 0.1) 0%, transparent 50%)`,
+            background: `radial-gradient(circle at 20% 50%, rgba(var(--theme-primary-rgb), 0.1) 0%, transparent 50%)`,
           }}
         />
       </div>
@@ -464,9 +411,7 @@ export default function CategoryPage() {
           style={{
             background: `linear-gradient(45deg, 
               transparent 30%, 
-              rgba(${hexToRgb(
-                homepageSettings?.accentColor || "#06b6d4"
-              )}, 0.3) 50%, 
+              rgba(var(--theme-primary-rgb), 0.3) 50%, 
               transparent 70%
             )`,
             animation: "hologram 3s ease-in-out infinite alternate",
@@ -480,17 +425,13 @@ export default function CategoryPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               className="text-5xl md:text-7xl font-black text-white mb-6 relative"
               style={{
-                textShadow: `0 0 30px rgba(${hexToRgb(
-                  homepageSettings?.accentColor || "#06b6d4"
-                )}, 0.5)`,
+                textShadow: `0 0 30px rgba(var(--theme-primary-rgb), 0.5)`,
               }}
             >
               <span
                 className="bg-clip-text text-transparent bg-gradient-to-r"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, ${
-                    homepageSettings?.accentColor || "#06b6d4"
-                  }, #ffffff, ${homepageSettings?.accentColor || "#06b6d4"})`,
+                  backgroundImage: `linear-gradient(135deg, var(--theme-primary), #ffffff, var(--theme-primary))`,
                 }}
               >
                 {category?.name}
@@ -499,9 +440,7 @@ export default function CategoryPage() {
               <div
                 className="absolute inset-0 bg-clip-text text-transparent bg-gradient-to-r opacity-50 blur-sm"
                 style={{
-                  backgroundImage: `linear-gradient(135deg, ${
-                    homepageSettings?.accentColor || "#06b6d4"
-                  }, #ffffff, ${homepageSettings?.accentColor || "#06b6d4"})`,
+                  backgroundImage: `linear-gradient(135deg, var(--theme-primary), #ffffff, var(--theme-primary))`,
                 }}
               >
                 {category?.name}
@@ -529,9 +468,7 @@ export default function CategoryPage() {
               transition={{ delay: 0.5, duration: 1 }}
               className="mx-auto mt-8 h-1 w-32 rounded-full"
               style={{
-                background: `linear-gradient(90deg, transparent, ${
-                  homepageSettings?.accentColor || "#06b6d4"
-                }, transparent)`,
+                background: `linear-gradient(90deg, transparent, var(--theme-primary), transparent)`,
               }}
             />
           </div>
@@ -546,9 +483,7 @@ export default function CategoryPage() {
           animate={{ opacity: 1, y: 0 }}
           className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 mb-8 shadow-2xl"
           style={{
-            boxShadow: `0 8px 32px rgba(${hexToRgb(
-              homepageSettings?.accentColor || "#06b6d4"
-            )}, 0.1)`,
+            boxShadow: `0 8px 32px rgba(var(--theme-primary-rgb), 0.1)`,
           }}
         >
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -578,9 +513,7 @@ export default function CategoryPage() {
               <div
                 className="absolute inset-0 rounded-xl bg-gradient-to-r opacity-0 hover:opacity-20 transition-opacity duration-300 pointer-events-none"
                 style={{
-                  background: `linear-gradient(90deg, transparent, ${
-                    homepageSettings?.accentColor || "#06b6d4"
-                  }, transparent)`,
+                  background: `linear-gradient(90deg, transparent, var(--theme-primary), transparent)`,
                 }}
               />
             </div>
@@ -632,9 +565,7 @@ export default function CategoryPage() {
                 onClick={() => setIsFilterOpen(true)}
                 className="relative px-6 py-3 bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl text-white hover:bg-white/10 transition-all duration-300 group"
                 style={{
-                  boxShadow: `0 4px 15px rgba(${hexToRgb(
-                    homepageSettings?.accentColor || "#06b6d4"
-                  )}, 0.2)`,
+                  boxShadow: `0 4px 15px rgba(var(--theme-primary-rgb), 0.2)`,
                 }}
               >
                 <div className="flex items-center gap-2">
@@ -660,8 +591,7 @@ export default function CategoryPage() {
                     <span
                       className="absolute -top-1 -right-1 w-3 h-3 rounded-full text-xs flex items-center justify-center"
                       style={{
-                        backgroundColor:
-                          homepageSettings?.accentColor || "#06b6d4",
+                        backgroundColor: "var(--theme-primary)",
                       }}
                     />
                   )}
@@ -680,7 +610,7 @@ export default function CategoryPage() {
                   style={{
                     backgroundColor:
                       viewMode === "grid"
-                        ? `${homepageSettings?.accentColor || "#06b6d4"}40`
+                        ? "var(--theme-primary)40"
                         : undefined,
                   }}
                 >
@@ -695,9 +625,7 @@ export default function CategoryPage() {
                   }`}
                   style={{
                     backgroundColor:
-                      viewMode === "list"
-                        ? `${homepageSettings?.accentColor || "#06b6d4"}40`
-                        : undefined,
+                      viewMode === "list" ? "var(--accent-color)40" : undefined,
                   }}
                 >
                   <FiList className="text-lg" />
@@ -727,9 +655,7 @@ export default function CategoryPage() {
               isFilterOpen ? "translate-x-0" : "translate-x-full"
             }`}
             style={{
-              boxShadow: `0 0 60px rgba(${hexToRgb(
-                homepageSettings?.accentColor || "#06b6d4"
-              )}, 0.2)`,
+              boxShadow: `0 0 60px rgba(var(--accent-rgb), 0.2)`,
             }}
           >
             {/* Sidebar Header */}
@@ -739,7 +665,7 @@ export default function CategoryPage() {
                   <svg
                     className="w-6 h-6"
                     style={{
-                      color: homepageSettings?.accentColor || "#06b6d4",
+                      color: "var(--accent-color)",
                     }}
                     fill="none"
                     stroke="currentColor"
@@ -783,8 +709,7 @@ export default function CategoryPage() {
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor:
-                        homepageSettings?.accentColor || "#06b6d4",
+                      backgroundColor: "var(--accent-color)",
                     }}
                   />
                   Price Range
@@ -796,7 +721,7 @@ export default function CategoryPage() {
                     min={filterOptions.minPrice}
                     max={filterOptions.maxPrice}
                     step={1}
-                    accentColor={homepageSettings?.accentColor || "#06b6d4"}
+                    accentColor="var(--accent-color)"
                     onValueChange={(value) =>
                       handleFilterChange("priceRange", value)
                     }
@@ -829,8 +754,7 @@ export default function CategoryPage() {
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
-                        backgroundColor:
-                          homepageSettings?.accentColor || "#06b6d4",
+                        backgroundColor: "var(--accent-color)",
                       }}
                     />
                     Colors
@@ -889,8 +813,7 @@ export default function CategoryPage() {
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
-                        backgroundColor:
-                          homepageSettings?.accentColor || "#06b6d4",
+                        backgroundColor: "var(--accent-color)",
                       }}
                     />
                     Sizes
@@ -930,8 +853,7 @@ export default function CategoryPage() {
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor:
-                        homepageSettings?.accentColor || "#06b6d4",
+                      backgroundColor: "var(--accent-color)",
                     }}
                   />
                   Availability
@@ -967,8 +889,7 @@ export default function CategoryPage() {
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor:
-                        homepageSettings?.accentColor || "#06b6d4",
+                      backgroundColor: "var(--accent-color)",
                     }}
                   />
                   Minimum Rating
@@ -1023,8 +944,7 @@ export default function CategoryPage() {
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
-                      backgroundColor:
-                        homepageSettings?.accentColor || "#06b6d4",
+                      backgroundColor: "var(--accent-color)",
                     }}
                   />
                   Special Features
@@ -1059,12 +979,8 @@ export default function CategoryPage() {
                   onClick={() => setIsFilterOpen(false)}
                   className="flex-1 px-4 py-3 rounded-xl text-white font-semibold transition-all duration-300 shadow-lg"
                   style={{
-                    background: `linear-gradient(135deg, ${
-                      homepageSettings?.accentColor || "#06b6d4"
-                    }, ${homepageSettings?.accentColor || "#06b6d4"}80)`,
-                    boxShadow: `0 4px 15px rgba(${hexToRgb(
-                      homepageSettings?.accentColor || "#06b6d4"
-                    )}, 0.3)`,
+                    background: `linear-gradient(135deg, var(--accent-color), var(--accent-color)80)`,
+                    boxShadow: `0 4px 15px rgba(var(--accent-rgb), 0.3)`,
                   }}
                 >
                   Apply Filters
@@ -1081,14 +997,14 @@ export default function CategoryPage() {
               <div
                 className="animate-spin rounded-full h-16 w-16 border-4 border-transparent"
                 style={{
-                  borderTopColor: homepageSettings?.accentColor || "#06b6d4",
-                  borderRightColor: homepageSettings?.accentColor || "#06b6d4",
+                  borderTopColor: "var(--accent-color)",
+                  borderRightColor: "var(--accent-color)",
                 }}
               />
               <div
                 className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-transparent opacity-20"
                 style={{
-                  borderTopColor: homepageSettings?.accentColor || "#06b6d4",
+                  borderTopColor: "var(--accent-color)",
                 }}
               />
             </div>
@@ -1097,7 +1013,7 @@ export default function CategoryPage() {
           <motion.div
             className={`grid gap-6 ${
               viewMode === "grid"
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr"
                 : "grid-cols-1"
             }`}
             initial="hidden"
@@ -1116,7 +1032,6 @@ export default function CategoryPage() {
                 key={product._id}
                 product={product}
                 viewMode={viewMode}
-                accentColor={homepageSettings?.accentColor || "#06b6d4"}
               />
             ))}
           </motion.div>
@@ -1131,9 +1046,7 @@ export default function CategoryPage() {
               <div
                 className="w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"
                 style={{
-                  background: `linear-gradient(135deg, ${
-                    homepageSettings?.accentColor || "#06b6d4"
-                  }20, transparent)`,
+                  background: `linear-gradient(135deg, var(--accent-color)20, transparent)`,
                 }}
               >
                 <FiSearch className="text-4xl text-gray-400" />
@@ -1150,9 +1063,7 @@ export default function CategoryPage() {
               onClick={clearFilters}
               className="px-8 py-3 rounded-xl border border-white/20 text-white hover:bg-white/10 transition-all duration-300"
               style={{
-                boxShadow: `0 4px 15px rgba(${hexToRgb(
-                  homepageSettings?.accentColor || "#06b6d4"
-                )}, 0.2)`,
+                boxShadow: `0 4px 15px rgba(var(--accent-rgb), 0.2)`,
               }}
             >
               Clear Filters
@@ -1198,7 +1109,7 @@ export default function CategoryPage() {
                       }`}
                       style={{
                         backgroundColor: isCurrentPage
-                          ? `${homepageSettings?.accentColor || "#06b6d4"}40`
+                          ? "var(--accent-color)40"
                           : undefined,
                       }}
                     >
@@ -1372,11 +1283,30 @@ export default function CategoryPage() {
 interface ProductCardProps {
   product: Product;
   viewMode: ViewMode;
-  accentColor: string;
 }
 
-function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
+function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const handleAddToCart = async () => {
+    if (product.status === "out of stock") return;
+
+    try {
+      setIsAddingToCart(true);
+      // Add to cart logic here
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      toast.error("Failed to add to cart");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const isOutOfStock = product.status === "out of stock";
+  const isLowStock = product.status === "low stock";
 
   return (
     <motion.div
@@ -1389,12 +1319,10 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
       onHoverEnd={() => setIsHovered(false)}
       className={`group relative backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500 ${
         viewMode === "list" ? "flex flex-row" : "flex flex-col"
-      }`}
+      } ${isOutOfStock ? "opacity-75" : ""}`}
       style={{
         boxShadow: isHovered
-          ? `0 20px 60px rgba(${hexToRgb(
-              accentColor
-            )}, 0.3), 0 0 30px rgba(${hexToRgb(accentColor)}, 0.1)`
+          ? `0 20px 60px rgba(var(--theme-accent-rgb), 0.3), 0 0 30px rgba(var(--theme-accent-rgb), 0.1)`
           : `0 8px 32px rgba(0, 0, 0, 0.3)`,
       }}
     >
@@ -1402,7 +1330,7 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
         style={{
-          background: `radial-gradient(circle at center, ${accentColor}, transparent 70%)`,
+          background: `radial-gradient(circle at center, var(--theme-primary), transparent 70%)`,
         }}
       />
 
@@ -1416,34 +1344,35 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
           src={product.image || product.images?.[0] || "/placeholder.jpg"}
           alt={product.name}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
+            isOutOfStock ? "grayscale" : ""
+          }`}
         />
+
+        {/* Out of stock overlay */}
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white font-bold text-lg bg-red-600 px-4 py-2 rounded-lg">
+              Out of Stock
+            </span>
+          </div>
+        )}
 
         {/* Holographic overlay */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500"
           style={{
-            background: `linear-gradient(45deg, transparent 30%, ${accentColor}40 50%, transparent 70%)`,
+            background: `linear-gradient(45deg, transparent 30%, rgba(var(--theme-accent-rgb), 0.4) 50%, transparent 70%)`,
             animation: isHovered ? "hologram 2s ease-in-out infinite" : "none",
           }}
         />
 
         {/* Floating action buttons */}
         <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-8 group-hover:translate-x-0">
-          <button
-            className="p-2 rounded-full backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-            style={{
-              boxShadow: `0 4px 15px rgba(${hexToRgb(accentColor)}, 0.2)`,
-            }}
-          >
+          <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
             <FiHeart className="text-sm" />
           </button>
-          <button
-            className="p-2 rounded-full backdrop-blur-sm bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-            style={{
-              boxShadow: `0 4px 15px rgba(${hexToRgb(accentColor)}, 0.2)`,
-            }}
-          >
+          <button className="p-2 rounded-full glass-effect text-white hover:bg-white/20 transition-all duration-300 theme-glow">
             <FiEye className="text-sm" />
           </button>
         </div>
@@ -1451,19 +1380,18 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
         {/* Status badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
           {product.hasDiscount && (
-            <span
-              className="px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm"
-              style={{
-                background: `linear-gradient(135deg, ${accentColor}, ${accentColor}80)`,
-                boxShadow: `0 2px 10px rgba(${hexToRgb(accentColor)}, 0.3)`,
-              }}
-            >
+            <span className="px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-sm bg-gradient-to-r from-red-500 to-pink-500 shadow-lg">
               -{Math.round(product.discountPercentage)}%
             </span>
           )}
           {product.featured && (
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white backdrop-blur-sm">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-400 to-orange-500 text-white backdrop-blur-sm shadow-lg">
               ⭐ Featured
+            </span>
+          )}
+          {isLowStock && !isOutOfStock && (
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white backdrop-blur-sm shadow-lg">
+              Low Stock
             </span>
           )}
         </div>
@@ -1476,14 +1404,7 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
         }`}
       >
         <div>
-          <h3
-            className="font-bold text-lg text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r"
-            style={{
-              backgroundImage: isHovered
-                ? `linear-gradient(135deg, ${accentColor}, #ffffff)`
-                : undefined,
-            }}
-          >
+          <h3 className="font-bold text-lg text-white mb-2 group-hover:text-theme-gradient transition-all duration-300">
             {product.name}
           </h3>
 
@@ -1493,7 +1414,7 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
 
           {/* Price */}
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl font-bold" style={{ color: accentColor }}>
+            <span className="text-2xl font-bold text-theme-gradient">
               ${product.finalPrice?.toFixed(2) || product.price?.toFixed(2)}
             </span>
             {product.hasDiscount && (
@@ -1503,40 +1424,89 @@ function ProductCard({ product, viewMode, accentColor }: ProductCardProps) {
             )}
           </div>
 
-          {/* Rating */}
-          {product.totalRating > 0 && (
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <FiStar
-                    key={i}
-                    className={`text-sm ${
-                      i < product.totalRating
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-600"
-                    }`}
-                  />
-                ))}
+          {/* Rating and Stock Info */}
+          <div className="flex items-center justify-between mb-4">
+            {product.totalRating > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <FiStar
+                      key={i}
+                      className={`text-sm ${
+                        i < product.totalRating
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-gray-400 text-sm">
+                  ({product.totalRating})
+                </span>
               </div>
-              <span className="text-gray-400 text-sm">
-                ({product.totalRating})
-              </span>
+            )}
+
+            {/* Stock status */}
+            <div className="text-xs">
+              {isOutOfStock ? (
+                <span className="text-red-400 font-medium">Out of Stock</span>
+              ) : isLowStock ? (
+                <span className="text-orange-400 font-medium">Low Stock</span>
+              ) : (
+                <span className="text-green-400 font-medium">In Stock</span>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Action Button */}
+        {/* Modern Action Button */}
         <button
-          className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
-          style={{
-            background: `linear-gradient(135deg, ${accentColor}, ${accentColor}80)`,
-            boxShadow: `0 4px 15px rgba(${hexToRgb(accentColor)}, 0.3)`,
-          }}
+          onClick={handleAddToCart}
+          disabled={isOutOfStock || isAddingToCart}
+          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform flex items-center justify-center gap-2 relative overflow-hidden ${
+            isOutOfStock
+              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+              : "btn-theme-primary hover:scale-105 hover:shadow-lg"
+          }`}
         >
-          <FiShoppingCart className="text-lg" />
-          Add to Cart
+          {/* Animated background */}
+          {!isOutOfStock && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          )}
+
+          {isAddingToCart ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+              Adding...
+            </>
+          ) : isOutOfStock ? (
+            <>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Out of Stock
+            </>
+          ) : (
+            <>
+              <FiShoppingCart className="text-lg" />
+              Add to Cart
+            </>
+          )}
         </button>
       </div>
+
+      {/* Theme border effect */}
+      <div className="absolute inset-0 rounded-2xl border border-transparent bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     </motion.div>
   );
 }

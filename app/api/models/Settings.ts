@@ -1,5 +1,46 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+// Define the interface for Website Theme Settings
+export interface WebsiteThemeSettings {
+  // Primary Colors
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+
+  // Button Colors
+  buttonPrimaryColor: string;
+  buttonSecondaryColor: string;
+  buttonHoverColor: string;
+  buttonTextColor: string;
+
+  // Header Colors
+  headerBackgroundColor: string;
+  headerTextColor: string;
+  headerBorderColor: string;
+
+  // Footer Colors
+  footerBackgroundColor: string;
+  footerTextColor: string;
+  footerLinkColor: string;
+
+  // Background Colors
+  backgroundColor: string;
+  surfaceColor: string;
+
+  // Text Colors
+  textPrimaryColor: string;
+  textSecondaryColor: string;
+
+  // Border and Shadow
+  borderColor: string;
+  shadowColor: string;
+
+  // Effects
+  animation3dEnabled: boolean;
+  glassmorphismEnabled: boolean;
+  particleEffectsEnabled: boolean;
+}
+
 // Define the interface for the Hero Banner
 export interface HeroBanner {
   _id?: string;
@@ -47,10 +88,51 @@ export interface HomepageSettingsValue {
 // Define the interface for Settings document
 export interface SettingsDocument extends Document {
   name: string;
-  value: HomepageSettingsValue;
+  value: WebsiteThemeSettings | HomepageSettingsValue | undefined;
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Define the schema for Website Theme Settings
+const WebsiteThemeSettingsSchema = new Schema({
+  // Primary Colors
+  primaryColor: { type: String, default: '#00f5ff' },
+  secondaryColor: { type: String, default: '#8b5cf6' },
+  accentColor: { type: String, default: '#ec4899' },
+
+  // Button Colors
+  buttonPrimaryColor: { type: String, default: '#00f5ff' },
+  buttonSecondaryColor: { type: String, default: '#8b5cf6' },
+  buttonHoverColor: { type: String, default: '#00d9ff' },
+  buttonTextColor: { type: String, default: '#ffffff' },
+
+  // Header Colors
+  headerBackgroundColor: { type: String, default: 'rgba(10, 10, 15, 0.95)' },
+  headerTextColor: { type: String, default: '#ffffff' },
+  headerBorderColor: { type: String, default: 'rgba(0, 245, 255, 0.2)' },
+
+  // Footer Colors
+  footerBackgroundColor: { type: String, default: 'rgba(10, 10, 15, 0.98)' },
+  footerTextColor: { type: String, default: '#ffffff' },
+  footerLinkColor: { type: String, default: '#00f5ff' },
+
+  // Background Colors
+  backgroundColor: { type: String, default: '#0a0a0f' },
+  surfaceColor: { type: String, default: 'rgba(255, 255, 255, 0.05)' },
+
+  // Text Colors
+  textPrimaryColor: { type: String, default: '#ffffff' },
+  textSecondaryColor: { type: String, default: '#a1a1aa' },
+
+  // Border and Shadow
+  borderColor: { type: String, default: 'rgba(255, 255, 255, 0.1)' },
+  shadowColor: { type: String, default: 'rgba(0, 245, 255, 0.2)' },
+
+  // Effects
+  animation3dEnabled: { type: Boolean, default: true },
+  glassmorphismEnabled: { type: Boolean, default: true },
+  particleEffectsEnabled: { type: Boolean, default: true }
+});
 
 // Define the schema for Hero Banner
 const HeroBannerSchema = new Schema({
@@ -109,4 +191,5 @@ const SettingsSchema = new Schema(
 // Create and export the Settings model
 const Settings = mongoose.models.Settings || mongoose.model<SettingsDocument>('Settings', SettingsSchema);
 export const HomepageSettings = mongoose.models.HomepageSettings || mongoose.model('HomepageSettings', HomepageSettingsSchema);
+export const WebsiteThemeSettings = mongoose.models.WebsiteThemeSettings || mongoose.model('WebsiteThemeSettings', WebsiteThemeSettingsSchema);
 export default Settings;

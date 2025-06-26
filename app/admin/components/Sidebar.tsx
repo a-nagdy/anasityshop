@@ -31,8 +31,9 @@ const menuGroups: MenuGroup[] = [
     items: [{ name: "Customers", href: "/admin/customers", icon: "users" }],
   },
   {
-    name: "Settings",
+    name: "Website",
     items: [
+      { name: "Homepage", href: "/admin/homepage", icon: "home" },
       { name: "Settings", href: "/admin/settings", icon: "cog" },
     ],
   },

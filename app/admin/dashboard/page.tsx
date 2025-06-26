@@ -132,13 +132,13 @@ export default function AdminDashboard() {
                 Delivered
               </span>
               <span className="text-sm font-medium">
-                {statusData.delivered}%
+                {statusData?.delivered}%
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-green-600 h-2.5 rounded-full"
-                style={{ width: `${statusData.delivered}%` }}
+                style={{ width: `${statusData?.delivered}%` }}
               ></div>
             </div>
 
@@ -147,13 +147,13 @@ export default function AdminDashboard() {
                 Processing
               </span>
               <span className="text-sm font-medium">
-                {statusData.processing}%
+                {statusData?.processing}%
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-blue-600 h-2.5 rounded-full"
-                style={{ width: `${statusData.processing}%` }}
+                style={{ width: `${statusData?.processing}%` }}
               ></div>
             </div>
 
@@ -161,12 +161,14 @@ export default function AdminDashboard() {
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 Pending
               </span>
-              <span className="text-sm font-medium">{statusData.pending}%</span>
+              <span className="text-sm font-medium">
+                {statusData?.pending}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-yellow-500 h-2.5 rounded-full"
-                style={{ width: `${statusData.pending}%` }}
+                style={{ width: `${statusData?.pending}%` }}
               ></div>
             </div>
 
@@ -175,13 +177,13 @@ export default function AdminDashboard() {
                 Cancelled
               </span>
               <span className="text-sm font-medium">
-                {statusData.cancelled}%
+                {statusData?.cancelled}%
               </span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
               <div
                 className="bg-red-600 h-2.5 rounded-full"
-                style={{ width: `${statusData.cancelled}%` }}
+                style={{ width: `${statusData?.cancelled}%` }}
               ></div>
             </div>
           </div>

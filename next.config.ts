@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       "via.placeholder.com",
       "placehold.co",
       "example.com",
+      "ui-avatars.com",
     ],
     remotePatterns: [
       {
@@ -16,6 +17,8 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
