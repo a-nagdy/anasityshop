@@ -229,7 +229,7 @@ export async function PUT(
                     try {
                         updateData.images = JSON.parse(updateData.images);
                     } catch {
-                        updateData.images = updateData.images.split(',').map(img => img.trim());
+                        updateData.images = (updateData.images as unknown as string).split(',').map((img: string) => img.trim());
                     }
                 }
 

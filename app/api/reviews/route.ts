@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
         const statsOnly = searchParams.get('statsOnly') === 'true';
 
         // Build query
-        const query: any = {};
+        const query: Record<string, unknown> = {};
         if (productId) {
             if (!mongoose.Types.ObjectId.isValid(productId)) {
                 return NextResponse.json(

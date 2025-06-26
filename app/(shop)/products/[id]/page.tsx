@@ -21,8 +21,9 @@ import {
   StarIcon as StarSolidIcon,
 } from "@heroicons/react/24/solid";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface Product {
@@ -100,19 +101,7 @@ export default function ProductDetailsPage() {
     "description" | "reviews" | "specs"
   >("description");
 
-  useEffect(() => {
-    if (id) {
-      fetchProduct();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (product?._id) {
-      fetchReviewStats();
-    }
-  }, [product?._id, reviewRefreshTrigger]);
-
-  const fetchReviewStats = async () => {
+  const fetchReviewStats = useCallback(async () => {
     if (!product?._id) return;
 
     try {
@@ -132,9 +121,9 @@ export default function ProductDetailsPage() {
     } catch (error) {
       console.error("Error fetching review stats:", error);
     }
-  };
+  }, [product?._id]);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -197,7 +186,19 @@ export default function ProductDetailsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, router]);
+
+  useEffect(() => {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id, fetchProduct]);
+
+  useEffect(() => {
+    if (product?._id) {
+      fetchReviewStats();
+    }
+  }, [product?._id, reviewRefreshTrigger, fetchReviewStats]);
 
   const fetchRelatedProducts = async (
     categoryId: string,
@@ -469,10 +470,12 @@ export default function ProductDetailsPage() {
                           : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
                       }`}
                     >
-                      <img
+                      <Image
                         src={image}
                         alt={`${product.name} ${index + 1}`}
                         className="w-full h-full object-cover"
+                        width={80}
+                        height={80}
                       />
                     </button>
                   ))}
@@ -922,10 +925,12 @@ export default function ProductDetailsPage() {
                     }
                   >
                     <div className="aspect-square overflow-hidden">
-                      <img
+                      <Image
                         src={relatedProduct.image}
                         alt={relatedProduct.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        width={80}
+                        height={80}
                       />
                     </div>
                     <div className="p-4">

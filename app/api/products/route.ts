@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
                     try {
                         productData.images = JSON.parse(productData.images);
                     } catch {
-                        productData.images = productData.images.split(',').map(img => img.trim());
+                        productData.images = (productData.images as unknown as string).split(',').map((img: string) => img.trim());
                     }
                 }
 

@@ -40,10 +40,7 @@ const MultiImageUploader = ({
       // Always use simulation since onFileUpload doesn't return URLs
       simulateImageUpload(file, (uploadedUrl) => {
         // Use functional update to get current images state
-        onImagesChange((currentImages) => [
-          ...currentImages,
-          uploadedUrl || imageUrl,
-        ]);
+        onImagesChange([...images, uploadedUrl || imageUrl]);
       });
 
       // Call onFileUpload for side effects (like showing toast)

@@ -3,7 +3,7 @@
 import { StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 interface Review {
@@ -57,35 +57,38 @@ export default function ReviewManagement() {
     hasPrev: false,
   });
 
-  const fetchReviews = async (page = 1, status = filter) => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "10",
-        ...(status !== "all" && { status }),
-      });
+  const fetchReviews = useCallback(
+    async (page = 1, status = filter) => {
+      try {
+        setLoading(true);
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: "10",
+          ...(status !== "all" && { status }),
+        });
 
-      const response = await fetch(`/api/reviews?${params}`);
+        const response = await fetch(`/api/reviews?${params}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setReviews(data.data.reviews);
-        setPagination(data.data.pagination);
-      } else {
-        toast.error("Failed to fetch reviews");
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data.data.reviews);
+          setPagination(data.data.pagination);
+        } else {
+          toast.error("Failed to fetch reviews");
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        toast.error("Error loading reviews");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      toast.error("Error loading reviews");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [filter]
+  );
 
   useEffect(() => {
     fetchReviews(1, filter);
-  }, [filter]);
+  }, [filter, fetchReviews]);
 
   const handleStatusUpdate = async (
     reviewId: string,

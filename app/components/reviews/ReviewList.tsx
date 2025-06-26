@@ -3,7 +3,7 @@
 import { StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Review {
   _id: string;
@@ -35,30 +35,33 @@ export default function ReviewList({
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const fetchReviews = async (page = 1) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `/api/reviews?productId=${productId}&page=${page}&limit=5`
-      );
+  const fetchReviews = useCallback(
+    async (page = 1) => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `/api/reviews?productId=${productId}&page=${page}&limit=5`
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        setReviews(data.data.reviews);
-        setCurrentPage(page);
-        setTotalPages(data.data.pagination.totalPages);
-        setTotal(data.data.pagination.total);
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data.data.reviews);
+          setCurrentPage(page);
+          setTotalPages(data.data.pagination.totalPages);
+          setTotal(data.data.pagination.total);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [productId]
+  );
 
   useEffect(() => {
     fetchReviews(1);
-  }, [productId, refreshTrigger]);
+  }, [productId, refreshTrigger, fetchReviews]);
 
   const renderStars = (rating: number) => {
     return (
