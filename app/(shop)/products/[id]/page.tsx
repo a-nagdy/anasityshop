@@ -3,21 +3,19 @@
 import ReviewForm from "@/app/components/reviews/ReviewForm";
 import ReviewList from "@/app/components/reviews/ReviewList";
 import { useTheme } from "@/app/components/ThemeProvider";
+import { AddToCartButton, QuantitySelector } from "@/app/components/ui";
 import {
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   HeartIcon,
   MagnifyingGlassIcon,
-  MinusIcon,
   ShareIcon,
-  ShoppingCartIcon,
   StarIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
   HeartIcon as HeartSolidIcon,
-  PlusIcon,
   StarIcon as StarSolidIcon,
 } from "@heroicons/react/24/solid";
 import { AnimatePresence, motion } from "framer-motion";
@@ -93,7 +91,7 @@ export default function ProductDetailsPage() {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
+  // Removed addingToCart state as it's now handled by AddToCartButton component
   const [showImageModal, setShowImageModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0);
@@ -222,46 +220,7 @@ export default function ProductDetailsPage() {
     }
   };
 
-  const handleAddToCart = async () => {
-    if (!product) return;
-
-    // Validate selections
-    if (product.color && product.color.length > 0 && !selectedColor) {
-      toast.error("Please select a color");
-      return;
-    }
-    if (product.size && product.size.length > 0 && !selectedSize) {
-      toast.error("Please select a size");
-      return;
-    }
-
-    setAddingToCart(true);
-    try {
-      const response = await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId: product._id,
-          quantity,
-          color: selectedColor,
-          size: selectedSize,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success("Product added to cart!");
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.message || "Failed to add to cart");
-      }
-    } catch {
-      toast.error("Failed to add to cart");
-    } finally {
-      setAddingToCart(false);
-    }
-  };
+  // Removed handleAddToCart function as it's now handled by AddToCartButton component
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -593,25 +552,13 @@ export default function ProductDetailsPage() {
                     Quantity
                   </h3>
                   <div className="flex items-center space-x-3">
-                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <MinusIcon className="w-4 h-4" />
-                      </button>
-                      <span className="px-4 py-2 text-center min-w-[50px] font-medium">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          setQuantity(Math.min(product.quantity, quantity + 1))
-                        }
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                      >
-                        <PlusIcon className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <QuantitySelector
+                      value={quantity}
+                      onChange={setQuantity}
+                      min={1}
+                      max={product.quantity}
+                      size="md"
+                    />
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       Max: {product.quantity}
                     </span>
@@ -620,34 +567,16 @@ export default function ProductDetailsPage() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!isProductInStock(product) || addingToCart}
-                    className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                      isProductInStock(product) && !addingToCart
-                        ? `text-white hover:scale-105 shadow-lg`
-                        : "bg-gray-400 text-gray-700 cursor-not-allowed"
-                    }`}
-                    style={
-                      isProductInStock(product) && !addingToCart
-                        ? dynamicStyles.accentButton
-                        : undefined
-                    }
-                  >
-                    {addingToCart ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                        Adding...
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCartIcon className="w-5 h-5" />
-                        {isProductInStock(product)
-                          ? "Add to Cart"
-                          : "Out of Stock"}
-                      </>
-                    )}
-                  </button>
+                  <AddToCartButton
+                    productId={product._id}
+                    quantity={quantity}
+                    selectedColor={selectedColor}
+                    selectedSize={selectedSize}
+                    inStock={isProductInStock(product)}
+                    variant="primary"
+                    size="lg"
+                    className="flex-1"
+                  />
 
                   <button
                     onClick={() => setIsWishlisted(!isWishlisted)}
@@ -983,9 +912,11 @@ export default function ProductDetailsPage() {
               className="relative max-w-5xl max-h-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <Image
                 src={allImages[selectedImageIndex]}
                 alt={product.name}
+                width={800}
+                height={600}
                 className="max-w-full max-h-full object-contain"
               />
 

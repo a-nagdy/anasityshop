@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CartButton, useCart } from "../ui";
 
 interface Category {
   _id: string;
@@ -19,6 +20,7 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const pathname = usePathname();
+  const { openCart } = useCart();
 
   const isActive = (path: string) => pathname === path;
 
@@ -142,24 +144,7 @@ export default function Header() {
 
           {/* User Menu */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
-            <Link
-              href="/cart"
-              className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                />
-              </svg>
-            </Link>
+            <CartButton onClick={openCart} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2" />
             <Link
               href="/account"
               className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
@@ -180,8 +165,9 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center">
+          {/* Mobile menu button & cart */}
+          <div className="sm:hidden flex items-center space-x-2">
+            <CartButton onClick={openCart} />
             <button
               type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -255,13 +241,15 @@ export default function Header() {
               ))}
 
               <div className="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
-                <Link
-                  href="/cart"
-                  className="block px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
-                  onClick={() => setIsMenuOpen(false)}
+                <button
+                  onClick={() => {
+                    openCart();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Cart
-                </Link>
+                </button>
                 <Link
                   href="/account"
                   className="block px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"

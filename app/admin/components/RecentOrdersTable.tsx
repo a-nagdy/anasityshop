@@ -117,7 +117,7 @@ export default function RecentOrdersTable() {
                 {new Date(order.createdAt).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                ${order.total.toFixed(2)}
+                ${order.totalPrice.toFixed(2)}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span

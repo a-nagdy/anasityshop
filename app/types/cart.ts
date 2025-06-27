@@ -13,12 +13,21 @@ export interface PopulatedProduct {
     slug: string;
 }
 
+// Cart item variants interface
+export interface CartItemVariants {
+    color?: string | null;
+    size?: string | null;
+}
+
 // Cart item interface matching the Mongoose schema
 export interface CartItem {
+    cartItemKey: string;
     product: mongoose.Types.ObjectId | PopulatedProduct;
     quantity: number;
     price: number;
     totalPrice: number;
+    variants?: CartItemVariants;
+    // Legacy fields for backward compatibility
     color?: string;
     size?: string;
     // Mongoose document methods

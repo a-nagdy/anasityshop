@@ -134,7 +134,7 @@ export default function OrdersPage() {
       key: "total" as keyof ColumnKey,
       render: (order: Order) => (
         <div className="text-sm text-gray-900 dark:text-white">
-          ${order.total.toFixed(2)}
+          ${(order.totalPrice || 0).toFixed(2)}
         </div>
       ),
     },

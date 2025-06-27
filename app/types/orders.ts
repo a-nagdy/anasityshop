@@ -18,7 +18,7 @@ export interface Order {
     itemsPrice: number;
     shippingPrice: number;
     taxPrice: number;
-    total: number;
+    totalPrice: number;
     status: string;
     isPaid: boolean;
     paidAt: string;

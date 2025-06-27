@@ -1,5 +1,6 @@
 "use client";
 
+import { AddToCartButton } from "@/app/components/ui";
 import { DualRangeSlider } from "@/app/components/ui/DualRangeSlider";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -1221,23 +1222,7 @@ interface ProductCardProps {
 
 function ProductCard({ product, viewMode }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-
-  const handleAddToCart = async () => {
-    if (product.status === "out of stock") return;
-
-    try {
-      setIsAddingToCart(true);
-      // Add to cart logic here
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
-      toast.success(`${product.name} added to cart!`);
-    } catch (error) {
-      console.error("Add to cart error:", error);
-      toast.error("Failed to add to cart");
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
+  // Removed isAddingToCart state and handleAddToCart function - now handled by AddToCartButton component
 
   const isOutOfStock = product.status === "out of stock";
   const isLowStock = product.status === "low stock";
@@ -1400,26 +1385,17 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
         </div>
 
         {/* Modern Action Button */}
-        <button
-          onClick={handleAddToCart}
-          disabled={isOutOfStock || isAddingToCart}
-          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-300 transform flex items-center justify-center gap-2 relative overflow-hidden ${
-            isOutOfStock
-              ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-              : "btn-theme-primary hover:scale-105 hover:shadow-lg"
-          }`}
+        <AddToCartButton
+          productId={product._id}
+          inStock={!isOutOfStock}
+          variant="primary"
+          size="md"
+          className="w-full relative overflow-hidden"
         >
-          {/* Animated background */}
           {!isOutOfStock && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           )}
-
-          {isAddingToCart ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-              Adding...
-            </>
-          ) : isOutOfStock ? (
+          {isOutOfStock ? (
             <>
               <svg
                 className="w-4 h-4"
@@ -1442,7 +1418,7 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
               Add to Cart
             </>
           )}
-        </button>
+        </AddToCartButton>
       </div>
 
       {/* Theme border effect */}

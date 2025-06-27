@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware } from '../../../middleware/authMiddleware';
 import { ApiResponseHelper } from '../../../utils/apiResponse';
+import { createCartItem, generateCartItemKey, normalizeVariants } from '../../../utils/cartUtils';
 import connectToDatabase from '../../../utils/db';
 import { Validator } from '../../../utils/validation';
 import Cart from '../models/Cart';
@@ -54,15 +55,33 @@ export function GET(req: NextRequest) {
 
             // Calculate current totals and validate stock
             const updatedItems: EnhancedCartItem[] = cart.items.map((item: CartItem) => {
-                const product = item.product as unknown as { price: number; discountPrice?: number; quantity: number };
+                const product = item.product as unknown as { _id: string; price: number; discountPrice?: number; quantity: number };
                 const currentPrice = product.discountPrice || product.price;
+
+                // Generate cartItemKey if not present (backward compatibility)
+                let cartItemKey = item.cartItemKey;
+                if (!cartItemKey) {
+                    const variants = normalizeVariants({
+                        color: item.color,
+                        size: item.size
+                    });
+                    cartItemKey = generateCartItemKey(product._id, variants);
+
+                    // Update the item in the database with the generated key
+                    item.cartItemKey = cartItemKey;
+                    if (!item.variants) {
+                        item.variants = variants;
+                    }
+                }
 
                 return {
                     ...(item.toObject ? item.toObject() : item),
+                    cartItemKey,
                     product: item.product,
                     quantity: item.quantity,
                     price: item.price,
                     totalPrice: item.totalPrice,
+                    variants: item.variants,
                     color: item.color,
                     size: item.size,
                     currentPrice,
@@ -70,6 +89,12 @@ export function GET(req: NextRequest) {
                     availableQuantity: product.quantity
                 } as EnhancedCartItem;
             });
+
+            // Save cart if we added any cartItemKeys
+            const hasNewKeys = cart.items.some((item: CartItem) => !item.cartItemKey);
+            if (hasNewKeys) {
+                await cart.save();
+            }
 
             const response: CartResponse = {
                 ...cart.toObject(),
@@ -159,12 +184,13 @@ export function POST(req: NextRequest) {
                 });
             }
 
+            // Generate cart item key for unique identification
+            const variants = normalizeVariants({ color, size });
+            const cartItemKey = generateCartItemKey(productId, variants);
+
             // Check if product already exists in cart with same variants
             const existingItemIndex = cart.items.findIndex(
-                (item: CartItem) =>
-                    item.product.toString() === productId &&
-                    (item.color || '') === (color || '') &&
-                    (item.size || '') === (size || '')
+                (item: CartItem) => item.cartItemKey === cartItemKey
             );
 
             // Calculate pricing
@@ -189,15 +215,9 @@ export function POST(req: NextRequest) {
                 cart.items[existingItemIndex].price = price;
                 cart.items[existingItemIndex].totalPrice = price * totalItemQuantity;
             } else {
-                // Add new item
-                cart.items.push({
-                    product: productId,
-                    quantity,
-                    color: color || '',
-                    size: size || '',
-                    price,
-                    totalPrice: price * quantity,
-                });
+                // Add new item using the cart utility
+                const newCartItem = createCartItem(productId, quantity, price, variants);
+                cart.items.push(newCartItem);
             }
 
             // Save cart with session

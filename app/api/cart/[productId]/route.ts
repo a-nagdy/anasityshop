@@ -2,6 +2,7 @@ import { CartItem } from '@/app/types/cart';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware } from '../../../../middleware/authMiddleware';
+import { generateCartItemKey, normalizeVariants } from '../../../../utils/cartUtils';
 import connectToDatabase from '../../../../utils/db';
 import Cart from '../../models/Cart';
 import Product from '../../models/Product';
@@ -48,12 +49,32 @@ export function PUT(
                 return NextResponse.json({ message: 'Cart not found' }, { status: 404 });
             }
 
-            // Find the cart item with matching product, color, and size
-            const itemIndex = cart.items.findIndex(
-                (item: CartItem) => item.product.toString() === productId &&
-                    item.color === (color || '') &&
-                    item.size === (size || '')
+            // Generate cart item key for identification
+            const variants = normalizeVariants({ color, size });
+            const cartItemKey = generateCartItemKey(productId, variants);
+
+            // Find the cart item using the cart item key OR fallback to old method
+            let itemIndex = cart.items.findIndex(
+                (item: CartItem) => item.cartItemKey === cartItemKey
             );
+
+            // Fallback: If not found by cartItemKey, try old method for backward compatibility
+            if (itemIndex === -1) {
+                itemIndex = cart.items.findIndex(
+                    (item: CartItem) =>
+                        item.product.toString() === productId &&
+                        (item.color || '') === (color || '') &&
+                        (item.size || '') === (size || '')
+                );
+
+                // If found with old method, update it with cartItemKey
+                if (itemIndex > -1) {
+                    cart.items[itemIndex].cartItemKey = cartItemKey;
+                    if (!cart.items[itemIndex].variants) {
+                        cart.items[itemIndex].variants = variants;
+                    }
+                }
+            }
 
             if (itemIndex === -1) {
                 return NextResponse.json({ message: 'Item not found in cart' }, { status: 404 });
@@ -116,15 +137,28 @@ export function DELETE(
                 return NextResponse.json({ message: 'Cart not found' }, { status: 404 });
             }
 
-            // Find the cart item with matching product, color, and size
+            // Generate cart item key for identification
+            const variants = normalizeVariants({ color, size });
+            const cartItemKey = generateCartItemKey(productId, variants);
+
+            // Find and remove the cart item using the cart item key OR fallback to old method
             const initialItemsCount = cart.items.length;
+
+            // Try to remove by cartItemKey first
             cart.items = cart.items.filter(
-                (item: CartItem) => !(
-                    item.product.toString() === productId &&
-                    item.color === color &&
-                    item.size === size
-                )
+                (item: CartItem) => item.cartItemKey !== cartItemKey
             );
+
+            // Fallback: If nothing was removed, try old method for backward compatibility
+            if (cart.items.length === initialItemsCount) {
+                cart.items = cart.items.filter(
+                    (item: CartItem) => !(
+                        item.product.toString() === productId &&
+                        (item.color || '') === (color || '') &&
+                        (item.size || '') === (size || '')
+                    )
+                );
+            }
 
             // Check if any item was removed
             if (cart.items.length === initialItemsCount) {

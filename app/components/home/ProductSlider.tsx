@@ -4,6 +4,7 @@ import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { AddToCartButton } from "../ui";
 
 interface Product {
   _id: string;
@@ -54,7 +55,7 @@ export default function ProductSlider({
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [homepageSettings, setHomepageSettings] =
     useState<HomepageSettings | null>(null);
-  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  // Removed addingToCart state - now handled by AddToCartButton component
 
   useEffect(() => {
     const fetchHomepageSettings = async () => {
@@ -84,41 +85,7 @@ export default function ProductSlider({
     return product.status === "in stock" || product.status === "low stock";
   };
 
-  const handleAddToCart = async (
-    e: React.MouseEvent,
-    productId: string,
-    product: Product
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!isProductInStock(product)) return;
-
-    setAddingToCart(productId);
-
-    try {
-      const response = await fetch(`/api/cart/${productId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ quantity: 1 }),
-      });
-
-      if (response.ok) {
-        // Show success feedback
-        const button = e.currentTarget as HTMLButtonElement;
-        button.style.transform = "scale(1.2)";
-        setTimeout(() => {
-          button.style.transform = "scale(1)";
-        }, 200);
-      }
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-    } finally {
-      setTimeout(() => setAddingToCart(null), 500);
-    }
-  };
+  // Removed handleAddToCart function - now handled by AddToCartButton component
 
   const accentColor = homepageSettings?.accentColor || "#00f5ff";
   const accentRgb = hexToRgb(accentColor);
@@ -360,68 +327,46 @@ export default function ProductSlider({
                       </div>
 
                       {/* Add to Cart Button */}
-                      <motion.button
-                        whileHover={inStock ? { scale: 1.1 } : {}}
-                        whileTap={inStock ? { scale: 0.9 } : {}}
-                        disabled={!inStock || addingToCart === product._id}
-                        className={`relative w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm transition-all duration-300 flex-shrink-0 ${
-                          inStock
-                            ? "cursor-pointer opacity-0 group-hover:opacity-100"
-                            : "cursor-not-allowed opacity-50"
-                        }`}
-                        style={{
-                          background: inStock
-                            ? `linear-gradient(135deg, ${accentColor}, rgba(${accentRgb}, 0.7))`
-                            : "linear-gradient(135deg, #6b7280, #9ca3af)",
-                          boxShadow: inStock
-                            ? `0 4px 15px rgba(${accentRgb}, 0.4)`
-                            : "none",
-                        }}
-                        onClick={(e) =>
-                          handleAddToCart(e, product._id, product)
-                        }
-                        title={inStock ? "Add to Cart" : "Out of Stock"}
-                      >
-                        {addingToCart === product._id ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{
-                              duration: 1,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }}
-                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                          />
-                        ) : inStock ? (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        )}
-                      </motion.button>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <AddToCartButton
+                          productId={product._id}
+                          inStock={inStock}
+                          variant="primary"
+                          size="sm"
+                          className="w-12 h-12 rounded-full !p-0"
+                          showIcon={false}
+                        >
+                          {inStock ? (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          )}
+                        </AddToCartButton>
+                      </div>
                     </div>
 
                     {/* Stock Info */}

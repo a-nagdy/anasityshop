@@ -336,7 +336,7 @@ export default function OrderDetailPage({
               </div>
               <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2 flex justify-between font-bold text-base">
                 <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>${order.totalPrice.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -353,6 +353,6 @@ export default function OrderDetailPage({
           )}
         </div>
       </div>
-        </div>
-    );
+    </div>
+  );
 }

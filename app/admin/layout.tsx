@@ -3,7 +3,7 @@
 import { Geist } from "next/font/google";
 import { Suspense, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { ReduxProvider } from "../store/ReduxProvider";
+import ReduxProvider from "../store/ReduxProvider";
 import { checkAuthStatus } from "../store/slices/authSlice";
 import DashboardWrapper from "./components/DashboardWrapper/DashboardWrapper";
 import Loader from "./components/Loader/Loader";

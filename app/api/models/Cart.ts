@@ -3,6 +3,10 @@ import connectToDatabase from '../../../utils/db';
 
 const cartItemSchema = new mongoose.Schema(
     {
+        cartItemKey: {
+            type: String,
+            required: [true, 'Cart item key is required'],
+        },
         product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
@@ -13,6 +17,17 @@ const cartItemSchema = new mongoose.Schema(
             required: [true, 'Quantity is required'],
             min: [1, 'Quantity must be at least 1'],
         },
+        variants: {
+            color: {
+                type: String,
+                default: null,
+            },
+            size: {
+                type: String,
+                default: null,
+            },
+        },
+        // Keep legacy fields for backward compatibility during migration
         color: {
             type: String,
         },

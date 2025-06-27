@@ -5,9 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { initCronJobs } from "../utils/cron";
 import connectToDatabase from "../utils/db";
 import { initializeOptimizations } from "../utils/initOptimizations";
+import CartProvider from "./components/cart/CartProvider";
 import GlobalBackground from "./components/GlobalBackground";
 import ThemeProvider from "./components/ThemeProvider";
 import "./globals.css";
+import ReduxProvider from "./store/ReduxProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,22 +56,26 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          <GlobalBackground />
-          <div className="relative z-10">{children}</div>
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="dark"
-          />
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <GlobalBackground />
+              <div className="relative z-10">{children}</div>
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+              />
+            </CartProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
