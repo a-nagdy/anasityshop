@@ -6,9 +6,10 @@ import {
   MapPinIcon,
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { CheckoutData } from "../../(shop)/checkout/page";
+import { CheckoutService } from "../../services/checkoutService";
+import { CheckoutData, SavedAddress } from "../../types/checkout";
 import ThemeButton from "../ui/ThemeButton";
 
 interface ShippingStepProps {
@@ -17,16 +18,10 @@ interface ShippingStepProps {
   onBack: () => void;
 }
 
-interface SavedAddress {
-  _id: string;
-  fullName: string;
-  addressLine1: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  phone: string;
-  isDefault?: boolean;
+interface LoadingStates {
+  fetchingAddresses: boolean;
+  savingAddress: boolean;
+  submitting: boolean;
 }
 
 export default function ShippingStep({
@@ -37,94 +32,116 @@ export default function ShippingStep({
   const [formData, setFormData] =
     useState<CheckoutData["shipping"]>(initialData);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    fetchingAddresses: false,
+    savingAddress: false,
+    submitting: false,
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saveAddress, setSaveAddress] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   // Fetch saved addresses
   useEffect(() => {
     fetchSavedAddresses();
   }, []);
 
-  const fetchSavedAddresses = async () => {
-    try {
-      const response = await fetch("/api/addresses");
-      if (response.ok) {
-        const addresses = await response.json();
-        setSavedAddresses(addresses);
+  // Auto-save draft to localStorage
+  useEffect(() => {
+    if (hasUserInteracted) {
+      const timer = setTimeout(() => {
+        localStorage.setItem(
+          "checkout-shipping-draft",
+          JSON.stringify(formData)
+        );
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [formData, hasUserInteracted]);
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const draft = localStorage.getItem("checkout-shipping-draft");
+    if (draft && !initialData.fullName) {
+      try {
+        const parsedDraft = JSON.parse(draft);
+        setFormData(parsedDraft);
+        toast.info("Restored your previous shipping information");
+      } catch (error) {
+        console.error("Error loading draft:", error);
       }
+    }
+  }, [initialData.fullName]);
+
+  const fetchSavedAddresses = async () => {
+    setLoadingStates((prev) => ({ ...prev, fetchingAddresses: true }));
+    try {
+      const addresses = await CheckoutService.getSavedAddresses();
+      setSavedAddresses(addresses);
     } catch (error) {
       console.error("Error fetching addresses:", error);
+      toast.error("Failed to load saved addresses");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, fetchingAddresses: false }));
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+  const validateForm = useCallback((): boolean => {
+    const mockCheckoutData: CheckoutData = {
+      shipping: formData,
+      payment: { method: "" }, // Mock payment data for validation
+    };
 
-    if (!formData.fullName?.trim()) {
-      newErrors.fullName = "Full name is required";
-    }
-    if (!formData.address?.trim()) {
-      newErrors.address = "Address is required";
-    }
-    if (!formData.city?.trim()) {
-      newErrors.city = "City is required";
-    }
-    if (!formData.state?.trim()) {
-      newErrors.state = "State is required";
-    }
-    if (!formData.postalCode?.trim()) {
-      newErrors.postalCode = "Postal code is required";
-    }
-    if (!formData.country?.trim()) {
-      newErrors.country = "Country is required";
-    }
-    if (!formData.phone?.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
+    const validation = CheckoutService.validateCheckoutData(mockCheckoutData);
 
-    // Phone validation
-    if (formData.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.phone)) {
-      newErrors.phone = "Please enter a valid phone number";
-    }
-
-    // Postal code validation (basic)
-    if (formData.postalCode && formData.postalCode.length < 3) {
-      newErrors.postalCode = "Please enter a valid postal code";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (
-    field: keyof CheckoutData["shipping"],
-    value: string
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const handleAddressSelect = (address: SavedAddress) => {
-    setFormData({
-      fullName: address.fullName || "",
-      address: address.addressLine1 || "",
-      city: address.city || "",
-      state: address.state || "",
-      postalCode: address.postalCode || "",
-      country: address.country || "",
-      phone: address.phone || "",
-      notes: formData.notes || "", // Keep existing notes
+    // Extract only shipping-related errors
+    const shippingErrors: Record<string, string> = {};
+    Object.entries(validation.errors).forEach(([key, value]) => {
+      if (key.startsWith("shipping.")) {
+        shippingErrors[key.replace("shipping.", "")] = value;
+      }
     });
-    setErrors({});
-  };
+
+    setErrors(shippingErrors);
+    return Object.keys(shippingErrors).length === 0;
+  }, [formData]);
+
+  const handleInputChange = useCallback(
+    (field: keyof CheckoutData["shipping"], value: string) => {
+      setHasUserInteracted(true);
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Clear error when user starts typing
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    },
+    [errors]
+  );
+
+  const handleAddressSelect = useCallback(
+    (address: SavedAddress) => {
+      setHasUserInteracted(true);
+      setFormData({
+        fullName: address.fullName || "",
+        address: address.addressLine1 || "",
+        city: address.city || "",
+        state: address.state || "",
+        postalCode: address.postalCode || "",
+        country: address.country || "",
+        phone: address.phone || "",
+        notes: formData.notes || "", // Keep existing notes
+      });
+      setErrors({});
+      toast.success("Address loaded successfully");
+    },
+    [formData.notes]
+  );
 
   const handleSaveAddress = async () => {
     if (!saveAddress) return;
 
+    setLoadingStates((prev) => ({ ...prev, savingAddress: true }));
     try {
       // Convert formData to match Address model schema
       const addressData = {
@@ -137,32 +154,29 @@ export default function ShippingStep({
         phone: formData.phone,
       };
 
-      const response = await fetch("/api/addresses", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(addressData),
-      });
-
-      if (response.ok) {
-        toast.success("Address saved successfully!");
-        fetchSavedAddresses();
-      }
+      await CheckoutService.saveAddress(addressData);
+      toast.success("Address saved successfully!");
+      setSaveAddress(false);
+      await fetchSavedAddresses(); // Refresh the list
     } catch (error) {
       console.error("Error saving address:", error);
       toast.error("Failed to save address");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, savingAddress: false }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (loadingStates.submitting) return;
+
     if (!validateForm()) {
+      toast.error("Please fix the errors below");
       return;
     }
 
-    setIsLoading(true);
+    setLoadingStates((prev) => ({ ...prev, submitting: true }));
 
     try {
       // Save address if requested
@@ -170,14 +184,32 @@ export default function ShippingStep({
         await handleSaveAddress();
       }
 
+      // Clear draft from localStorage
+      localStorage.removeItem("checkout-shipping-draft");
+
       onComplete(formData);
+      toast.success("Shipping information saved!");
     } catch (error) {
       console.error("Error processing shipping:", error);
       toast.error("Failed to process shipping information");
     } finally {
-      setIsLoading(false);
+      setLoadingStates((prev) => ({ ...prev, submitting: false }));
     }
   };
+
+  const isFormValid = useMemo(() => {
+    return (
+      formData.fullName?.trim() &&
+      formData.address?.trim() &&
+      formData.city?.trim() &&
+      formData.state?.trim() &&
+      formData.postalCode?.trim() &&
+      formData.country?.trim() &&
+      formData.phone?.trim()
+    );
+  }, [formData]);
+
+  const isSubmitting = loadingStates.submitting || loadingStates.savingAddress;
 
   return (
     <motion.div
@@ -199,78 +231,114 @@ export default function ShippingStep({
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
             Saved Addresses
           </h3>
-          <div className="grid gap-3">
-            {savedAddresses.map((address) => (
-              <motion.div
-                key={address._id}
-                whileHover={{ scale: 1.02 }}
-                className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                onClick={() => handleAddressSelect(address)}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {address.fullName}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {address.addressLine1}, {address.city}, {address.state}{" "}
-                      {address.postalCode}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {address.country} • {address.phone}
-                    </p>
+          {loadingStates.fetchingAddresses ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <div className="grid gap-3 mb-4">
+              {savedAddresses.map((address) => (
+                <motion.div
+                  key={address._id}
+                  whileHover={{ scale: 1.01 }}
+                  className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+                  onClick={() => handleAddressSelect(address)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {address.fullName}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {address.addressLine1}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {address.city}, {address.state} {address.postalCode}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {address.country}
+                      </p>
+                    </div>
+                    {address.isDefault && (
+                      <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded">
+                        Default
+                      </span>
+                    )}
                   </div>
-                  {address.isDefault && (
-                    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 rounded-full">
-                      Default
-                    </span>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Full Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Full Name *
-          </label>
-          <input
-            type="text"
-            value={formData.fullName}
-            onChange={(e) => handleInputChange("fullName", e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-              errors.fullName
-                ? "border-red-500"
-                : "border-gray-300 dark:border-gray-600"
-            }`}
-            placeholder="Enter your full name"
-          />
-          {errors.fullName && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.fullName}
-            </p>
-          )}
+      {/* Shipping Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Full Name and Phone */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              value={formData.fullName || ""}
+              onChange={(e) => handleInputChange("fullName", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                errors.fullName
+                  ? "border-red-500 ring-2 ring-red-500/20"
+                  : "border-gray-300 dark:border-gray-600"
+              }`}
+              placeholder="John Doe"
+              disabled={isSubmitting}
+            />
+            {errors.fullName && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.fullName}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Phone Number *
+            </label>
+            <input
+              type="tel"
+              value={formData.phone || ""}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                errors.phone
+                  ? "border-red-500 ring-2 ring-red-500/20"
+                  : "border-gray-300 dark:border-gray-600"
+              }`}
+              placeholder="+1 (555) 123-4567"
+              disabled={isSubmitting}
+            />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.phone}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Address */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Street Address *
+            Address *
           </label>
           <input
             type="text"
-            value={formData.address}
+            value={formData.address || ""}
             onChange={(e) => handleInputChange("address", e.target.value)}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
               errors.address
-                ? "border-red-500"
+                ? "border-red-500 ring-2 ring-red-500/20"
                 : "border-gray-300 dark:border-gray-600"
             }`}
-            placeholder="Enter your street address"
+            placeholder="123 Main Street, Apt 4B"
+            disabled={isSubmitting}
           />
           {errors.address && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -287,14 +355,15 @@ export default function ShippingStep({
             </label>
             <input
               type="text"
-              value={formData.city}
+              value={formData.city || ""}
               onChange={(e) => handleInputChange("city", e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                 errors.city
-                  ? "border-red-500"
+                  ? "border-red-500 ring-2 ring-red-500/20"
                   : "border-gray-300 dark:border-gray-600"
               }`}
-              placeholder="City"
+              placeholder="New York"
+              disabled={isSubmitting}
             />
             {errors.city && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -305,18 +374,19 @@ export default function ShippingStep({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              State *
+              State/Province *
             </label>
             <input
               type="text"
-              value={formData.state}
+              value={formData.state || ""}
               onChange={(e) => handleInputChange("state", e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                 errors.state
-                  ? "border-red-500"
+                  ? "border-red-500 ring-2 ring-red-500/20"
                   : "border-gray-300 dark:border-gray-600"
               }`}
-              placeholder="State"
+              placeholder="NY"
+              disabled={isSubmitting}
             />
             {errors.state && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -331,14 +401,15 @@ export default function ShippingStep({
             </label>
             <input
               type="text"
-              value={formData.postalCode}
+              value={formData.postalCode || ""}
               onChange={(e) => handleInputChange("postalCode", e.target.value)}
               className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
                 errors.postalCode
-                  ? "border-red-500"
+                  ? "border-red-500 ring-2 ring-red-500/20"
                   : "border-gray-300 dark:border-gray-600"
               }`}
-              placeholder="Postal Code"
+              placeholder="10001"
+              disabled={isSubmitting}
             />
             {errors.postalCode && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -354,63 +425,40 @@ export default function ShippingStep({
             Country *
           </label>
           <select
-            value={formData.country}
+            value={formData.country || ""}
             onChange={(e) => handleInputChange("country", e.target.value)}
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
               errors.country
-                ? "border-red-500"
+                ? "border-red-500 ring-2 ring-red-500/20"
                 : "border-gray-300 dark:border-gray-600"
             }`}
+            disabled={isSubmitting}
           >
             <option value="">Select Country</option>
             <option value="US">United States</option>
             <option value="CA">Canada</option>
-            <option value="UK">United Kingdom</option>
-            <option value="AU">Australia</option>
+            <option value="GB">United Kingdom</option>
             <option value="DE">Germany</option>
             <option value="FR">France</option>
             <option value="IT">Italy</option>
             <option value="ES">Spain</option>
-            <option value="NL">Netherlands</option>
-            <option value="BE">Belgium</option>
-            <option value="SE">Sweden</option>
-            <option value="NO">Norway</option>
-            <option value="DK">Denmark</option>
-            <option value="FI">Finland</option>
-            <option value="CH">Switzerland</option>
-            <option value="AT">Austria</option>
+            <option value="AU">Australia</option>
             <option value="JP">Japan</option>
+            <option value="CN">China</option>
+            <option value="IN">India</option>
+            <option value="BR">Brazil</option>
+            <option value="MX">Mexico</option>
             <option value="KR">South Korea</option>
             <option value="SG">Singapore</option>
-            <option value="HK">Hong Kong</option>
-            <option value="NZ">New Zealand</option>
+            <option value="AE">United Arab Emirates</option>
+            <option value="ZA">South Africa</option>
+            <option value="EG">Egypt</option>
+            <option value="NG">Nigeria</option>
+            <option value="FI">Finland</option>
           </select>
           {errors.country && (
             <p className="mt-1 text-sm text-red-600 dark:text-red-400">
               {errors.country}
-            </p>
-          )}
-        </div>
-
-        {/* Phone */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Phone Number *
-          </label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-              errors.phone
-                ? "border-red-500"
-                : "border-gray-300 dark:border-gray-600"
-            }`}
-            placeholder="Enter your phone number"
-          />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.phone}
             </p>
           )}
         </div>
@@ -423,59 +471,62 @@ export default function ShippingStep({
           <textarea
             value={formData.notes || ""}
             onChange={(e) => handleInputChange("notes", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Any special delivery instructions..."
+            placeholder="Special delivery instructions, preferred delivery time, etc."
+            disabled={isSubmitting}
           />
         </div>
 
         {/* Save Address Option */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <input
             type="checkbox"
             id="saveAddress"
             checked={saveAddress}
             onChange={(e) => setSaveAddress(e.target.checked)}
             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            disabled={isSubmitting}
           />
           <label
             htmlFor="saveAddress"
-            className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+            className="text-sm text-gray-700 dark:text-gray-300"
           >
             Save this address for future orders
           </label>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4 pt-4">
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
           <ThemeButton
             type="button"
             variant="secondary"
-            size="lg"
             onClick={onBack}
-            className="flex items-center gap-2"
+            className="flex items-center justify-center gap-2"
+            disabled={isSubmitting}
           >
-            <ArrowLeftIcon className="w-5 h-5" />
+            <ArrowLeftIcon className="w-4 h-4" />
             Back to Cart
           </ThemeButton>
 
           <ThemeButton
             type="submit"
             variant="primary"
-            size="lg"
-            className="flex-1 flex items-center justify-center gap-2"
-            disabled={isLoading}
+            className="flex items-center justify-center gap-2 flex-1"
+            disabled={!isFormValid || isSubmitting}
             glow
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Processing...
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                {loadingStates.savingAddress
+                  ? "Saving Address..."
+                  : "Processing..."}
               </>
             ) : (
               <>
+                <ArrowRightIcon className="w-4 h-4" />
                 Continue to Payment
-                <ArrowRightIcon className="w-5 h-5" />
               </>
             )}
           </ThemeButton>

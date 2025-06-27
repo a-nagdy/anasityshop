@@ -7,20 +7,21 @@ import {
 } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { CheckoutData } from "../../(shop)/checkout/page";
+import { CheckoutService } from "../../services/checkoutService";
+import { CheckoutData, OrderTotals } from "../../types/checkout";
 import ThemeButton from "../ui/ThemeButton";
 
 interface OrderConfirmationProps {
   orderId: string;
   checkoutData: CheckoutData;
-  totals: {
-    itemsPrice: number;
-    shippingPrice: number;
-    taxPrice: number;
-    total: number;
-  };
+  totals: OrderTotals;
+}
+
+interface LoadingStates {
+  fetchingOrder: boolean;
+  sharing: boolean;
 }
 
 export default function OrderConfirmation({
@@ -29,55 +30,89 @@ export default function OrderConfirmation({
   totals,
 }: OrderConfirmationProps) {
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [loadingStates, setLoadingStates] = useState<LoadingStates>({
+    fetchingOrder: false,
+    sharing: false,
+  });
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch order details to get order number
-  useState(() => {
+  // Fetch order details to get order number - FIXED: using useEffect instead of useState
+  useEffect(() => {
     const fetchOrderDetails = async () => {
+      if (!orderId) return;
+
+      setLoadingStates((prev) => ({ ...prev, fetchingOrder: true }));
+      setError(null);
+
       try {
-        const response = await fetch(`/api/orders/${orderId}`);
-        if (response.ok) {
-          const order = await response.json();
-          setOrderNumber(order.orderNumber);
-        }
+        const order = await CheckoutService.getOrderById(orderId);
+        setOrderNumber(order.orderNumber || "");
       } catch (error) {
         console.error("Error fetching order details:", error);
+        setError("Failed to load order details");
+        toast.error("Could not load order information");
+      } finally {
+        setLoadingStates((prev) => ({ ...prev, fetchingOrder: false }));
       }
     };
 
     fetchOrderDetails();
-  });
+  }, [orderId]);
 
   const handlePrint = () => {
-    window.print();
+    try {
+      window.print();
+    } catch (error) {
+      console.error("Print error:", error);
+      toast.error("Failed to print order");
+    }
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "Order Confirmation",
-          text: `Order ${orderNumber} confirmed! Total: $${totals.total.toFixed(
+    setLoadingStates((prev) => ({ ...prev, sharing: true }));
+
+    try {
+      const shareData = {
+        title: "Order Confirmation",
+        text: `Order ${orderNumber} confirmed! Total: $${totals.total.toFixed(
+          2
+        )}`,
+        url: window.location.href,
+      };
+
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare(shareData)
+      ) {
+        await navigator.share(shareData);
+        toast.success("Order details shared successfully!");
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(
+          `Order ${orderNumber} confirmed! Total: $${totals.total.toFixed(
             2
-          )}`,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.error("Error sharing:", error);
+          )}\n${window.location.href}`
+        );
+        toast.success("Order details copied to clipboard!");
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(
-        `Order ${orderNumber} confirmed! Total: $${totals.total.toFixed(2)}`
-      );
-      toast.success("Order details copied to clipboard!");
+    } catch (error) {
+      console.error("Error sharing:", error);
+      if (error instanceof Error && error.name === "AbortError") {
+        // User cancelled sharing, no need to show error
+        return;
+      }
+      toast.error("Failed to share order details");
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, sharing: false }));
     }
   };
 
   const getEstimatedDelivery = () => {
     const deliveryDate = new Date();
-    deliveryDate.setDate(
-      deliveryDate.getDate() + (totals.shippingPrice === 0 ? 3 : 7)
-    );
+    const daysToAdd = totals.shippingPrice === 0 ? 3 : 7;
+    deliveryDate.setDate(deliveryDate.getDate() + daysToAdd);
+
     return deliveryDate.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
@@ -85,6 +120,38 @@ export default function OrderConfirmation({
       day: "numeric",
     });
   };
+
+  // Show loading state while fetching order details
+  if (loadingStates.fetchingOrder) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading order details...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if order fetch failed
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+          <span className="text-red-600 text-2xl">⚠️</span>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Something went wrong
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+        <ThemeButton variant="primary" onClick={() => window.location.reload()}>
+          Try Again
+        </ThemeButton>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -136,6 +203,7 @@ export default function OrderConfirmation({
               size="sm"
               onClick={handlePrint}
               className="flex items-center gap-2"
+              disabled={loadingStates.sharing}
             >
               <PrinterIcon className="w-4 h-4" />
               Print
@@ -145,9 +213,14 @@ export default function OrderConfirmation({
               size="sm"
               onClick={handleShare}
               className="flex items-center gap-2"
+              disabled={loadingStates.sharing}
             >
-              <ShareIcon className="w-4 h-4" />
-              Share
+              {loadingStates.sharing ? (
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                <ShareIcon className="w-4 h-4" />
+              )}
+              {loadingStates.sharing ? "Sharing..." : "Share"}
             </ThemeButton>
           </div>
         </div>
