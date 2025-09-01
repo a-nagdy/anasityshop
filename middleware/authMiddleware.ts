@@ -79,6 +79,17 @@ export function isAdmin(user: User) {
     return null;
 }
 
+// Permission check function
+export function hasPermission(user: User, requiredPermission: string) {
+    if (!user.permissions || !user.permissions.includes(requiredPermission)) {
+        return NextResponse.json(
+            { success: false, message: `Access denied. Requires permission: ${requiredPermission}` },
+            { status: 403 }
+        );
+    }
+    return null;
+}
+
 // Super admin check middleware
 export function isSuperAdmin(user: User) {
     if (user.role !== 'super-admin') {
@@ -88,4 +99,4 @@ export function isSuperAdmin(user: User) {
         );
     }
     return null;
-} 
+}

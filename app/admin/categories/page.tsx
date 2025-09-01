@@ -1,41 +1,49 @@
 "use client";
 
-import { AppDispatch, RootState } from "@/app/store";
-import {
-  deleteCategory,
-  fetchCategories,
-} from "@/app/store/slices/categorySlice";
-import { Category } from "@/app/types/categoryTypes";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { CategoryService } from "../../services/categoryService";
+import { CategoryResponse } from "../../types/api";
+
+type Category = CategoryResponse;
 
 export default function CategoriesPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { categories, isLoading, isSubmitting, error } = useSelector(
-    (state: RootState) => state.categories
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<keyof Category>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [itemsPerPage, setItemsPerPage] = useState(8);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Fetch categories on component mount
   useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
+    fetchCategories();
+  }, []);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
+  const fetchCategories = async () => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const categoriesData = await CategoryService.getCategories();
+      setCategories(categoriesData);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch categories";
+      setError(errorMessage);
+      toast.error(`Categories Error: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
     }
-  }, [error]);
+  };
 
   // Filter categories based on search
-  // console.log(categories);
   const filteredCategories = categories?.filter(
     (category) =>
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,11 +65,11 @@ export default function CategoriesPage() {
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
       });
-    } else if (sortField === "products") {
+    } else if (sortField === "productCount") {
       sorted.sort((a, b) => {
         // Force conversion to number and handle undefined
-        const aProducts = a.products === undefined ? 0 : +a.products;
-        const bProducts = b.products === undefined ? 0 : +b.products;
+        const aProducts = a.productCount === undefined ? 0 : +a.productCount;
+        const bProducts = b.productCount === undefined ? 0 : +b.productCount;
 
         if (sortDirection === "asc") {
           return aProducts - bProducts;
@@ -107,17 +115,73 @@ export default function CategoriesPage() {
     }
   };
 
-  // Handle delete
-  const handleDeleteCategory = (categoryId: string) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      dispatch(deleteCategory(categoryId));
+  // Handle delete with service layer
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) {
+      return;
+    }
+
+    setIsDeleting(categoryId);
+
+    try {
+      await CategoryService.deleteCategory(categoryId);
+
+      // Remove from local state
+      setCategories((prev) => prev.filter((cat) => cat._id !== categoryId));
+
+      toast.success("Category deleted successfully!");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete category";
+      toast.error(`Delete Error: ${errorMessage}`);
+    } finally {
+      setIsDeleting(null);
     }
   };
 
+  // Show error state
+  if (error && !isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+            Categories
+          </h1>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 text-lg mb-4">
+              Failed to load categories
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <button
+              onClick={fetchCategories}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+            Categories
+          </h1>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -212,15 +276,15 @@ export default function CategoriesPage() {
                     (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
                 <button
-                  onClick={() => handleSort("products")}
+                  onClick={() => handleSort("productCount")}
                   className={`px-3 py-1 text-sm ${
-                    sortField === "products"
+                    sortField === "productCount"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                   }`}
                 >
                   Products{" "}
-                  {sortField === "products" &&
+                  {sortField === "productCount" &&
                     (sortDirection === "desc" ? "↑" : "↓")}
                 </button>
                 <button
@@ -342,7 +406,7 @@ export default function CategoriesPage() {
                       />
                     </svg>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {category.products || 0} Products
+                      {category.productCount || 0} Products
                     </span>
                   </div>
 
@@ -363,7 +427,7 @@ export default function CategoriesPage() {
 
                   <button
                     onClick={() => handleDeleteCategory(category._id)}
-                    disabled={isSubmitting}
+                    disabled={isDeleting === category._id}
                     className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Delete
@@ -468,12 +532,6 @@ export default function CategoriesPage() {
           )}
         </div>
       </motion.div>
-
-      {isSubmitting && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      )}
     </div>
   );
 }

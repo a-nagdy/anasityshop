@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { rateLimiters } from '../../../middleware/rateLimiting';
 import { ApiResponseHelper } from '../../../utils/apiResponse';
 import connectToDatabase from '../../../utils/db';
+import { Validator } from '../../../utils/validation';
 import { uploadFile } from '../../../utils/fileUpload';
 
 // File validation constants
@@ -44,10 +45,18 @@ export async function POST(req: NextRequest) {
     try {
       await connectToDatabase();
 
-      // Get form data
       const formData = await req.formData();
       const file = formData.get('file') as File;
       const folder = formData.get('folder') as string || 'general';
+      const sanitizedFolder = Validator.sanitizeInput(folder) as string || 'general';
+
+      console.log('Upload request received:', {
+        hasFile: !!file,
+        fileName: file?.name,
+        fileSize: file?.size,
+        fileType: file?.type,
+        folder
+      });
 
       if (!file) {
         return NextResponse.json(
@@ -65,11 +74,12 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Validate folder parameter
-      const allowedFolders = ['products', 'categories', 'banners', 'avatars', 'general'];
-      if (!allowedFolders.includes(folder)) {
+      // Validate folder parameter - allow nested folders
+      const allowedFolderPrefixes = ['products', 'categories', 'banners', 'avatars', 'general', 'homepage'];
+      const folderPrefix = sanitizedFolder.split('/')[0];
+      if (!allowedFolderPrefixes.includes(folderPrefix)) {
         return NextResponse.json(
-          ApiResponseHelper.validationError({ folder: 'Invalid folder specified' }),
+          ApiResponseHelper.validationError({ folder: `Invalid folder specified. Allowed prefixes: ${allowedFolderPrefixes.join(', ')}` }),
           { status: 400 }
         );
       }
@@ -83,15 +93,31 @@ export async function POST(req: NextRequest) {
         name: file.name,
       };
 
+      console.log('Uploading to Cloudinary:', {
+        folder,
+        bufferSize: buffer.length,
+        mimetype: fileBuffer.mimetype
+      });
+
       // Upload to Cloudinary
-      const uploadResult = await uploadFile(fileBuffer, folder);
+      const uploadResult = await uploadFile(fileBuffer, sanitizedFolder);
+
+      console.log('Upload successful:', {
+        url: uploadResult.url,
+        publicId: uploadResult.publicId
+      });
 
       return NextResponse.json(
         ApiResponseHelper.success(uploadResult, 'File uploaded successfully'),
         { status: 200 }
       );
     } catch (error: unknown) {
-      console.error('Upload error:', error);
+      console.error('Upload error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        error
+      });
+
       return NextResponse.json(
         ApiResponseHelper.serverError(
           error instanceof Error ? error.message : 'File upload failed'

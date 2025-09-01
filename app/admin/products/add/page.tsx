@@ -2,40 +2,65 @@
 
 import ImageUploader from "@/app/components/ImageUploader";
 import MultiImageUploader from "@/app/components/MultiImageUploader";
-import axios from "axios";
 import { getCookie } from "cookies-next";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
-type Category = {
-  _id: string;
-  name: string;
-};
+// Import our services and types
+import Image from "next/image";
+import { CategoryService } from "../../../services/categoryService";
+import { ProductService } from "../../../services/productService";
+import { CategoryResponse, CreateProductRequest } from "../../../types/api";
 
 export default function AddProductPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [formError, setFormError] = useState("");
-  const token = getCookie("auth_token");
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CreateProductRequest>({
     name: "",
     sku: "",
     description: "",
-    price: "",
+    price: 0,
     category: "",
-    quantity: "",
+    quantity: 0,
     color: "",
     size: "",
     featured: false,
-    shipping: true,
     active: true,
-    image: "",
-    images: [] as string[],
+    images: [],
   });
+
+  // Check authentication
+  useEffect(() => {
+    const token = getCookie("auth_token");
+    if (!token) {
+      router.push("/admin");
+    }
+  }, [router]);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const categoriesData = await CategoryService.getActiveCategories();
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load categories";
+        toast.error(`Categories Error: ${errorMessage}`);
+        setCategories([]);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Helper function to generate SKU from name
   const generateSKU = (name: string): string => {
@@ -45,29 +70,6 @@ export default function AddProductPage() {
       .replace(/\s+/g, "-") // Replace spaces with hyphens
       .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
   };
-
-  // Fetch categories on component mount
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(`/api/categories`);
-        const data = response.data;
-
-        // Check if categories exist in the response and is an array
-        if (data && data.categories && Array.isArray(data.categories)) {
-          setCategories(data.categories);
-        } else {
-          console.error("Invalid categories data structure:", data);
-          setCategories([]);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Failed to load categories");
-      }
-    };
-
-    fetchCategories();
-  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -83,29 +85,33 @@ export default function AddProductPage() {
       if (name === "name") {
         // Auto-generate SKU when name changes
         const generatedSKU = generateSKU(value);
-        setFormData((prev) => ({ ...prev, [name]: value, sku: generatedSKU }));
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+          sku: generatedSKU,
+        }));
+      } else if (name === "price" || name === "quantity") {
+        // Handle numeric fields
+        const numericValue = parseFloat(value) || 0;
+        setFormData((prev) => ({ ...prev, [name]: numericValue }));
       } else {
         setFormData((prev) => ({ ...prev, [name]: value }));
       }
     }
   };
 
-  // Handle main image change
-  const handleMainImageChange = (url: string) => {
-    setFormData((prev) => ({ ...prev, image: url }));
-  };
-
   // Handle additional images change
   const handleAdditionalImagesChange = (images: string[]) => {
-    setFormData((prev) => ({ ...prev, images }));
+    const mainImage = formData.images?.[0] || "";
+    setFormData((prev) => ({
+      ...prev,
+      images: mainImage ? [mainImage, ...images] : images,
+    }));
   };
 
   // Simulate file upload
   const handleFileUpload = (file: File) => {
     // In a real implementation, upload the file to your server/cloud storage
-    // console.log("File to upload:", file.name);
-
-    // For simulation purposes only
     setTimeout(() => {
       toast.success(`File "${file.name}" uploaded successfully`);
     }, 1500);
@@ -114,46 +120,56 @@ export default function AddProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setFormError("");
+    setError(null);
 
     try {
-      // Format the data for the API as JSON
-      const productData = {
-        name: formData.name,
-        sku: formData.sku,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity),
-        category: formData.category,
-        featured: formData.featured,
-        shipping: formData.shipping,
-        active: formData.active,
-        image: formData.image,
-        images: Array.isArray(formData.images) ? formData.images : [],
-        color: formData.color,
-        size: formData.size,
-      };
+      // Validate required fields
+      if (!formData.name.trim()) {
+        throw new Error("Product name is required");
+      }
+      if (!formData.description.trim()) {
+        throw new Error("Product description is required");
+      }
+      if (formData.price <= 0) {
+        throw new Error("Product price must be greater than 0");
+      }
+      if (!formData.category) {
+        throw new Error("Please select a category");
+      }
+      if (formData.quantity < 0) {
+        throw new Error("Quantity cannot be negative");
+      }
 
-      // Make API call to create product with JSON
-      await axios.post(`/api/products`, productData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // Use our ProductService to create the product
+      await ProductService.createProduct(formData);
 
       toast.success("Product created successfully!");
-
-      // Redirect to products page on success
       router.push("/admin/products");
     } catch (error) {
-      console.error("Error creating product:", error);
-      setFormError("Failed to create product. Please try again.");
-      toast.error("Failed to create product");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create product";
+      setError(errorMessage);
+      toast.error(`Create Product Error: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Loading state for categories
+  if (isLoadingCategories) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
+            Add New Product
+          </h1>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -174,9 +190,9 @@ export default function AddProductPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        {formError && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {formError}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md">
+            {error}
           </div>
         )}
 
@@ -190,41 +206,74 @@ export default function AddProductPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Main Product Image */}
               <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Main Product Image
+                </label>
                 <ImageUploader
-                  label="Main Product Image"
-                  imageUrl={formData.image}
-                  onImageChange={handleMainImageChange}
-                  onFileUpload={handleFileUpload}
-                  previewSize="large"
-                  placeholder="Enter main image URL"
+                  onUpload={(url) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      images: [url, ...(prev.images?.slice(1) || [])],
+                    }));
+                  }}
+                  folder="products"
+                  maxSize={5}
                 />
+                {formData.images?.[0] && (
+                  <div className="mt-2 relative inline-block">
+                    <Image
+                      src={formData.images[0]}
+                      alt="Main product preview"
+                      className="h-32 w-32 object-cover rounded-md border border-gray-200"
+                      width={128}
+                      height={128}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          images: prev.images?.slice(1) || [],
+                        }))
+                      }
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    >
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Additional Images */}
               <div>
                 <MultiImageUploader
                   label="Additional Images"
-                  images={formData.images}
+                  images={formData.images?.slice(1) || []}
                   onImagesChange={handleAdditionalImagesChange}
                   onFileUpload={handleFileUpload}
-                  placeholder="Enter image URL"
+                  maxImages={5}
                 />
               </div>
             </div>
           </div>
 
-          <hr className="border-gray-200 dark:border-gray-700" />
-
-          {/* Product Information */}
-          <h2 className="text-lg font-medium text-gray-800 dark:text-white mb-4">
-            Product Information
-          </h2>
-
+          {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Product Name*
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Product Name *
               </label>
               <input
                 type="text"
@@ -232,115 +281,29 @@ export default function AddProductPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Enter product name"
               />
             </div>
 
-            {/* SKU */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                SKU (Auto-generated)*
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                SKU (Auto-generated)
               </label>
               <input
                 type="text"
                 name="sku"
                 value={formData.sku}
                 onChange={handleChange}
-                required
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-                placeholder="Auto-generated from product name"
-              />
-            </div>
-
-            {/* Price */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Price*
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                step="0.01"
-                min="0"
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-              />
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Category*
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-              >
-                <option value="">Select Category</option>
-                {categories.map((category) => (
-                  <option key={category._id} value={category._id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Quantity */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Quantity*
-              </label>
-              <input
-                type="number"
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleChange}
-                required
-                min="0"
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-              />
-            </div>
-
-            {/* Color */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Colors (comma separated)
-              </label>
-              <input
-                type="text"
-                name="color"
-                value={formData.color}
-                onChange={handleChange}
-                placeholder="Red, Blue, Green"
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-              />
-            </div>
-
-            {/* Size */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Sizes (comma separated)
-              </label>
-              <input
-                type="text"
-                name="size"
-                value={formData.size}
-                onChange={handleChange}
-                placeholder="S, M, L, XL"
-                className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="SKU will be auto-generated"
               />
             </div>
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Description*
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description *
             </label>
             <textarea
               name="description"
@@ -348,78 +311,156 @@ export default function AddProductPage() {
               onChange={handleChange}
               required
               rows={4}
-              className="block w-full rounded-md border border-gray-200 dark:border-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white p-2.5"
-            ></textarea>
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Enter product description"
+            />
           </div>
 
-          {/* Checkboxes */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="featured"
-                name="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="featured"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
-                Featured Product
+          {/* Pricing and Inventory */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Price ($) *
               </label>
+              <input
+                type="number"
+                name="price"
+                value={formData.price || ""}
+                onChange={handleChange}
+                required
+                min="0"
+                step="0.01"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="0.00"
+              />
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="shipping"
-                name="shipping"
-                checked={formData.shipping}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="shipping"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
-                Shipping Available
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Quantity *
               </label>
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity || ""}
+                onChange={handleChange}
+                required
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="0"
+              />
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="active"
-                name="active"
-                checked={formData.active}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label
-                htmlFor="active"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
-                Active
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Category *
               </label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Select a category</option>
+                {Array.isArray(categories) &&
+                  categories.map((category) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+              </select>
             </div>
           </div>
 
+          {/* Product Attributes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Color
+              </label>
+              <input
+                type="text"
+                name="color"
+                value={formData.color || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="e.g., Red, Blue, Green"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Size
+              </label>
+              <input
+                type="text"
+                name="size"
+                value={formData.size || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                placeholder="e.g., S, M, L, XL"
+              />
+            </div>
+          </div>
+
+          {/* Product Settings */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-gray-800 dark:text-white">
+              Product Settings
+            </h3>
+
+            <div className="flex flex-wrap gap-6">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={formData.featured}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Featured Product
+                </label>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="active"
+                  checked={formData.active}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Active (Visible to customers)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
           <div className="flex justify-end space-x-3">
             <button
               type="button"
-              onClick={() => router.push("/admin/products")}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+              onClick={() => router.back()}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? "Creating..." : "Create Product"}
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+                  Creating...
+                </div>
+              ) : (
+                "Create Product"
+              )}
             </button>
           </div>
         </form>

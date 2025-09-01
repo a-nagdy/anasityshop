@@ -69,13 +69,7 @@ export const useCheckout = (): UseCheckoutReturn => {
     // Calculate totals
     const totals = CheckoutService.calculateTotals(totalPrice);
 
-    // Handle placing order after payment data is updated
-    useEffect(() => {
-        if (shouldPlaceOrder && checkoutData.payment.method) {
-            setShouldPlaceOrder(false);
-            handlePlaceOrder();
-        }
-    }, [checkoutData.payment.method, shouldPlaceOrder]);
+    // moved effect below handlePlaceOrder to avoid 'used before declaration'
 
     // Redirect if cart is empty
     useEffect(() => {
@@ -101,7 +95,7 @@ export const useCheckout = (): UseCheckoutReturn => {
         setCurrentStep((prev) => Math.max(1, prev - 1));
     };
 
-    const handlePlaceOrder = async (paymentData?: CheckoutData['payment']) => {
+    const handlePlaceOrder = useCallback(async (paymentData?: CheckoutData['payment']) => {
         console.log('handlePlaceOrder called with payment method:', paymentData?.method || checkoutData.payment.method);
         setIsProcessing(true);
 
@@ -179,7 +173,15 @@ export const useCheckout = (): UseCheckoutReturn => {
         } finally {
             setIsProcessing(false);
         }
-    };
+    }, [checkoutData.payment, checkoutData.shipping, dispatch, items, totals.itemsPrice, totals.shippingPrice, totals.taxPrice, totals.total]);
+
+    // Handle placing order after payment data is updated
+    useEffect(() => {
+        if (shouldPlaceOrder && checkoutData.payment.method) {
+            setShouldPlaceOrder(false);
+            handlePlaceOrder(checkoutData.payment);
+        }
+    }, [checkoutData.payment, shouldPlaceOrder, handlePlaceOrder]);
 
     const handlePaymentComplete = async (paymentData?: CheckoutData['payment']) => {
         if (paymentData) {

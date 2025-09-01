@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -8,7 +9,7 @@ import CheckoutSteps from "../../components/checkout/CheckoutSteps";
 import OrderConfirmation from "../../components/checkout/OrderConfirmation";
 import PaymentStep from "../../components/checkout/PaymentStep";
 import ShippingStep from "../../components/checkout/ShippingStep";
-import LoadingSpinner from "../../components/LoadingSpinner";
+import { LoadingSpinner } from "../../components/ui";
 import { useCheckout } from "../../hooks/useCheckout";
 import { useAppSelector } from "../../store/hooks";
 
@@ -49,7 +50,7 @@ export default function CheckoutPage() {
   if (!orderId && items.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -170,10 +171,12 @@ export default function CheckoutPage() {
                     className="flex items-center gap-3"
                   >
                     <div className="relative w-12 h-12">
-                      <img
+                      <Image
                         src={item.product.image || "/images/placeholder.jpg"}
                         alt={item.product.name}
                         className="w-full h-full object-cover rounded-lg"
+                        width={12}
+                        height={12}
                       />
                       <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                         {item.quantity}

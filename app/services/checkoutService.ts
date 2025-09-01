@@ -23,7 +23,7 @@ export class CheckoutService {
      * Create a new order
      */
     static async createOrder(orderData: OrderData): Promise<Order> {
-        const response = await fetch('/api/orders', {
+        const response = await fetch('/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export class CheckoutService {
      * Get order details by ID
      */
     static async getOrderById(orderId: string): Promise<Order> {
-        const response = await fetch(`/api/orders/${orderId}`);
+        const response = await fetch(`/orders/${orderId}`);
 
         if (!response.ok) {
             throw new Error('Failed to fetch order details');
@@ -56,7 +56,7 @@ export class CheckoutService {
      * Get saved addresses for the user
      */
     static async getSavedAddresses(): Promise<SavedAddress[]> {
-        const response = await fetch('/api/addresses');
+        const response = await fetch('/addresses');
 
         if (!response.ok) {
             throw new Error('Failed to fetch addresses');
@@ -69,7 +69,7 @@ export class CheckoutService {
      * Save a new address
      */
     static async saveAddress(addressData: Partial<SavedAddress>): Promise<SavedAddress> {
-        const response = await fetch('/api/addresses', {
+        const response = await fetch('/addresses', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

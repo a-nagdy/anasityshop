@@ -78,7 +78,7 @@ export default function DataTable<T>({
                     e.stopPropagation();
                     action.onClick(item);
                   }}
-                  className={`text-sm font-medium ${
+                  className={`text-sm font-medium  ${
                     action.className ||
                     "text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                   }`}

@@ -2,6 +2,7 @@
 
 import ImageUploader from "@/app/components/ImageUploader";
 import { Category, CategoryFormProps } from "@/app/types/categoryTypes";
+import Image from "next/image";
 import { ChangeEvent, FormEvent, useState } from "react";
 
 export default function CategoryForm({
@@ -32,10 +33,6 @@ export default function CategoryForm({
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-  };
-
-  const handleImageChange = (url: string) => {
-    setFormData((prev) => ({ ...prev, image: url }));
   };
 
   const handleSubmitForm = (e: FormEvent) => {
@@ -92,12 +89,42 @@ export default function CategoryForm({
             Category Image
           </label>
           <ImageUploader
-            label=""
-            imageUrl={formData.image || ""}
-            onImageChange={handleImageChange}
-            previewSize="medium"
-            placeholder="Enter image URL"
+            onUpload={(url) => {
+              setFormData((prev) => ({ ...prev, image: url }));
+            }}
+            folder="categories"
+            maxSize={2}
           />
+          {formData.image && (
+            <div className="mt-2 relative inline-block">
+              <Image
+                src={formData.image}
+                alt="Category preview"
+                className="h-20 w-20 object-cover rounded-md border border-gray-200"
+                width={80}
+                height={80}
+              />
+              <button
+                type="button"
+                onClick={() => setFormData((prev) => ({ ...prev, image: "" }))}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+              >
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Optional. Add an image for this category.
           </p>

@@ -21,6 +21,39 @@ interface ReviewFormProps {
   onClose: () => void;
 }
 
+// Simple auth and review API helpers
+const AuthAPI = {
+  async getCurrentUser() {
+    const response = await fetch("/api/auth/me");
+    if (!response.ok) {
+      throw new Error("Not authenticated");
+    }
+    return response.json();
+  },
+};
+
+const ReviewAPI = {
+  async createReview(data: {
+    productId: string;
+    rating: number;
+    title: string;
+    comment: string;
+  }) {
+    const response = await fetch("/api/reviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to submit review");
+    }
+
+    return response.json();
+  },
+};
+
 export default function ReviewForm({
   productId,
   productName,
@@ -43,16 +76,13 @@ export default function ReviewForm({
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch("/api/auth/me");
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData.data);
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+      const userData = await AuthAPI.getCurrentUser();
+      setUser(userData.data);
+      setIsAuthenticated(true);
     } catch (error) {
-      console.error("Error checking auth status:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Authentication check failed";
+      console.warn(`Auth check: ${errorMessage}`);
       setIsAuthenticated(false);
     }
   };
@@ -66,8 +96,8 @@ export default function ReviewForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isAuthenticated) {
-      toast.error("Please login to submit a review");
+    if (!isAuthenticated || !user) {
+      toast.error("Please log in to submit a review");
       return;
     }
 
@@ -76,39 +106,35 @@ export default function ReviewForm({
       return;
     }
 
-    if (comment.trim().length < 10) {
-      toast.error("Review comment must be at least 10 characters");
+    if (!comment.trim()) {
+      toast.error("Please write a review comment");
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      const response = await fetch("/api/reviews", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productId,
-          rating,
-          comment: comment.trim(),
-          title: title.trim() || undefined,
-        }),
+      setIsSubmitting(true);
+
+      await ReviewAPI.createReview({
+        productId,
+        rating,
+        title: title.trim(),
+        comment: comment.trim(),
       });
 
-      const data = await response.json();
+      toast.success("Review submitted successfully!");
 
-      if (response.ok) {
-        toast.success(data.message || "Review submitted successfully!");
-        onReviewSubmitted();
-        onClose();
-      } else {
-        toast.error(data.message || "Failed to submit review");
-      }
+      // Reset form
+      setRating(0);
+      setHoverRating(0);
+      setTitle("");
+      setComment("");
+
+      // Notify parent component
+      onReviewSubmitted?.();
     } catch (error) {
-      console.error("Error submitting review:", error);
-      toast.error("Failed to submit review. Please try again.");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to submit review";
+      toast.error(`Review Error: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }

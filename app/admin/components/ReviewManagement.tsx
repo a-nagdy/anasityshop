@@ -236,220 +236,223 @@ export default function ReviewManagement() {
             </p>
           </div>
         ) : (
-          reviews.map((review, index) => (
-            <motion.div
-              key={review._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
-            >
-              {/* Review Header */}
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {review.user.firstName[0]}
-                      {review.user.lastName[0]}
+          reviews.map(
+            (review, index) =>
+              review.product && (
+                <motion.div
+                  key={review._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+                >
+                  {/* Review Header */}
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {review.user.firstName[0]}
+                          {review.user.lastName[0]}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900 dark:text-white">
+                              {review.user.firstName} {review.user.lastName}
+                            </h3>
+                            {review.verified && (
+                              <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs px-2 py-1 rounded-full font-medium">
+                                ✓ Verified
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {review.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            review.status
+                          )}`}
+                        >
+                          {review.status.charAt(0).toUpperCase() +
+                            review.status.slice(1)}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {formatDate(review.createdAt)}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {review.user.firstName} {review.user.lastName}
-                        </h3>
-                        {review.verified && (
-                          <span className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs px-2 py-1 rounded-full font-medium">
-                            ✓ Verified
-                          </span>
+                  </div>
+
+                  {/* Review Content */}
+                  <div className="p-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Left Column - Review Details */}
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            Product
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {review.product?.name}
+                            </span>
+                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
+                              SKU: {review.product?.sku}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            Rating
+                          </h4>
+                          <div className="flex items-center gap-2">
+                            {renderStars(review?.rating)}
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">
+                              {review?.rating}/5
+                            </span>
+                          </div>
+                        </div>
+
+                        {review.title && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                              Review Title
+                            </h4>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {review.title}
+                            </p>
+                          </div>
+                        )}
+
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            Review Comment
+                          </h4>
+                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {review.comment}
+                          </p>
+                        </div>
+
+                        {review.helpful > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                              Helpful Votes
+                            </h4>
+                            <span className="text-sm text-gray-900 dark:text-white">
+                              {review.helpful} people found this helpful
+                            </span>
+                          </div>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {review.user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        review.status
-                      )}`}
-                    >
-                      {review.status.charAt(0).toUpperCase() +
-                        review.status.slice(1)}
-                    </span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {formatDate(review.createdAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Review Content */}
-              <div className="p-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Left Column - Review Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Product
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {review.product.name}
-                        </span>
-                        <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
-                          SKU: {review.product.sku}
-                        </span>
-                      </div>
-                    </div>
+                      {/* Right Column - Actions */}
+                      <div className="space-y-4">
+                        {review.status === "pending" && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                              Review Actions
+                            </h4>
+                            <div className="space-y-2">
+                              <button
+                                onClick={() =>
+                                  handleStatusUpdate(review._id, "approved")
+                                }
+                                disabled={updating === review._id}
+                                className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                              >
+                                {updating === review._id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>✅ Approve Review</>
+                                )}
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleStatusUpdate(review._id, "rejected")
+                                }
+                                disabled={updating === review._id}
+                                className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                              >
+                                {updating === review._id ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>❌ Reject Review</>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Rating
-                      </h4>
-                      <div className="flex items-center gap-2">
-                        {renderStars(review.rating)}
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {review.rating}/5
-                        </span>
-                      </div>
-                    </div>
+                        {/* Review History */}
+                        {review.status !== "pending" && review.reviewedBy && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                              Review History
+                            </h4>
+                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
+                              <p className="text-gray-700 dark:text-gray-300">
+                                <span className="font-medium">
+                                  {review.status.charAt(0).toUpperCase() +
+                                    review.status.slice(1)}
+                                </span>{" "}
+                                by{" "}
+                                <span className="font-medium">
+                                  {review.reviewedBy.firstName}{" "}
+                                  {review.reviewedBy.lastName}
+                                </span>
+                              </p>
+                              {review.reviewedAt && (
+                                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                                  {formatDate(review.reviewedAt)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
 
-                    {review.title && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                          Review Title
-                        </h4>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {review.title}
-                        </p>
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                        Review Comment
-                      </h4>
-                      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {review.comment}
-                      </p>
-                    </div>
-
-                    {review.helpful > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
-                          Helpful Votes
-                        </h4>
-                        <span className="text-sm text-gray-900 dark:text-white">
-                          {review.helpful} people found this helpful
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Column - Actions */}
-                  <div className="space-y-4">
-                    {review.status === "pending" && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                          Review Actions
-                        </h4>
-                        <div className="space-y-2">
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(review._id, "approved")
-                            }
-                            disabled={updating === review._id}
-                            className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                          >
-                            {updating === review._id ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                Processing...
-                              </>
-                            ) : (
-                              <>✅ Approve Review</>
-                            )}
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleStatusUpdate(review._id, "rejected")
-                            }
-                            disabled={updating === review._id}
-                            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                          >
-                            {updating === review._id ? (
-                              <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                Processing...
-                              </>
-                            ) : (
-                              <>❌ Reject Review</>
-                            )}
-                          </button>
+                        {/* Quick Actions */}
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                            Quick Actions
+                          </h4>
+                          <div className="space-y-2">
+                            <button
+                              onClick={() =>
+                                window.open(
+                                  `/products/${review.product.sku}`,
+                                  "_blank"
+                                )
+                              }
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              🔗 View Product
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigator.clipboard.writeText(review.user.email)
+                              }
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              📧 Copy Email
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    )}
-
-                    {/* Review History */}
-                    {review.status !== "pending" && review.reviewedBy && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          Review History
-                        </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
-                          <p className="text-gray-700 dark:text-gray-300">
-                            <span className="font-medium">
-                              {review.status.charAt(0).toUpperCase() +
-                                review.status.slice(1)}
-                            </span>{" "}
-                            by{" "}
-                            <span className="font-medium">
-                              {review.reviewedBy.firstName}{" "}
-                              {review.reviewedBy.lastName}
-                            </span>
-                          </p>
-                          {review.reviewedAt && (
-                            <p className="text-gray-500 dark:text-gray-400 mt-1">
-                              {formatDate(review.reviewedAt)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Quick Actions */}
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                        Quick Actions
-                      </h4>
-                      <div className="space-y-2">
-                        <button
-                          onClick={() =>
-                            window.open(
-                              `/products/${review.product.sku}`,
-                              "_blank"
-                            )
-                          }
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          🔗 View Product
-                        </button>
-                        <button
-                          onClick={() =>
-                            navigator.clipboard.writeText(review.user.email)
-                          }
-                          className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                        >
-                          📧 Copy Email
-                        </button>
-                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </motion.div>
-          ))
+                </motion.div>
+              )
+          )
         )}
       </div>
 

@@ -1,4 +1,4 @@
-import { getJwtSecretKey } from '@/utils/auth';
+import { getJwtSecretKey } from '@/utils/auth-server';
 import { jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';

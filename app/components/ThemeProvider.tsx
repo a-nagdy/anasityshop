@@ -66,17 +66,17 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
     buttonTextColor: "#ffffff",
 
     // Header Colors
-    headerBackgroundColor: "rgba(10, 10, 15, 0.95)",
+    headerBackgroundColor: "#f4f0ec",
     headerTextColor: "#ffffff",
     headerBorderColor: "rgba(0, 245, 255, 0.2)",
 
     // Footer Colors
-    footerBackgroundColor: "rgba(10, 10, 15, 0.98)",
+    footerBackgroundColor: "#f4f0ec",
     footerTextColor: "#ffffff",
     footerLinkColor: "#00f5ff",
 
     // Background Colors
-    backgroundColor: "#0a0a0f",
+    backgroundColor: "#f4f0ec",
     surfaceColor: "rgba(255, 255, 255, 0.05)",
 
     // Text Colors
@@ -103,7 +103,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
           fetch("/api/settings/homepage"),
         ]);
 
-        let baseThemeSettings = { ...themeSettings };
+        let baseThemeSettings: WebsiteThemeSettings | null = null;
         let homepageSettings: HomepageSettings | null = null;
 
         // Process website theme settings
@@ -122,70 +122,78 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
           }
         }
 
+        // Helper to convert hex to rgb for rgba composition (inlined below as toRgb)
+
         // Merge settings - homepage settings override theme settings for key colors
-        if (homepageSettings) {
-          const mergedSettings = {
-            ...baseThemeSettings,
-            // Use homepage colors as primary theme colors
-            primaryColor:
-              homepageSettings.accentColor || baseThemeSettings.primaryColor,
-            accentColor:
-              homepageSettings.accentColor || baseThemeSettings.accentColor,
-            backgroundColor:
-              homepageSettings.backgroundColor ||
-              baseThemeSettings.backgroundColor,
+        setThemeSettings((previous) => {
+          const base = baseThemeSettings || previous;
+          if (homepageSettings) {
+            const toRgb = (hex: string) => {
+              if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
+                return hex;
+              }
+              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+                hex
+              );
+              return result
+                ? `${parseInt(result[1], 16)}, ${parseInt(
+                    result[2],
+                    16
+                  )}, ${parseInt(result[3], 16)}`
+                : "0, 245, 255";
+            };
+            const mergedSettings: WebsiteThemeSettings = {
+              ...base,
+              // Use homepage colors as primary theme colors
+              primaryColor: homepageSettings.accentColor || base.primaryColor,
+              accentColor: homepageSettings.accentColor || base.accentColor,
+              backgroundColor:
+                homepageSettings.backgroundColor || base.backgroundColor,
 
-            // Update button colors to use homepage accent
-            buttonPrimaryColor:
-              homepageSettings.accentColor ||
-              baseThemeSettings.buttonPrimaryColor,
-            buttonHoverColor:
-              homepageSettings.accentColor ||
-              baseThemeSettings.buttonHoverColor,
+              // Update button colors to use homepage accent
+              buttonPrimaryColor:
+                homepageSettings.accentColor || base.buttonPrimaryColor,
+              buttonHoverColor:
+                homepageSettings.accentColor || base.buttonHoverColor,
 
-            // Update header border and footer link to use homepage accent
-            headerBorderColor: `rgba(${hexToRgb(
-              homepageSettings.accentColor || baseThemeSettings.primaryColor
-            )}, 0.2)`,
-            footerLinkColor:
-              homepageSettings.accentColor || baseThemeSettings.footerLinkColor,
+              // Update header border and footer link to use homepage accent
+              headerBorderColor: `rgba(${toRgb(
+                homepageSettings.accentColor || base.primaryColor
+              )}, 0.2)`,
+              footerLinkColor:
+                homepageSettings.accentColor || base.footerLinkColor,
 
-            // Update shadow color to use homepage accent
-            shadowColor: `rgba(${hexToRgb(
-              homepageSettings.accentColor || baseThemeSettings.primaryColor
-            )}, 0.2)`,
+              // Update shadow color to use homepage accent
+              shadowColor: `rgba(${toRgb(
+                homepageSettings.accentColor || base.primaryColor
+              )}, 0.2)`,
 
-            // Use homepage animation setting
-            animation3dEnabled:
-              homepageSettings.animation3dEnabled !== undefined
-                ? homepageSettings.animation3dEnabled
-                : baseThemeSettings.animation3dEnabled,
-          };
-
-          setThemeSettings(mergedSettings);
-        } else {
-          setThemeSettings(baseThemeSettings);
-        }
+              // Use homepage animation setting
+              animation3dEnabled:
+                homepageSettings.animation3dEnabled !== undefined
+                  ? homepageSettings.animation3dEnabled
+                  : base.animation3dEnabled,
+              // Preserve other flags
+              glassmorphismEnabled: base.glassmorphismEnabled,
+              particleEffectsEnabled: base.particleEffectsEnabled,
+              secondaryColor: base.secondaryColor,
+              buttonSecondaryColor: base.buttonSecondaryColor,
+              headerBackgroundColor: base.headerBackgroundColor,
+              headerTextColor: base.headerTextColor,
+              footerBackgroundColor: base.footerBackgroundColor,
+              footerTextColor: base.footerTextColor,
+              surfaceColor: base.surfaceColor,
+              textPrimaryColor: base.textPrimaryColor,
+              textSecondaryColor: base.textSecondaryColor,
+              borderColor: base.borderColor,
+            };
+            return mergedSettings;
+          }
+          return base;
+        });
       } catch (error) {
         console.error("Error fetching theme settings:", error);
       }
-    };
-
-    // Helper function to convert color to RGB
-    const hexToRgb = (hex: string) => {
-      // Handle rgba/rgb strings
-      if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
-        return hex;
-      }
-
-      // Handle hex colors
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result
-        ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
-            result[3],
-            16
-          )}`
-        : "0, 245, 255";
     };
 
     fetchAllSettings();
@@ -207,7 +215,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
       window.removeEventListener("themeUpdated", handleThemeUpdate);
       window.removeEventListener("homepageUpdated", handleHomepageUpdate);
     };
-  }, []);
+  }, []); // Remove themeSettings from dependency array to prevent infinite loop
 
   useEffect(() => {
     // Apply theme to CSS custom properties
@@ -423,8 +431,7 @@ export function useTheme() {
           fetch("/api/settings/website-theme"),
           fetch("/api/settings/homepage"),
         ]);
-
-        let baseThemeSettings = { ...themeSettings };
+        let baseThemeSettings: WebsiteThemeSettings | null = null;
         let homepageSettings: HomepageSettings | null = null;
 
         // Process website theme settings
@@ -444,66 +451,67 @@ export function useTheme() {
         }
 
         // Helper function to convert color to RGB
-        const hexToRgb = (hex: string) => {
-          // Handle rgba/rgb strings
-          if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
-            return hex;
-          }
+        // const hexToRgb = (hex: string) => {
+        //   // Handle rgba/rgb strings
+        //   if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
+        //     return hex;
+        //   }
 
-          // Handle hex colors
-          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-          return result
-            ? `${parseInt(result[1], 16)}, ${parseInt(
-                result[2],
-                16
-              )}, ${parseInt(result[3], 16)}`
-            : "0, 245, 255";
-        };
+        //   // Handle hex colors
+        //   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        //   return result
+        //     ? `${parseInt(result[1], 16)}, ${parseInt(
+        //         result[2],
+        //         16
+        //       )}, ${parseInt(result[3], 16)}`
+        //     : "0, 245, 255";
+        // };
 
         // Merge settings - homepage settings override theme settings for key colors
-        if (homepageSettings) {
-          const mergedSettings = {
-            ...baseThemeSettings,
-            // Use homepage colors as primary theme colors
-            primaryColor:
-              homepageSettings.accentColor || baseThemeSettings.primaryColor,
-            accentColor:
-              homepageSettings.accentColor || baseThemeSettings.accentColor,
-            backgroundColor:
-              homepageSettings.backgroundColor ||
-              baseThemeSettings.backgroundColor,
+        setThemeSettings((previous) => {
+          const base = baseThemeSettings || previous;
+          if (homepageSettings) {
+            const hexToRgb = (hex: string) => {
+              if (hex.startsWith("rgba") || hex.startsWith("rgb")) {
+                return hex;
+              }
+              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+                hex
+              );
+              return result
+                ? `${parseInt(result[1], 16)}, ${parseInt(
+                    result[2],
+                    16
+                  )}, ${parseInt(result[3], 16)}`
+                : "0, 245, 255";
+            };
 
-            // Update button colors to use homepage accent
-            buttonPrimaryColor:
-              homepageSettings.accentColor ||
-              baseThemeSettings.buttonPrimaryColor,
-            buttonHoverColor:
-              homepageSettings.accentColor ||
-              baseThemeSettings.buttonHoverColor,
-
-            // Update header border and footer link to use homepage accent
-            headerBorderColor: `rgba(${hexToRgb(
-              homepageSettings.accentColor || baseThemeSettings.primaryColor
-            )}, 0.2)`,
-            footerLinkColor:
-              homepageSettings.accentColor || baseThemeSettings.footerLinkColor,
-
-            // Update shadow color to use homepage accent
-            shadowColor: `rgba(${hexToRgb(
-              homepageSettings.accentColor || baseThemeSettings.primaryColor
-            )}, 0.2)`,
-
-            // Use homepage animation setting
-            animation3dEnabled:
-              homepageSettings.animation3dEnabled !== undefined
-                ? homepageSettings.animation3dEnabled
-                : baseThemeSettings.animation3dEnabled,
-          };
-
-          setThemeSettings(mergedSettings);
-        } else {
-          setThemeSettings(baseThemeSettings);
-        }
+            return {
+              ...base,
+              primaryColor: homepageSettings.accentColor || base.primaryColor,
+              accentColor: homepageSettings.accentColor || base.accentColor,
+              backgroundColor:
+                homepageSettings.backgroundColor || base.backgroundColor,
+              buttonPrimaryColor:
+                homepageSettings.accentColor || base.buttonPrimaryColor,
+              buttonHoverColor:
+                homepageSettings.accentColor || base.buttonHoverColor,
+              headerBorderColor: `rgba(${hexToRgb(
+                homepageSettings.accentColor || base.primaryColor
+              )}, 0.2)`,
+              footerLinkColor:
+                homepageSettings.accentColor || base.footerLinkColor,
+              shadowColor: `rgba(${hexToRgb(
+                homepageSettings.accentColor || base.primaryColor
+              )}, 0.2)`,
+              animation3dEnabled:
+                homepageSettings.animation3dEnabled !== undefined
+                  ? homepageSettings.animation3dEnabled
+                  : base.animation3dEnabled,
+            };
+          }
+          return base;
+        });
       } catch (error) {
         console.error("Error fetching theme settings:", error);
       }
@@ -527,7 +535,7 @@ export function useTheme() {
       window.removeEventListener("themeUpdated", handleThemeUpdate);
       window.removeEventListener("homepageUpdated", handleHomepageUpdate);
     };
-  }, []);
+  }, []); // Run once on mount; merges state functionally to avoid deps
 
   return themeSettings;
 }

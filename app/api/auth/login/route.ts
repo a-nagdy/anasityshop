@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Validator } from '../../../../utils/validation';
 import { rateLimiters } from '../../../../middleware/rateLimiting';
 import { ApiResponseHelper } from '../../../../utils/apiResponse';
 import connectToDatabase from '../../../../utils/db';
@@ -9,22 +10,21 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
 
-            // Get request body
             const { email, password } = await req.json();
+            const sanitizedEmail = Validator.sanitizeInput(email) as string || '';
+            const sanitizedPassword = password ? password.trim() : '';
 
-            // Check if email and password are provided
-            if (!email || !password) {
+            if (!sanitizedEmail || !sanitizedPassword) {
                 return NextResponse.json(
                     ApiResponseHelper.validationError({
-                        email: !email ? 'Email is required' : '',
-                        password: !password ? 'Password is required' : ''
+                        email: !sanitizedEmail ? 'Email is required' : '',
+                        password: !sanitizedPassword ? 'Password is required' : ''
                     }),
                     { status: 400 }
                 );
             }
 
-            // Validate email format
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
                 return NextResponse.json(
                     ApiResponseHelper.validationError({
                         email: 'Please provide a valid email address'
@@ -33,8 +33,7 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            // Find user by email
-            const user = await getUserByEmail(email);
+            const user = await getUserByEmail(sanitizedEmail);
             if (!user) {
                 return NextResponse.json(
                     ApiResponseHelper.error('Invalid credentials'),
@@ -42,8 +41,7 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            // Verify password
-            const isPasswordValid = await comparePassword(password, user.password);
+            const isPasswordValid = await comparePassword(sanitizedPassword, user.password);
             if (!isPasswordValid) {
                 return NextResponse.json(
                     ApiResponseHelper.error('Invalid credentials'),
@@ -90,4 +88,4 @@ export async function POST(req: NextRequest) {
             );
         }
     });
-} 
+}

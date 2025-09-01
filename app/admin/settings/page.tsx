@@ -51,6 +51,10 @@ export default function SettingsPage() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [cacheStatus, setCacheStatus] = useState<string | null>(null);
+  const [indexStatus, setIndexStatus] = useState<string | null>(null);
+  const [cacheLoading, setCacheLoading] = useState(false);
+  const [indexLoading, setIndexLoading] = useState(false);
 
   // Fetch current settings
   useEffect(() => {
@@ -160,6 +164,49 @@ export default function SettingsPage() {
     setSettings(defaultSettings);
   };
 
+  // Admin actions
+  const handleClearCache = async () => {
+    setCacheLoading(true);
+    setCacheStatus(null);
+    try {
+      const res = await fetch("/api/settings/cache/clear", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setCacheStatus("✅ Cache cleared successfully");
+      } else {
+        setCacheStatus(
+          `❌ Failed to clear cache: ${data.message || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+      setCacheStatus("❌ Error clearing cache");
+    } finally {
+      setCacheLoading(false);
+    }
+  };
+
+  const handleReinitializeIndexes = async () => {
+    setIndexLoading(true);
+    setIndexStatus(null);
+    try {
+      const res = await fetch("/api/settings/reinitialize", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setIndexStatus("✅ Indexes and optimizations reinitialized");
+      } else {
+        setIndexStatus(
+          `❌ Failed to reinitialize: ${data.message || "Unknown error"}`
+        );
+      }
+    } catch (error) {
+      console.error("Error reinitializing indexes:", error);
+      setIndexStatus("❌ Error reinitializing indexes");
+    } finally {
+      setIndexLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -197,6 +244,29 @@ export default function SettingsPage() {
           <p className="text-gray-600 mt-2">
             Customize the colors and appearance of your website
           </p>
+        </div>
+        {/* Admin Tools */}
+        <div className="flex flex-col gap-2 items-end">
+          <button
+            onClick={handleClearCache}
+            disabled={cacheLoading}
+            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50"
+          >
+            {cacheLoading ? "Clearing Cache..." : "Clear Cache"}
+          </button>
+          {cacheStatus && (
+            <span className="text-sm text-gray-700">{cacheStatus}</span>
+          )}
+          <button
+            onClick={handleReinitializeIndexes}
+            disabled={indexLoading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 mt-2"
+          >
+            {indexLoading ? "Reinitializing..." : "Reinitialize Indexes"}
+          </button>
+          {indexStatus && (
+            <span className="text-sm text-gray-700">{indexStatus}</span>
+          )}
         </div>
         <div className="flex space-x-4">
           <button

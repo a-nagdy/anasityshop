@@ -1,25 +1,16 @@
 "use client";
 
-import axios from "axios";
+import { CategoryResponse } from "@/app/types/api";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FiGrid, FiSearch, FiUsers } from "react-icons/fi";
 import { toast } from "react-toastify";
-
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  image?: string;
-  active: boolean;
-  products?: number;
-}
+import { CategoryService } from "../../services/categoryService";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -28,23 +19,13 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/api/categories");
-        console.log("Categories response:", response.data);
-
-        // Handle the response format
-        const categoriesData = Array.isArray(response.data)
-          ? response.data
-          : response.data.data || response.data.categories || [];
-
-        // Only show active categories
-        const activeCategories = categoriesData.filter(
-          (cat: Category) => cat.active
-        );
-
-        setCategories(activeCategories);
+        const categoriesData = await CategoryService.getActiveCategories();
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        toast.error("Failed to load categories");
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load categories";
+        toast.error(`Categories Error: ${errorMessage}`);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -226,7 +207,7 @@ export default function CategoriesPage() {
 
 // Category Card Component
 interface CategoryCardProps {
-  category: Category;
+  category: CategoryResponse;
 }
 
 function CategoryCard({ category }: CategoryCardProps) {
@@ -280,7 +261,7 @@ function CategoryCard({ category }: CategoryCardProps) {
               <div className="flex items-center space-x-2 text-gray-400">
                 <FiUsers className="text-sm" />
                 <span className="text-sm">
-                  {category.products || 0} products
+                  {category.productCount || 0} products
                 </span>
               </div>
 

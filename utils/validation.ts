@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import xss from 'xss';
 
 export interface ValidationRule {
     required?: boolean;
@@ -107,7 +108,7 @@ export class Validator {
 
     static sanitizeInput(input: unknown): unknown {
         if (typeof input === 'string') {
-            return input.trim();
+            return xss(input.trim());
         }
         if (typeof input === 'object' && input !== null) {
             const sanitized: Record<string, unknown> = {};
@@ -115,6 +116,9 @@ export class Validator {
                 sanitized[key] = this.sanitizeInput(value);
             }
             return sanitized;
+        }
+        if (Array.isArray(input)) {
+            return input.map(item => this.sanitizeInput(item));
         }
         return input;
     }
@@ -143,4 +147,4 @@ export class Validator {
             errors
         };
     }
-} 
+}

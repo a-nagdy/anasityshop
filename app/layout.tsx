@@ -21,9 +21,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Initialize database connection and optimizations
+// Initialize database connection and optimizations only once
+let isAppInitialized = false;
+
 async function initializeApp() {
+  if (isAppInitialized) return;
+
   try {
+    console.log("🚀 Initializing Anasity Shop application...");
     await connectToDatabase();
     await initializeOptimizations();
 
@@ -31,13 +36,13 @@ async function initializeApp() {
     if (process.env.NODE_ENV === "production") {
       initCronJobs();
     }
+
+    isAppInitialized = true;
+    console.log("✅ Anasity Shop application initialized successfully");
   } catch (error) {
     console.error("Failed to initialize app:", error);
   }
 }
-
-// Initialize app
-initializeApp();
 
 export const metadata: Metadata = {
   title: "Anasity Shop - Futuristic E-Commerce Experience",
@@ -50,6 +55,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Initialize app on first render
+  if (typeof window === "undefined") {
+    initializeApp();
+  }
+
   return (
     <html lang="en">
       <body

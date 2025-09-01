@@ -1,8 +1,9 @@
 import { CartItem, PopulatedProduct } from '@/app/types/cart';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware } from '../../../middleware/authMiddleware';
+import { authMiddleware, hasPermission } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
+import { Validator } from '../../../utils/validation';
 import Cart from '../models/Cart';
 import Order from '../models/Order';
 import Product from '../models/Product';
@@ -20,8 +21,9 @@ export function GET(req: NextRequest) {
 
             let query: Record<string, string | boolean | mongoose.Types.ObjectId> = {};
 
-            // If not admin, only show user's orders
-            if (user.role !== 'admin' && user.role !== 'super-admin') {
+            const hasAdminAccess = hasPermission(user, 'manage_orders') === null;
+
+            if (!hasAdminAccess) {
                 query = { user: user._id };
             }
 
@@ -80,8 +82,8 @@ export function POST(req: NextRequest) {
         try {
             await connectToDatabase();
 
-            // Get order data from request
             const orderData = await req.json();
+            const sanitizedData = Validator.sanitizeInput(orderData) as typeof orderData;
 
             // Start a transaction
             const session = await mongoose.startSession();
@@ -89,7 +91,7 @@ export function POST(req: NextRequest) {
 
             try {
                 // Get user's cart if items aren't provided
-                if (!orderData.items || orderData.items.length === 0) {
+                if (!sanitizedData.items || sanitizedData.items.length === 0) {
                     const cart = await Cart.findOne({ user: user._id }).populate('items.product');
 
                     if (!cart || cart.items.length === 0) {
@@ -97,7 +99,7 @@ export function POST(req: NextRequest) {
                     }
 
                     // Transform cart items to order items
-                    orderData.items = cart.items.map((item: CartItem) => ({
+                    sanitizedData.items = cart.items.map((item: CartItem) => ({
                         product: item.product._id,
                         name: (item.product as PopulatedProduct).name,
                         quantity: item.quantity,
@@ -109,16 +111,16 @@ export function POST(req: NextRequest) {
                     }));
 
                     // Set order prices from cart
-                    orderData.itemsPrice = cart.total;
+                    sanitizedData.itemsPrice = cart.total;
                 }
 
                 // Set user ID if not provided
-                if (!orderData.user) {
-                    orderData.user = user._id;
+                if (!sanitizedData.user) {
+                    sanitizedData.user = user._id;
                 }
 
                 // Calculate totals if not provided
-                if (!orderData.total) {
+                if (!sanitizedData.total) {
                     // Calculate shipping price (simplified, could be more complex in real app)
                     const shippingPrice = orderData.shippingPrice || 10;
 
@@ -130,13 +132,13 @@ export function POST(req: NextRequest) {
                     const total = orderData.itemsPrice + shippingPrice + taxPrice;
 
                     // Set prices
-                    orderData.shippingPrice = shippingPrice;
-                    orderData.taxPrice = taxPrice;
-                    orderData.total = total;
+                    sanitizedData.shippingPrice = shippingPrice;
+                    sanitizedData.taxPrice = taxPrice;
+                    sanitizedData.total = total;
                 }
 
                 // Create new order
-                const order = await Order.create([orderData], { session });
+                const order = await Order.create([sanitizedData], { session });
 
                 // Update product quantities
                 for (const item of orderData.items) {
@@ -179,4 +181,4 @@ export function POST(req: NextRequest) {
             );
         }
     });
-} 
+}

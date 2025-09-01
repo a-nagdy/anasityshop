@@ -1,6 +1,5 @@
 "use client";
 
-import axios from "axios";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -31,25 +30,27 @@ export default function Header() {
     { name: "Contact", href: "/contact" },
   ];
 
-  // Fetch categories
+  // Fetch categories using CategoryService
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setCategoriesLoading(true);
-        const response = await axios.get("/api/categories");
 
-        // Handle the response format
-        const categoriesData = Array.isArray(response.data)
-          ? response.data
-          : response.data.data || response.data.categories || [];
-
-        // Only show active categories
-        const activeCategories = categoriesData.filter(
-          (cat: Category) => cat.active
+        // Import and use CategoryService
+        const { CategoryService } = await import(
+          "../../services/categoryService"
         );
+        const activeCategories = await CategoryService.getNavigationCategories(
+          1
+        ); // Only parent categories for navigation
+
         setCategories(activeCategories);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        // Improved error handling
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load categories";
+        console.error("Error fetching categories:", errorMessage);
+        setCategories([]); // Set empty array as fallback
       } finally {
         setCategoriesLoading(false);
       }
@@ -144,7 +145,10 @@ export default function Header() {
 
           {/* User Menu */}
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
-            <CartButton onClick={openCart} className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2" />
+            <CartButton
+              onClick={openCart}
+              className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
+            />
             <Link
               href="/account"
               className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"

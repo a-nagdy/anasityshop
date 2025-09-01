@@ -2,38 +2,20 @@
 
 import ImageUploader from "@/app/components/ImageUploader";
 import MultiImageUploader from "@/app/components/MultiImageUploader";
-import axios from "axios";
-import { getCookie } from "cookies-next";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { CategoryService } from "../../../services/categoryService";
+import { ProductService } from "../../../services/productService";
+import { ProductResponse } from "../../../types/api";
 
 type Category = {
   _id: string;
   name: string;
 };
 
-type Product = {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: {
-    _id: string;
-    name: string;
-  };
-  quantity: number;
-  status: "in stock" | "out of stock" | "low stock" | "draft";
-  color: string[];
-  size: string[];
-  featured: boolean;
-  shipping: boolean;
-  active: boolean;
-  image: string;
-  images: string[];
-  slug: string;
-};
+type Product = ProductResponse;
 
 export default function EditProductPage({
   params,
@@ -48,7 +30,6 @@ export default function EditProductPage({
   const [categories, setCategories] = useState<Category[]>([]);
   const [formError, setFormError] = useState("");
   const [product, setProduct] = useState<Product | null>(null);
-  const token = getCookie("auth_token");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -74,51 +55,48 @@ export default function EditProductPage({
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Fetch product data
-        const productResponse = await axios.get(`/api/products/${id}`);
-        const productData = productResponse.data;
+        // Fetch product and categories data using services
+        const [productData, categoriesData] = await Promise.all([
+          ProductService.getProduct(id),
+          CategoryService.getActiveCategories(),
+        ]);
+
         setProduct(productData);
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
 
-        // Fetch categories
-        const categoriesResponse = await axios.get(`/api/categories`);
-        const categoriesData = categoriesResponse.data;
-
-        // Check if categories exist in the response and is an array
-        if (
-          categoriesData &&
-          categoriesData.categories &&
-          Array.isArray(categoriesData.categories)
-        ) {
-          setCategories(categoriesData.categories);
-        } else {
-          console.error("Invalid categories data structure:", categoriesData);
-          setCategories([]);
-        }
-
-        // Populate form data
+        // Populate form data - handle both string and array formats for color/size
         setFormData({
           name: productData.name || "",
           description: productData.description || "",
           price: productData.price?.toString() || "",
           category: productData.category?._id || "",
           quantity: productData.quantity?.toString() || "",
-          color: productData.color?.join(", ") || "",
-          size: productData.size?.join(", ") || "",
+          color: Array.isArray(productData.color)
+            ? productData.color.join(", ")
+            : productData.color || "",
+          size: Array.isArray(productData.size)
+            ? productData.size.join(", ")
+            : productData.size || "",
           weight: productData.weight || "",
           dimensions: productData.dimensions || "",
           material: productData.material || "",
           warranty: productData.warranty || "",
           featured: productData.featured || false,
-          shipping: productData.shipping !== false,
+          shipping: true, // ProductResponse doesn't have shipping, default to true
           active: productData.active !== false,
           image: productData.image || "",
           images: productData.images || [],
           sku: productData.sku || "",
         });
+
+        console.log("Product data:", productData);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setFormError("Failed to load product data");
-        toast.error("Failed to load product data");
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to load product data";
+        setFormError(errorMessage);
+        toast.error(`Product Error: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
@@ -148,11 +126,6 @@ export default function EditProductPage({
     }
   };
 
-  // Handle main image change
-  const handleMainImageChange = (url: string) => {
-    setFormData((prev) => ({ ...prev, image: url }));
-  };
-
   // Handle additional images change
   const handleAdditionalImagesChange = (images: string[]) => {
     setFormData((prev) => ({ ...prev, images }));
@@ -175,11 +148,16 @@ export default function EditProductPage({
     setFormError("");
 
     try {
-      // Format the data for the API
-      const productData = {
-        ...formData,
+      // Format the data for the API using proper types
+      const updateData = {
+        id, // Required by UpdateProductRequest type
+        name: formData.name,
+        description: formData.description,
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
+        category: formData.category,
+        sku: formData.sku,
+        image: formData.image, // Include the main image
         images: Array.isArray(formData.images) ? formData.images : [],
         color:
           typeof formData.color === "string"
@@ -187,31 +165,39 @@ export default function EditProductPage({
                 .split(",")
                 .map((item) => item.trim())
                 .filter(Boolean)
-            : [],
+                .join(", ")
+            : "",
         size:
           typeof formData.size === "string"
             ? formData.size
                 .split(",")
                 .map((item) => item.trim())
                 .filter(Boolean)
-            : [],
+                .join(", ")
+            : "",
+        weight: formData.weight,
+        dimensions: formData.dimensions,
+        material: formData.material,
+        warranty: formData.warranty,
+        featured: formData.featured,
+        active: formData.active,
       };
 
-      // Make API call to update product
-      await axios.put(`/api/products/${id}`, productData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Use ProductService for the update instead of direct axios
+      await ProductService.updateProduct(id, updateData);
 
       toast.success("Product updated successfully!");
 
       // Redirect to products page on success
       router.push("/admin/products");
     } catch (error) {
-      console.error("Error updating product:", error);
-      setFormError("Failed to update product. Please try again.");
-      toast.error("Failed to update product");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to update product. Please try again.";
+
+      setFormError(errorMessage);
+      toast.error(`Update Error: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
@@ -267,14 +253,23 @@ export default function EditProductPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Main Product Image */}
               <div>
-                <ImageUploader
-                  label="Main Product Image"
-                  imageUrl={formData.image}
-                  onImageChange={handleMainImageChange}
-                  onFileUpload={handleFileUpload}
-                  previewSize="large"
-                  placeholder="Enter main image URL"
-                />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Main Product Image
+                </label>
+                <div>
+                  <ImageUploader
+                    onUpload={(url) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        image: url,
+                        images: prev.images || [],
+                      }));
+                    }}
+                    folder="products"
+                    maxSize={5}
+                    imageUrl={formData.image}
+                  />
+                </div>
               </div>
 
               {/* Additional Images */}

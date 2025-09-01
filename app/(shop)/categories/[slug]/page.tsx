@@ -2,12 +2,11 @@
 
 import { AddToCartButton } from "@/app/components/ui";
 import { DualRangeSlider } from "@/app/components/ui/DualRangeSlider";
-import axios from "axios";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiEye,
   FiGrid,
@@ -18,52 +17,16 @@ import {
   FiStar,
 } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { CategoryService } from "../../../services/categoryService";
+import { ProductService } from "../../../services/productService";
+import { CategoryResponse, ProductResponse } from "../../../types/api";
 
 // Types
-interface Product {
-  _id: string;
-  name: string;
-  sku?: string;
-  slug: string;
-  description: string;
-  price: number;
-  discountPrice?: number;
-  image: string;
-  images: string[];
-  category: {
-    _id: string;
-    name: string;
-    slug: string;
-  };
-  quantity: number;
-  status: "in stock" | "out of stock" | "draft" | "low stock";
-  color: string[];
-  size: string[];
-  featured: boolean;
-  active: boolean;
-  totalRating: number;
-  sold: number;
-  createdAt: string;
-  finalPrice: number;
-  hasDiscount: boolean;
-  discountPercentage: number;
-}
-
-interface Category {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  image?: string;
-  active: boolean;
-  children?: Category[];
-}
-
 interface Filters {
   search: string;
   priceRange: [number, number];
-  colors: string[];
-  sizes: string[];
+  selectedColors: string[];
+  selectedSizes: string[];
   status: string[];
   featured: boolean | null;
   rating: number;
@@ -108,8 +71,8 @@ export default function CategoryPage() {
   const params = useParams();
   const slug = params?.slug as string;
 
-  const [category, setCategory] = useState<Category | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [category, setCategory] = useState<CategoryResponse | null>(null);
+  const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [productsLoading, setProductsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -124,8 +87,8 @@ export default function CategoryPage() {
   const [filters, setFilters] = useState<Filters>({
     search: "",
     priceRange: [0, 10000],
-    colors: [],
-    sizes: [],
+    selectedColors: [],
+    selectedSizes: [],
     status: [],
     featured: null,
     rating: 0,
@@ -147,12 +110,13 @@ export default function CategoryPage() {
     const fetchCategory = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/api/categories/${slug}`);
-        setCategory(response.data);
+        const categoryData = await CategoryService.getCategoryBySlug(slug);
+        setCategory(categoryData);
       } catch (err) {
-        console.error("Error fetching category:", err);
-        setError("Category not found");
-        toast.error("Category not found");
+        const errorMessage =
+          err instanceof Error ? err.message : "Category not found";
+        setError(errorMessage);
+        toast.error(`Category Error: ${errorMessage}`);
       } finally {
         setLoading(false);
       }
@@ -187,27 +151,31 @@ export default function CategoryPage() {
           sortParam = "-createdAt"; // Default newest first
         }
 
-        const params = new URLSearchParams({
-          category: category._id,
-          page: currentPage.toString(),
-          limit: itemsPerPage.toString(),
-          sort: sortParam,
-        });
+        const response = await ProductService.getProducts(
+          {
+            category: category._id,
+            search: filters.search || undefined,
+            featured: filters.featured !== null ? filters.featured : undefined,
+            status:
+              filters.status.length > 0
+                ? (filters.status.join(",") as
+                    | "active"
+                    | "inactive"
+                    | "draft"
+                    | "out_of_stock")
+                : undefined,
+          },
+          {
+            page: currentPage,
+            limit: itemsPerPage,
+            sortBy: sortParam,
+            sortOrder: "desc",
+          }
+        );
 
-        if (filters.search) params.append("search", filters.search);
-        if (filters.featured !== null)
-          params.append("featured", filters.featured.toString());
-        if (filters.status.length > 0)
-          params.append("status", filters.status.join(","));
-
-        console.log("Fetching products with params:", params.toString());
-
-        const response = await axios.get(`/api/products?${params.toString()}`);
-        console.log("Products response:", response.data);
-
-        const fetchedProducts =
-          response.data.data?.products || response.data.products || [];
-
+        const fetchedProducts = Array.isArray(response.data)
+          ? response.data
+          : [];
         setProducts(fetchedProducts);
 
         // Extract filter options from all products
@@ -216,9 +184,22 @@ export default function CategoryPage() {
         let maxPrice = 0;
         let minPrice = Infinity;
 
-        fetchedProducts.forEach((product: Product) => {
-          product.color?.forEach((color) => allColors.add(color));
-          product.size?.forEach((size) => allSizes.add(size));
+        fetchedProducts.forEach((product: ProductResponse) => {
+          // Handle string properties for color/size
+          if (product.color) {
+            // Split comma-separated values if they exist
+            product.color
+              .split(",")
+              .forEach((color) => allColors.add(color.trim()));
+          }
+
+          if (product.size) {
+            // Split comma-separated values if they exist
+            product.size
+              .split(",")
+              .forEach((size) => allSizes.add(size.trim()));
+          }
+
           const price = product.discountPrice || product.price;
           maxPrice = Math.max(maxPrice, price);
           minPrice = Math.min(minPrice, price);
@@ -239,8 +220,9 @@ export default function CategoryPage() {
           }));
         }
       } catch (err) {
-        console.error("Error fetching products:", err);
-        toast.error("Failed to load products");
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load products";
+        toast.error(`Products Error: ${errorMessage}`);
       } finally {
         setProductsLoading(false);
       }
@@ -251,39 +233,38 @@ export default function CategoryPage() {
     }
   }, [category, currentPage, itemsPerPage, sortBy, filters]);
 
-  // Filter products client-side (for better UX)
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      // Price range filter
-      const price = product.discountPrice || product.price;
-      if (price < filters.priceRange[0] || price > filters.priceRange[1])
-        return false;
+  // Filter products based on current filters
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch =
+      !filters.search ||
+      product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      product.description.toLowerCase().includes(filters.search.toLowerCase());
 
-      // Color filter
-      if (
-        filters.colors.length > 0 &&
-        !product.color?.some((color) => filters.colors.includes(color))
-      )
-        return false;
+    const matchesPrice =
+      product.finalPrice >= filters.priceRange[0] &&
+      product.finalPrice <= filters.priceRange[1];
 
-      // Size filter
-      if (
-        filters.sizes.length > 0 &&
-        !product.size?.some((size) => filters.sizes.includes(size))
-      )
-        return false;
+    const matchesColors =
+      filters.selectedColors.length === 0 ||
+      (product.color &&
+        filters.selectedColors.some((color) => product.color!.includes(color)));
 
-      // Status filter
-      if (filters.status.length > 0 && !filters.status.includes(product.status))
-        return false;
+    const matchesSizes =
+      filters.selectedSizes.length === 0 ||
+      (product.size &&
+        filters.selectedSizes.some((size) => product.size!.includes(size)));
 
-      // Rating filter
-      if (filters.rating > 0 && product.totalRating < filters.rating)
-        return false;
+    const matchesFeatured =
+      filters.featured === null || product.featured === filters.featured;
 
-      return true;
-    });
-  }, [products, filters]);
+    return (
+      matchesSearch &&
+      matchesPrice &&
+      matchesColors &&
+      matchesSizes &&
+      matchesFeatured
+    );
+  });
 
   // Reset page when filters change
   useEffect(() => {
@@ -305,8 +286,8 @@ export default function CategoryPage() {
     setFilters({
       search: "",
       priceRange: [filterOptions.minPrice, filterOptions.maxPrice],
-      colors: [],
-      sizes: [],
+      selectedColors: [],
+      selectedSizes: [],
       status: [],
       featured: null,
       rating: 0,
@@ -541,8 +522,8 @@ export default function CategoryPage() {
                     />
                   </svg>
                   <span>Filters</span>
-                  {(filters.colors.length > 0 ||
-                    filters.sizes.length > 0 ||
+                  {(filters.selectedColors.length > 0 ||
+                    filters.selectedSizes.length > 0 ||
                     filters.status.length > 0 ||
                     filters.featured !== null ||
                     filters.rating > 0) && (
@@ -722,24 +703,26 @@ export default function CategoryPage() {
                       <label key={color} className="cursor-pointer group">
                         <input
                           type="checkbox"
-                          checked={filters.colors.includes(color)}
+                          checked={filters.selectedColors.includes(color)}
                           onChange={(e) => {
                             const newColors = e.target.checked
-                              ? [...filters.colors, color]
-                              : filters.colors.filter((c) => c !== color);
-                            handleFilterChange("colors", newColors);
+                              ? [...filters.selectedColors, color]
+                              : filters.selectedColors.filter(
+                                  (c) => c !== color
+                                );
+                            handleFilterChange("selectedColors", newColors);
                           }}
                           className="sr-only"
                         />
                         <div
                           className={`w-10 h-10 rounded-xl border-2 transition-all duration-300 flex items-center justify-center ${
-                            filters.colors.includes(color)
+                            filters.selectedColors.includes(color)
                               ? "border-white shadow-lg scale-110 ring-2 ring-white/30"
                               : "border-gray-500 group-hover:border-white group-hover:scale-105"
                           }`}
                           style={{ backgroundColor: color.toLowerCase() }}
                         >
-                          {filters.colors.includes(color) && (
+                          {filters.selectedColors.includes(color) && (
                             <svg
                               className="w-4 h-4 text-white"
                               fill="none"
@@ -781,18 +764,18 @@ export default function CategoryPage() {
                       <label key={size} className="cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={filters.sizes.includes(size)}
+                          checked={filters.selectedSizes.includes(size)}
                           onChange={(e) => {
                             const newSizes = e.target.checked
-                              ? [...filters.sizes, size]
-                              : filters.sizes.filter((s) => s !== size);
-                            handleFilterChange("sizes", newSizes);
+                              ? [...filters.selectedSizes, size]
+                              : filters.selectedSizes.filter((s) => s !== size);
+                            handleFilterChange("selectedSizes", newSizes);
                           }}
                           className="sr-only"
                         />
                         <div
                           className={`px-3 py-2 rounded-lg text-center font-medium transition-all duration-300 ${
-                            filters.sizes.includes(size)
+                            filters.selectedSizes.includes(size)
                               ? "bg-white/20 text-white border-2 border-white shadow-lg"
                               : "bg-white/5 text-gray-400 border-2 border-gray-600 hover:border-white hover:text-white hover:bg-white/10"
                           }`}
@@ -1216,7 +1199,7 @@ export default function CategoryPage() {
 
 // Enhanced ProductCard component
 interface ProductCardProps {
-  product: Product;
+  product: ProductResponse;
   viewMode: ViewMode;
 }
 

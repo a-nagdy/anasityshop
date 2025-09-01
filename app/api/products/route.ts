@@ -1,14 +1,14 @@
-import { ProductData } from '@/app/types/mongoose';
+import '@/app/api/models'; // Ensures all models are registered
+import { CategoryData, ProductData } from '@/app/types/mongoose';
 import mongoose from 'mongoose';
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
+import { authMiddleware, hasPermission, isAdmin } from '../../../middleware/authMiddleware';
 import { ApiResponseHelper } from '../../../utils/apiResponse';
 import { cacheHelper } from '../../../utils/cache';
 import connectToDatabase from '../../../utils/db';
 import { determineProductStatus } from '../../../utils/productStatus';
 import { Validator } from '../../../utils/validation';
 import Product from '../models/Product';
-
 // Validation schemas - removing unused schema
 // const productQuerySchema = { ... } // Removed unused variable
 
@@ -31,6 +31,11 @@ const productCreateSchema = {
 // Get all products with simplified queries for better reliability
 export async function GET(req: NextRequest) {
     try {
+
+        if (!isAdmin) {
+            return NextResponse.json({ message: 'Not authorized' }, { status: 401 });
+        }
+
         await connectToDatabase();
 
         const url = new URL(req.url);
@@ -222,10 +227,8 @@ export async function GET(req: NextRequest) {
 // Create a new product - Admin only with enhanced validation
 export async function POST(req: NextRequest) {
     return authMiddleware(req, async (req, user) => {
-        // Check if user is admin
-        console.log("user", user);
-        const adminCheckResult = isAdmin(user);
-        if (adminCheckResult) return adminCheckResult;
+        const permissionCheck = hasPermission(user, 'manage_products');
+        if (permissionCheck) return permissionCheck;
 
         try {
             await connectToDatabase();
@@ -264,7 +267,7 @@ export async function POST(req: NextRequest) {
             }
 
             // Validate category exists
-            const Category = mongoose.models.Category;
+            const Category = mongoose.models.Category as mongoose.Model<CategoryData>;
             if (Category) {
                 const categoryExists = await Category.findById(productData.category);
                 if (!categoryExists) {
@@ -358,4 +361,4 @@ export async function POST(req: NextRequest) {
             );
         }
     });
-} 
+}

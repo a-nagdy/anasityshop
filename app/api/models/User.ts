@@ -49,6 +49,19 @@ const userSchema = new mongoose.Schema(
         },
         resetPasswordToken: String,
         resetPasswordExpire: Date,
+        permissions: {
+            type: [String],
+            default: function (this: { role?: string }) {
+                switch (this.role) {
+                    case 'super-admin':
+                        return ['manage_products', 'manage_orders', 'manage_users', 'manage_categories', 'manage_uploads', 'view_stats'];
+                    case 'admin':
+                        return ['manage_products', 'manage_orders', 'manage_categories', 'manage_uploads'];
+                    default:
+                        return [];
+                }
+            }
+        }
     },
     {
         timestamps: true,
@@ -120,4 +133,4 @@ export const getUserByEmail = async (email: string) => {
     }
 };
 
-export default User; 
+export default User;

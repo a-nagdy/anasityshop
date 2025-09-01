@@ -8,62 +8,14 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
-interface HeroBanner {
-  _id?: string;
-  title: string;
-  subtitle: string;
-  backgroundImage?: string;
-  ctaText?: string;
-  ctaLink?: string;
-  active: boolean;
-  order?: number;
-  showButton?: boolean;
-  showSecondaryButton?: boolean;
-}
-
-interface Banner {
-  _id?: string;
-  title: string;
-  subtitle?: string;
-  description?: string;
-  image: string;
-  ctaText?: string;
-  ctaLink?: string;
-  active: boolean;
-  order: number;
-  layout: "full-width" | "split" | "grid";
-}
-
-interface CategorySlider {
-  title: string;
-  subtitle?: string;
-  categories: string[];
-  active: boolean;
-}
-
-interface ProductSlider {
-  title: string;
-  subtitle?: string;
-  products: string[];
-  type: "featured" | "bestseller" | "new" | "sale" | "custom";
-  active: boolean;
-}
-
-interface HomepageSettings {
-  heroBanners: HeroBanner[];
-  categorySliders: CategorySlider[];
-  productSliders: ProductSlider[];
-  banners: Banner[];
-  showFeaturedCategories: boolean;
-  showNewArrivals: boolean;
-  showBestsellers: boolean;
-  backgroundColor: string;
-  accentColor: string;
-  animation3dEnabled: boolean;
-}
+import {
+  HomepageSettings,
+  HeroBanner,
+  Banner,
+} from "../../services/settingsService";
 
 export default function HomepageManagementPage() {
   const [settings, setSettings] = useState<HomepageSettings | null>(null);
@@ -80,18 +32,19 @@ export default function HomepageManagementPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/settings/homepage");
+      const { SettingsService } = await import(
+        "../../services/settingsService"
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data.data);
-        toast.success("Homepage settings loaded successfully");
-      } else {
-        throw new Error("Failed to fetch settings");
-      }
+      const settingsData = await SettingsService.getHomepageSettings();
+      setSettings(settingsData);
+      toast.success("Homepage settings loaded successfully");
     } catch (error) {
-      console.error("Error fetching settings:", error);
-      toast.error("Failed to load homepage settings");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to load homepage settings";
+      toast.error(`Settings Error: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -102,26 +55,28 @@ export default function HomepageManagementPage() {
 
     try {
       setSaving(true);
-      const response = await fetch("/api/settings/homepage", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(settings),
-      });
+      const { SettingsService } = await import(
+        "../../services/settingsService"
+      );
 
-      if (response.ok) {
-        toast.success("Homepage settings saved successfully!");
-        // Trigger homepage update event for global theme
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("homepageUpdated"));
-        }
-      } else {
-        throw new Error("Failed to save settings");
+      // Validate settings before saving
+      const validation = SettingsService.validateHomepageSettings(settings);
+      if (!validation.valid) {
+        validation.errors.forEach((error) => toast.error(error));
+        return;
+      }
+
+      await SettingsService.updateHomepageSettings(settings);
+      toast.success("Homepage settings saved successfully!");
+
+      // Trigger homepage update event for global theme
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("homepageUpdated"));
       }
     } catch (error) {
-      console.error("Error saving settings:", error);
-      toast.error("Failed to save settings");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to save settings";
+      toast.error(`Save Error: ${errorMessage}`);
     } finally {
       setSaving(false);
     }
@@ -208,43 +163,19 @@ export default function HomepageManagementPage() {
   };
 
   const removeBanner = (index: number) => {
-    if (!settings) return;
-
-    const updatedBanners = settings.banners.filter((_, i) => i !== index);
-
-    setSettings({
-      ...settings,
-      banners: updatedBanners,
+    setSettings((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        banners: prev.banners.filter((_, i) => i !== index),
+      };
     });
-    toast.success("Promotional banner removed");
-  };
-
-  const handleImageUpload = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to upload image");
-    }
-
-    const data = await response.json();
-    return data.url;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">
-            Loading homepage settings...
-          </p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -357,7 +288,6 @@ export default function HomepageManagementPage() {
                 onAdd={addHeroBanner}
                 onUpdate={updateHeroBanner}
                 onRemove={removeHeroBanner}
-                onImageUpload={handleImageUpload}
               />
             )}
 
@@ -367,7 +297,6 @@ export default function HomepageManagementPage() {
                 onAdd={addBanner}
                 onUpdate={updateBanner}
                 onRemove={removeBanner}
-                onImageUpload={handleImageUpload}
               />
             )}
 
@@ -541,13 +470,11 @@ function HeroBannersSection({
   onAdd,
   onUpdate,
   onRemove,
-  onImageUpload,
 }: {
   banners: HeroBanner[];
   onAdd: () => void;
   onUpdate: (index: number, banner: HeroBanner) => void;
   onRemove: (index: number) => void;
-  onImageUpload: (file: File) => Promise<string>;
 }) {
   const [openBanners, setOpenBanners] = useState<number[]>([]);
 
@@ -675,18 +602,44 @@ function HeroBannersSection({
                       Background Image
                     </label>
                     <ImageUploader
-                      label=""
-                      imageUrl={banner.backgroundImage || ""}
-                      onImageChange={(url) =>
-                        onUpdate(index, { ...banner, backgroundImage: url })
-                      }
-                      onFileUpload={async (file) => {
-                        const url = await onImageUpload(file);
+                      onUpload={(url: string) => {
                         onUpdate(index, { ...banner, backgroundImage: url });
                       }}
-                      previewSize="large"
-                      placeholder="Background image URL"
+                      folder="homepage/banners"
+                      maxSize={5}
                     />
+                    {banner.backgroundImage && (
+                      <div className="mt-2 relative inline-block">
+                        <Image
+                          src={banner.backgroundImage}
+                          alt="Banner background preview"
+                          className="h-32 w-48 object-cover rounded-md border border-gray-200"
+                          width={192}
+                          height={192}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdate(index, { ...banner, backgroundImage: "" })
+                          }
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Settings */}
@@ -784,13 +737,11 @@ function PromotionalBannersSection({
   onAdd,
   onUpdate,
   onRemove,
-  onImageUpload,
 }: {
   banners: Banner[];
   onAdd: () => void;
   onUpdate: (index: number, banner: Banner) => void;
   onRemove: (index: number) => void;
-  onImageUpload: (file: File) => Promise<string>;
 }) {
   const [openBanners, setOpenBanners] = useState<number[]>([]);
 
@@ -956,18 +907,44 @@ function PromotionalBannersSection({
                       Banner Image
                     </label>
                     <ImageUploader
-                      label=""
-                      imageUrl={banner.image || ""}
-                      onImageChange={(url) =>
-                        onUpdate(index, { ...banner, image: url })
-                      }
-                      onFileUpload={async (file) => {
-                        const url = await onImageUpload(file);
+                      onUpload={(url: string) => {
                         onUpdate(index, { ...banner, image: url });
                       }}
-                      previewSize="large"
-                      placeholder="Banner image URL"
+                      folder="homepage/promotional"
+                      maxSize={5}
                     />
+                    {banner.image && (
+                      <div className="mt-2 relative inline-block">
+                        <Image
+                          src={banner.image}
+                          alt="Banner preview"
+                          className="h-32 w-48 object-cover rounded-md border border-gray-200"
+                          width={192}
+                          height={192}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onUpdate(index, { ...banner, image: "" })
+                          }
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Settings */}

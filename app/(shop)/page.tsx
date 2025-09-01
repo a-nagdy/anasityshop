@@ -95,56 +95,45 @@ export default function HomePage() {
     setMounted(true);
     const fetchData = async () => {
       try {
-        // Fetch all data in parallel
+        // Import services
+        const { ProductService } = await import("../services/productService");
+        const { CategoryService } = await import("../services/categoryService");
+        const { SettingsService } = await import("../services/settingsService");
+
+        // Fetch all data in parallel using services
         const [
-          homepageResponse,
-          featuredResponse,
-          newResponse,
-          saleResponse,
-          categoriesResponse,
+          homepageSettings,
+          featuredProducts,
+          newProducts,
+          saleProducts,
+          categories,
         ] = await Promise.all([
-          fetch("/api/settings/homepage"),
-          fetch("/api/products?limit=8&featured=true"),
-          fetch("/api/products?limit=8&sortBy=createdAt&sortOrder=desc"),
-          fetch("/api/products?limit=8&onSale=true"),
-          fetch("/api/categories?active=true&parentOnly=true&limit=8"),
+          SettingsService.getHomepageSettings(),
+          ProductService.getFeaturedProducts(8),
+          ProductService.getNewProducts(8),
+          ProductService.getSaleProducts(8),
+          CategoryService.getParentCategories(8),
         ]);
 
-        // Homepage settings
-        if (homepageResponse.ok) {
-          const homepageData = await homepageResponse.json();
-          setHomepageSettings(homepageData.data);
-        }
-
-        // Featured products
-        if (featuredResponse.ok) {
-          const featuredData = await featuredResponse.json();
-          setFeaturedProducts(
-            featuredData.products || featuredData.data?.products || []
-          );
-        }
-
-        // New products
-        if (newResponse.ok) {
-          const newData = await newResponse.json();
-          setNewProducts(newData.products || newData.data?.products || []);
-        }
-
-        // Sale products
-        if (saleResponse.ok) {
-          const saleData = await saleResponse.json();
-          setSaleProducts(saleData.products || saleData.data?.products || []);
-        }
-
-        // Categories
-        if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json();
-          setCategories(
-            categoriesData.categories || categoriesData.data?.categories || []
-          );
-        }
+        // Set all data using services
+        setHomepageSettings(homepageSettings as HomepageSettings);
+        setFeaturedProducts(featuredProducts as Product[]);
+        setNewProducts(newProducts as Product[]);
+        setSaleProducts(saleProducts as Product[]);
+        setCategories(categories as Category[]);
       } catch (error) {
-        console.error("Error fetching homepage data:", error);
+        // Use proper error handling
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to load homepage data";
+        console.error("Error fetching homepage data:", errorMessage);
+
+        // Set empty arrays as fallbacks
+        setFeaturedProducts([]);
+        setNewProducts([]);
+        setSaleProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }

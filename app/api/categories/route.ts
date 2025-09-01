@@ -2,6 +2,7 @@ import { CategoryData, MongooseError, ValidationError } from '@/app/types/mongoo
 import { NextRequest, NextResponse } from 'next/server';
 import { authMiddleware, isAdmin } from '../../../middleware/authMiddleware';
 import connectToDatabase from '../../../utils/db';
+import { Validator } from '../../../utils/validation';
 // No longer using file upload with JSON approach
 import mongoose from 'mongoose';
 import Category from '../models/Category';
@@ -80,19 +81,17 @@ export async function POST(req: NextRequest) {
         try {
             await connectToDatabase();
 
-            // Get JSON data
             const categoryData: CategoryData = await req.json();
+            const sanitizedData = Validator.sanitizeInput(categoryData) as CategoryData;
 
-            // Create a slug if not provided
-            if (!categoryData.slug && categoryData.name) {
-                categoryData.slug = (categoryData.name as string)
+            if (!sanitizedData.slug && sanitizedData.name) {
+                sanitizedData.slug = (sanitizedData.name as string)
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/(^-|-$)/g, '');
             }
 
-            // Create a new category
-            const category = await Category.create(categoryData);
+            const category = await Category.create(sanitizedData);
             return NextResponse.json(category, { status: 201 });
         } catch (error: unknown) {
             // Handle validation errors
@@ -132,4 +131,4 @@ export async function POST(req: NextRequest) {
             );
         }
     });
-} 
+}

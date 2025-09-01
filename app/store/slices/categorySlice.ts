@@ -1,8 +1,53 @@
+import { CategoryService } from '@/app/services/categoryService';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { getCookie } from 'cookies-next';
 import { toast } from 'react-toastify';
+import { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from '../../types/api';
 import { Category, CategoryState } from '../../types/categoryTypes';
+
+// Helper function to transform CategoryResponse to Category
+const transformCategoryResponse = (categoryResponse: CategoryResponse): Category => {
+  return {
+    _id: categoryResponse._id,
+    name: categoryResponse.name,
+    slug: categoryResponse.slug,
+    description: categoryResponse.description,
+    image: categoryResponse.image,
+    active: categoryResponse.active,
+    parent: categoryResponse.parent?._id || null,
+    createdAt: categoryResponse.createdAt,
+    updatedAt: categoryResponse.updatedAt,
+    products: categoryResponse.productCount,
+  };
+};
+
+// Helper function to transform Category to CreateCategoryRequest
+const transformToCreateRequest = (categoryData: Partial<Category>): CreateCategoryRequest => {
+  if (!categoryData.name) {
+    throw new Error('Category name is required');
+  }
+
+  return {
+    name: categoryData.name,
+    description: categoryData.description,
+    parent: categoryData.parent || undefined,
+    image: categoryData.image,
+    active: categoryData.active ?? true,
+    featured: false, // Default value since local Category doesn't have this
+  };
+};
+
+// Helper function to transform Category to UpdateCategoryRequest
+const transformToUpdateRequest = (id: string, categoryData: Partial<Category>): UpdateCategoryRequest => {
+  return {
+    id,
+    name: categoryData.name,
+    description: categoryData.description,
+    parent: categoryData.parent || undefined,
+    image: categoryData.image,
+    active: categoryData.active,
+    featured: false, // Default value since local Category doesn't have this
+  };
+};
 
 // Initial state
 const initialState: CategoryState = {
@@ -14,26 +59,31 @@ const initialState: CategoryState = {
 };
 
 // Get all categories
-export const fetchCategories = createAsyncThunk('categories/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const response = await axios.get(`/api/categories`);
-    // console.log('Successfully fetched categories:', response.data);
-    return response.data;
-  } catch (error: unknown) {
-    const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to fetch categories' : 'Failed to fetch categories';
-    return rejectWithValue(errorMessage);
+export const fetchCategories = createAsyncThunk(
+  'categories/fetchAll',
+  async (_, { rejectWithValue }) => {
+    try {
+      const categoriesResponse = await CategoryService.getCategories();
+      const categories = Array.isArray(categoriesResponse)
+        ? categoriesResponse.map(transformCategoryResponse)
+        : [];
+      return { categories };
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch categories';
+      return rejectWithValue(errorMessage);
+    }
   }
-});
+);
 
 // Get category by ID
 export const fetchCategoryById = createAsyncThunk(
   'categories/fetchById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/api/categories/${id}`);
-      return response.data;
+      const categoryResponse = await CategoryService.getCategory(id);
+      return transformCategoryResponse(categoryResponse);
     } catch (error: unknown) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to fetch category' : 'Failed to fetch category';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch category';
       return rejectWithValue(errorMessage);
     }
   }
@@ -43,24 +93,13 @@ export const fetchCategoryById = createAsyncThunk(
 export const createCategory = createAsyncThunk(
   'categories/create',
   async (categoryData: Partial<Category>, { rejectWithValue }) => {
-    const token = getCookie('auth_token');
-
     try {
-      const response = await axios.post(
-        `/api/categories`,
-        categoryData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
+      const createRequest = transformToCreateRequest(categoryData);
+      const categoryResponse = await CategoryService.createCategory(createRequest);
       toast.success('Category created successfully!');
-      return response.data;
+      return transformCategoryResponse(categoryResponse);
     } catch (error: unknown) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to create category' : 'Failed to create category';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create category';
       toast.error(errorMessage);
       return rejectWithValue(errorMessage);
     }
@@ -71,24 +110,13 @@ export const createCategory = createAsyncThunk(
 export const updateCategory = createAsyncThunk(
   'categories/update',
   async ({ id, data }: { id: string; data: Partial<Category> }, { rejectWithValue }) => {
-    const token = getCookie('auth_token');
-
     try {
-      const response = await axios.put(
-        `/api/categories/${id}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
+      const updateRequest = transformToUpdateRequest(id, data);
+      const categoryResponse = await CategoryService.updateCategory(id, updateRequest);
       toast.success('Category updated successfully!');
-      return response.data;
+      return transformCategoryResponse(categoryResponse);
     } catch (error: unknown) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to update category' : 'Failed to update category';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update category';
       toast.error(errorMessage);
       return rejectWithValue(errorMessage);
     }
@@ -99,19 +127,12 @@ export const updateCategory = createAsyncThunk(
 export const deleteCategory = createAsyncThunk(
   'categories/delete',
   async (id: string, { rejectWithValue }) => {
-    const token = getCookie('auth_token');
-
     try {
-      await axios.delete(`/api/categories/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
+      await CategoryService.deleteCategory(id);
       toast.success('Category deleted successfully!');
       return id;
     } catch (error: unknown) {
-      const errorMessage = axios.isAxiosError(error) ? error.response?.data?.message || 'Failed to delete category' : 'Failed to delete category';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete category';
       toast.error(errorMessage);
       return rejectWithValue(errorMessage);
     }

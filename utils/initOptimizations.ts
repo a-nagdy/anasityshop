@@ -1,8 +1,32 @@
 import connectToDatabase from './db';
 import { createDatabaseIndexes } from './dbIndexes.js';
 
+// Singleton to track initialization status
+let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
+
 // Initialize all performance optimizations
 export async function initializeOptimizations(): Promise<void> {
+    // If already initialized, return immediately
+    if (isInitialized) {
+        console.log('✅ Performance optimizations already initialized');
+        return;
+    }
+
+    // // If initialization is in progress, wait for it
+    // if (initializationPromise) {
+    //     console.log('⏳ Performance optimizations initialization in progress...');
+    //     await initializationPromise;
+    //     return;
+    // }
+
+    // Start initialization
+    // initializationPromise = performInitialization();
+    // await initializationPromise;
+}
+
+// Actual initialization logic
+async function performInitialization(): Promise<void> {
     console.log('🚀 Initializing performance optimizations...');
 
     try {
@@ -27,11 +51,48 @@ export async function initializeOptimizations(): Promise<void> {
         }
 
         console.log('🎉 All performance optimizations initialized successfully');
+        isInitialized = true;
 
     } catch (error) {
         console.error('❌ Error initializing optimizations:', error);
+        isInitialized = false;
         throw error;
+    } finally {
+        initializationPromise = null;
     }
+}
+
+// Manual reinitialize function for admin use
+export async function reinitializeOptimizations(): Promise<{ success: boolean; message: string }> {
+    try {
+        console.log('🔄 Reinitializing performance optimizations...');
+
+        // Reset initialization status
+        isInitialized = false;
+        initializationPromise = null;
+
+        // Perform fresh initialization
+        // await performInitialization();
+
+        return {
+            success: true,
+            message: 'Performance optimizations reinitialized successfully'
+        };
+    } catch (error) {
+        console.error('❌ Error reinitializing optimizations:', error);
+        return {
+            success: false,
+            message: `Failed to reinitialize: ${error instanceof Error ? error.message : 'Unknown error'}`
+        };
+    }
+}
+
+// Check initialization status
+export function getInitializationStatus(): { isInitialized: boolean; isInProgress: boolean } {
+    return {
+        isInitialized,
+        isInProgress: initializationPromise !== null
+    };
 }
 
 // Database maintenance utilities

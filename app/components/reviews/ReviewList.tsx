@@ -4,6 +4,7 @@ import { StarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 interface Review {
   _id: string;
@@ -25,6 +26,19 @@ interface ReviewListProps {
   refreshTrigger?: number;
 }
 
+// For now, let's create a simple review service inline until we create a full ReviewService
+const ReviewAPI = {
+  async getReviews(productId: string, page: number = 1, limit: number = 5) {
+    const response = await fetch(
+      `/api/reviews?productId=${productId}&page=${page}&limit=${limit}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch reviews");
+    }
+    return response.json();
+  },
+};
+
 export default function ReviewList({
   productId,
   refreshTrigger,
@@ -39,19 +53,18 @@ export default function ReviewList({
     async (page = 1) => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/reviews?productId=${productId}&page=${page}&limit=5`
-        );
+        const data = await ReviewAPI.getReviews(productId, page, 5);
 
-        if (response.ok) {
-          const data = await response.json();
+        if (data.data?.reviews) {
           setReviews(data.data.reviews);
           setCurrentPage(page);
           setTotalPages(data.data.pagination.totalPages);
           setTotal(data.data.pagination.total);
         }
       } catch (error) {
-        console.error("Error fetching reviews:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load reviews";
+        toast.error(`Reviews Error: ${errorMessage}`);
       } finally {
         setLoading(false);
       }

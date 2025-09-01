@@ -20,4 +20,5 @@ export type User = {
     isProductVerified: boolean;
     isCustomer: boolean;
     isAdmin: boolean;
+    permissions: string[];
 }

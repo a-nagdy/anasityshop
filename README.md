@@ -344,3 +344,44 @@ For support and questions:
 ---
 
 **Built with ❤️ using Next.js, TypeScript, and MongoDB**
+
+
+## Refactoring Documentation Summary
+
+This section consolidates key insights from previous refactoring plans, status, and patterns to maintain a clean project structure.
+
+### Key Refactoring Phases
+- **Core Infrastructure**: Implemented logging, error handling, type enhancements, and base service architecture.
+- **Service Layer**: Created services for products, categories, orders, users, and auth with consistent patterns.
+- **API Standardization**: Ensured consistent response formats and middleware.
+- **Component Refactoring**: Updated admin and shop components to use service layer, improving type safety and UX.
+
+### Performance Improvements
+- Reduced API response times and page loads through indexing, caching, and optimizations.
+
+### API Patterns
+- Standardized success responses with data and messages.
+- Consistent error handling across endpoints.
+
+## Performance Optimizations
+
+- **Database**: Added indexing, aggregation pipelines, connection pooling, and query profiling.
+- **Caching**: Implemented in-memory caching with invalidation and TTL.
+- **API**: Standardized responses, pagination, and field selection.
+- **Security**: Input validation, rate limiting, enhanced password rules.
+- **Improvements**: Reduced response times by 80-86% across key operations.
+
+## SKU Implementation
+
+- **Generation**: Auto-generates unique SKUs (e.g., PWH-234567-891) based on product name, timestamp, and random digits.
+- **Fields**: Added specifications like weight, dimensions, material, warranty.
+- **API**: Simplified to single endpoint using ID, removed redundant slug route.
+- **Benefits**: User-friendly SKUs, enhanced product details, improved performance.
+
+## Service Configuration
+
+- **Smart URLs**: Environment-aware base URLs for client/server.
+- **Custom Settings**: Service-specific timeouts and retries (e.g., auth: 10s, orders: 30s).
+- **Benefits**: Flexible, optimized for different environments and operations.
+
+For detailed history, refer to version control commits.

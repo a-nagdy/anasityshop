@@ -1,10 +1,11 @@
 "use client";
 
-import { Order } from "@/app/types/orders";
 import { Pagination } from "@/app/types/shared";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { OrderService } from "../../services/orderService";
+import { OrderResponse } from "../../types/api";
 import DataTable from "../components/DataTable";
 
 interface ColumnKey {
@@ -22,7 +23,7 @@ interface ColumnKey {
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 1,
     totalPages: 1,
@@ -52,23 +53,43 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const queryParams = new URLSearchParams({
-        page: pagination.currentPage.toString(),
-        ...filters,
-      });
-      const response = await fetch(`/api/orders?${queryParams}`);
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch orders");
+      // Convert string filters to proper types
+      const orderFilters = {
+        page: pagination.currentPage,
+        limit: 10,
+        status: filters.status
+          ? (filters.status as
+              | "pending"
+              | "processing"
+              | "shipped"
+              | "delivered"
+              | "cancelled")
+          : undefined,
+        isPaid: filters.isPaid ? filters.isPaid === "true" : undefined,
+        isDelivered: filters.isDelivered
+          ? filters.isDelivered === "true"
+          : undefined,
+      };
+
+      const response = await OrderService.getOrders(orderFilters);
+
+      setOrders(Array.isArray(response.data) ? response.data : []);
+
+      // Map PaginationMeta to Pagination format
+      const paginationData = response.pagination;
+      if (paginationData) {
+        setPagination({
+          currentPage: paginationData.page,
+          totalPages: paginationData.totalPages,
+          totalOrders: paginationData.total,
+        });
       }
-
-      const data = await response.json();
-      setOrders(data.orders);
-      setPagination(data.pagination);
-      // console.log(data);
     } catch (error) {
-      console.error("Error fetching orders:", error);
-      toast.error("Failed to load orders");
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load orders";
+      toast.error(`Orders Error: ${errorMessage}`);
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -104,12 +125,12 @@ export default function OrdersPage() {
 
   const columnDefinitions = [
     {
-      header: "Order",
+      header: "Order #",
       accessor: "orderNumber",
       key: "order" as keyof ColumnKey,
-      render: (order: Order) => (
-        <div className="text-sm font-medium text-gray-900 dark:text-white">
-          {order.orderNumber}
+      render: (order: OrderResponse) => (
+        <div className="font-medium text-gray-900 dark:text-white">
+          #{order.orderNumber}
         </div>
       ),
     },
@@ -117,10 +138,10 @@ export default function OrdersPage() {
       header: "Customer",
       accessor: "user",
       key: "customer" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <div>
-          <div className="text-sm text-gray-900 dark:text-white">
-            {order.user.firstName} {order.user.lastName}
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
+            {order.user.name}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {order.user.email}
@@ -130,11 +151,11 @@ export default function OrdersPage() {
     },
     {
       header: "Total",
-      accessor: "total",
+      accessor: "totalPrice",
       key: "total" as keyof ColumnKey,
-      render: (order: Order) => (
-        <div className="text-sm text-gray-900 dark:text-white">
-          ${(order.totalPrice || 0).toFixed(2)}
+      render: (order: OrderResponse) => (
+        <div className="text-sm font-medium text-gray-900 dark:text-white">
+          ${order.totalPrice ? order.totalPrice.toFixed(2) : 0}
         </div>
       ),
     },
@@ -142,13 +163,13 @@ export default function OrdersPage() {
       header: "Status",
       accessor: "status",
       key: "status" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
             order.status
           )}`}
         >
-          {order.status}
+          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
         </span>
       ),
     },
@@ -156,7 +177,7 @@ export default function OrdersPage() {
       header: "Payment",
       accessor: "isPaid",
       key: "payment" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
             order.isPaid
@@ -170,17 +191,17 @@ export default function OrdersPage() {
     },
     {
       header: "Delivery",
-      accessor: "isDelivered",
+      accessor: "deliveredAt",
       key: "delivery" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-            order.isDelivered
+            order.deliveredAt
               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
               : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
           }`}
         >
-          {order.isDelivered ? "Delivered" : "Pending"}
+          {order.deliveredAt ? "Delivered" : "Pending"}
         </span>
       ),
     },
@@ -188,7 +209,7 @@ export default function OrdersPage() {
       header: "Date",
       accessor: "createdAt",
       key: "date" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {new Date(order.createdAt).toLocaleDateString()}
         </div>
@@ -198,7 +219,7 @@ export default function OrdersPage() {
       header: "Items",
       accessor: "items",
       key: "items" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {order.items.length} items
         </div>
@@ -208,19 +229,19 @@ export default function OrdersPage() {
       header: "Shipping",
       accessor: "shipping",
       key: "shipping" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {order.shipping?.method || ""}
+          {order.shipping?.fullName || "N/A"}
         </div>
       ),
     },
     {
       header: "Notes",
-      accessor: "notes",
+      accessor: "trackingNumber",
       key: "notes" as keyof ColumnKey,
-      render: (order: Order) => (
+      render: (order: OrderResponse) => (
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          {order.notes || "No notes"}
+          {order.trackingNumber || "No tracking"}
         </div>
       ),
     },
@@ -326,7 +347,8 @@ export default function OrdersPage() {
   const pageActions = [
     {
       label: "View Details",
-      onClick: (order: Order) => router.push(`/admin/orders/${order._id}`),
+      onClick: (order: OrderResponse) =>
+        router.push(`/admin/orders/${order._id}`),
       className:
         "text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300",
     },
@@ -353,5 +375,5 @@ export default function OrdersPage() {
       }}
       pageActions={pageActions}
     />
-    );
+  );
 }
