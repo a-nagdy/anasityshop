@@ -21,4 +21,7 @@ export type User = {
     isCustomer: boolean;
     isAdmin: boolean;
     permissions: string[];
+    orders: string[];
+    products: string[];
+    image?: string;
 }

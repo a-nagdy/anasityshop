@@ -150,7 +150,7 @@ export default function Header() {
               className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
             />
             <Link
-              href="/account"
+              href="/profile"
               className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
             >
               <svg
@@ -255,7 +255,7 @@ export default function Header() {
                   Cart
                 </button>
                 <Link
-                  href="/account"
+                  href="/profile"
                   className="block px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => setIsMenuOpen(false)}
                 >

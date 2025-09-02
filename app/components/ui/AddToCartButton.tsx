@@ -20,6 +20,12 @@ interface AddToCartButtonProps {
   onCartUpdate?: () => void;
   showIcon?: boolean;
   children?: React.ReactNode;
+  iconOnly?: boolean;
+  customIcon?: React.ReactNode;
+  loadingText?: string;
+  successText?: string;
+  outOfStockText?: string;
+  fullWidth?: boolean;
 }
 
 export default function AddToCartButton({
@@ -35,6 +41,12 @@ export default function AddToCartButton({
   onCartUpdate,
   showIcon = true,
   children,
+  iconOnly = false,
+  customIcon,
+  loadingText = "Adding...",
+  successText,
+  outOfStockText = "Out of Stock",
+  fullWidth = false,
 }: AddToCartButtonProps) {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector((state) => state.cart);
@@ -57,7 +69,6 @@ export default function AddToCartButton({
 
       console.log("AddToCart result:", result);
 
-      // Fetch fresh cart data after successful add
       await dispatch(fetchCart());
 
       toast.success("Product added to cart!");
@@ -72,18 +83,56 @@ export default function AddToCartButton({
 
   const isButtonLoading = isLoading || loading;
 
+  // Determine icon size based on button size
+  const getIconSize = () => {
+    switch (size) {
+      case "sm":
+        return "w-4 h-4";
+      case "lg":
+        return "w-6 h-6";
+      default:
+        return "w-5 h-5";
+    }
+  };
+
+  // Render the appropriate icon
+  const renderIcon = () => {
+    if (!showIcon && !iconOnly) return null;
+
+    const iconClass = getIconSize();
+
+    if (customIcon) {
+      return <span className={iconClass}>{customIcon}</span>;
+    }
+
+    return <ShoppingCartIcon className={iconClass} />;
+  };
+
+  // Determine button text
+  const getButtonText = () => {
+    if (isButtonLoading) return loadingText;
+    if (!inStock) return outOfStockText;
+    if (successText && !isButtonLoading) return successText;
+    return "Add to Cart";
+  };
+
+  // Build button content
   const buttonContent = children || (
     <>
-      {showIcon && (
-        <ShoppingCartIcon
-          className={
-            size === "sm" ? "w-4 h-4" : size === "lg" ? "w-6 h-6" : "w-5 h-5"
-          }
-        />
-      )}
-      {isButtonLoading ? "Adding..." : inStock ? "Add to Cart" : "Out of Stock"}
+      {renderIcon()}
+      {!iconOnly && getButtonText()}
     </>
   );
+
+  // Build final className
+  const finalClassName = [
+    "flex items-center",
+    iconOnly ? "justify-center" : "gap-2",
+    fullWidth ? "w-full" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <ThemeButton
@@ -91,7 +140,7 @@ export default function AddToCartButton({
       size={size}
       onClick={handleAddToCart}
       disabled={!inStock || disabled || isButtonLoading}
-      className={`flex items-center gap-2 ${className}`}
+      className={finalClassName}
       glow={variant === "primary"}
     >
       {isButtonLoading && (

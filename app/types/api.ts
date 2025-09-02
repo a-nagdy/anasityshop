@@ -1,4 +1,5 @@
 import { ErrorCode } from '../../utils/errorHandler';
+import { User } from './user';
 
 // Base API Response Types
 export interface ApiResponse<T = unknown> {
@@ -297,6 +298,7 @@ export interface UserResponse {
     createdAt: string;
     updatedAt: string;
     lastLogin?: string;
+    user: User
 }
 
 // Authentication API Types

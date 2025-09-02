@@ -198,7 +198,7 @@ export default function ProductCard({
             inStock={isInStock}
             variant="primary"
             size="sm"
-            className="w-full"
+            fullWidth
           />
         )}
       </div>

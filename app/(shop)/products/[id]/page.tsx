@@ -575,7 +575,7 @@ export default function ProductDetailsPage() {
                     inStock={isProductInStock(product)}
                     variant="primary"
                     size="lg"
-                    className="flex-1"
+                    fullWidth
                   />
 
                   <button

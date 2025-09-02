@@ -1373,33 +1373,29 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
           inStock={!isOutOfStock}
           variant="primary"
           size="md"
-          className="w-full relative overflow-hidden"
+          fullWidth
+          className="relative overflow-hidden"
+          customIcon={isOutOfStock ? (
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            <FiShoppingCart className="text-lg" />
+          )}
+          outOfStockText="Out of Stock"
         >
           {!isOutOfStock && (
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-          )}
-          {isOutOfStock ? (
-            <>
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-              Out of Stock
-            </>
-          ) : (
-            <>
-              <FiShoppingCart className="text-lg" />
-              Add to Cart
-            </>
           )}
         </AddToCartButton>
       </div>

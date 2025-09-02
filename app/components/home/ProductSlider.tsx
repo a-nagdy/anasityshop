@@ -1,11 +1,11 @@
 "use client";
 
+import PlaceholderImage from "@/assets/svg/elyana-placeholder.svg";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AddToCartButton } from "../ui";
-
 interface Product {
   _id: string;
   name: string;
@@ -207,7 +207,7 @@ export default function ProductSlider({
                   <Link href={`/products/${product.sku || product._id}`}>
                     <div className="relative h-64 flex-shrink-0 overflow-hidden">
                       <Image
-                        src={product.image}
+                        src={product.image || PlaceholderImage}
                         alt={product.name}
                         fill
                         className={`object-cover transition-transform duration-700 ${
@@ -334,38 +334,39 @@ export default function ProductSlider({
                           variant="primary"
                           size="sm"
                           className="w-12 h-12 rounded-full !p-0"
-                          showIcon={false}
-                        >
-                          {inStock ? (
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                              />
-                            </svg>
-                          ) : (
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          )}
-                        </AddToCartButton>
+                          iconOnly
+                          customIcon={
+                            inStock ? (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            )
+                          }
+                        />
                       </div>
                     </div>
 
