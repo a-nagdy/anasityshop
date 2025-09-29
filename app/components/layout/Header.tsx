@@ -66,7 +66,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="text-2xl font-bold text-theme-gradient">
-              Anasity
+              Elyana
             </Link>
           </div>
 

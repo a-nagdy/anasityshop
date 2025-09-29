@@ -56,7 +56,7 @@ export default function LoginComponent() {
       >
         <div>
           <div className="flex justify-center">
-            <h2 className="text-3xl font-extrabold text-blue-600">Anasity</h2>
+            <h2 className="text-3xl font-extrabold text-blue-600">Elyana</h2>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Admin Login

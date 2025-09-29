@@ -15,8 +15,8 @@ const geistSans = Geist({
 });
 
 // export const metadata: Metadata = {
-//   title: "Anasity Admin Dashboard",
-//   description: "Admin dashboard for Anasity E-Commerce platform",
+//   title: "Elyana Admin Dashboard",
+//   description: "Admin dashboard for Elyana E-Commerce platform",
 // };
 
 export default function AdminLayout({

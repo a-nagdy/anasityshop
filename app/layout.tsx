@@ -28,7 +28,7 @@ async function initializeApp() {
   if (isAppInitialized) return;
 
   try {
-    console.log("🚀 Initializing Anasity Shop application...");
+    console.log("🚀 Initializing Elyana Shop application...");
     await connectToDatabase();
     await initializeOptimizations();
 
@@ -38,14 +38,14 @@ async function initializeApp() {
     }
 
     isAppInitialized = true;
-    console.log("✅ Anasity Shop application initialized successfully");
+    console.log("✅ Elyana Shop application initialized successfully");
   } catch (error) {
     console.error("Failed to initialize app:", error);
   }
 }
 
 export const metadata: Metadata = {
-  title: "Anasity Shop - Futuristic E-Commerce Experience",
+  title: "Elyana Shop - Futuristic E-Commerce Experience",
   description:
     "Experience the future of online shopping with our cyberpunk-inspired e-commerce platform featuring dynamic themes and cutting-edge design.",
 };

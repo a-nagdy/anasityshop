@@ -225,7 +225,7 @@ export default function HomePage() {
                   backgroundImage: "var(--theme-gradient-primary)",
                 }}
               >
-                Why Choose Anasity?
+                Why Choose Elyana?
               </h2>
               <p className="text-xl text-gray-300 max-w-3xl mx-auto">
                 Experience the future of e-commerce with cutting-edge

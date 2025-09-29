@@ -18,7 +18,7 @@ export async function GET() {
                 value: {
                     heroBanners: [
                         {
-                            title: "ANASITY",
+                            title: "Elyana",
                             subtitle: "Future of E-Commerce",
                             backgroundImage: "",
                             ctaText: "Explore Store",

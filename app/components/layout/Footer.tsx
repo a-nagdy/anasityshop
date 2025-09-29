@@ -76,7 +76,7 @@ export default function Footer() {
             ))}
           </div>
           <p className="mt-8 text-base text-gray-400 dark:text-gray-500 md:mt-0 md:order-1">
-            &copy; {new Date().getFullYear()} Anasity. All rights reserved.
+            &copy; {new Date().getFullYear()} Elyana. All rights reserved.
           </p>
         </div>
       </div>

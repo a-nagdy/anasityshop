@@ -96,7 +96,7 @@ export default function Sidebar() {
               className="flex items-center space-x-2"
               onClick={() => handleNavigation("/admin")}
             >
-              <span className="text-xl font-bold text-white">Anasity</span>
+              <span className="text-xl font-bold text-white">Elyana</span>
             </Link>
             <button
               onClick={() => setIsOpen(false)}

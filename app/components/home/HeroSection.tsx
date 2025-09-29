@@ -69,7 +69,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
 
   // Default banner if no active banners
   const defaultBanner: HeroBanner = {
-    title: "ANASITY",
+    title: "Elyana",
     subtitle: "Future of E-Commerce",
     backgroundImage: "",
     ctaText: "Explore Store",
@@ -102,7 +102,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
   // Normalize the current banner properties
   const currentBanner = allBanners[currentSlide];
   const normalizedBanner = {
-    title: currentBanner.title || "ANASITY",
+    title: currentBanner.title || "Elyana",
     subtitle: currentBanner.subtitle || "Future of E-Commerce",
     backgroundImage: currentBanner.backgroundImage || currentBanner.image || "",
     ctaText:

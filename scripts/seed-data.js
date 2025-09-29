@@ -5,7 +5,7 @@ require("dotenv").config();
 const connectToDatabase = async () => {
   try {
     await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/anasityshop"
+      process.env.MONGODB_URI || "mongodb://localhost:27017/elyanashop"
     );
     console.log("✅ Connected to MongoDB");
   } catch (error) {
