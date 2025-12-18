@@ -66,6 +66,10 @@ export interface HomepageSettings {
     backgroundColor: string;
     accentColor: string;
     animation3dEnabled: boolean;
+    emailConfig?: {
+        gmailUser?: string;
+        gmailAppPassword?: string;
+    };
 }
 
 export interface UpdateHomepageSettingsRequest {
@@ -79,6 +83,10 @@ export interface UpdateHomepageSettingsRequest {
     backgroundColor?: string;
     accentColor?: string;
     animation3dEnabled?: boolean;
+    emailConfig?: {
+        gmailUser?: string;
+        gmailAppPassword?: string;
+    };
 }
 
 export interface UpdateWebsiteThemeRequest {

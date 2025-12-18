@@ -83,6 +83,10 @@ export interface HomepageSettingsValue {
   backgroundColor: string;
   accentColor: string;
   animation3dEnabled: boolean;
+  emailConfig?: {
+    gmailUser?: string;
+    gmailAppPassword?: string;
+  };
 }
 
 // Define the interface for Settings document
@@ -176,7 +180,11 @@ const HomepageSettingsSchema = new Schema({
   showBestsellers: { type: Boolean, default: true },
   backgroundColor: { type: String, default: '#ffffff' },
   accentColor: { type: String, default: '#3b82f6' },
-  animation3dEnabled: { type: Boolean, default: true }
+  animation3dEnabled: { type: Boolean, default: true },
+  emailConfig: {
+    gmailUser: { type: String },
+    gmailAppPassword: { type: String }
+  }
 });
 
 // Define the schema for Settings

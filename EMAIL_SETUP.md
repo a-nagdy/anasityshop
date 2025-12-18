@@ -1,8 +1,19 @@
 # Email Setup for Contact Form
 
-The contact form uses Gmail SMTP to send emails. Follow these steps to set it up:
+The contact form uses Gmail SMTP to send emails. You can configure email settings in two ways:
 
-## 1. Generate Gmail App Password
+## Option 1: Configure via Admin Panel (Recommended for ease of use)
+
+1. Go to **Admin Panel** → **Homepage Management** → **General Settings** tab
+2. Scroll to the **Email Configuration** section
+3. Enter your Gmail address and app password
+4. Click **Save All Changes**
+
+**Note:** If environment variables are set, they will take priority over admin panel settings.
+
+## Option 2: Environment Variables (Recommended for security)
+
+### 1. Generate Gmail App Password
 
 1. Go to your Google Account settings: https://myaccount.google.com/
 2. Select **Security** from the left menu
@@ -38,12 +49,22 @@ npm run dev
 
 ## How It Works
 
-When a user submits the contact form:
+### Email Credentials Priority:
+
+1. **Environment Variables** (if set) - highest priority
+2. **Admin Panel Settings** (if environment variables are not set) - fallback
+
+### When a user submits the contact form:
 
 1. **Admin Email**: You receive a notification email with the user's message and contact details
 2. **Auto-Reply**: The user receives an automatic confirmation email
 
 Both emails are sent using your Gmail account via SMTP.
+
+### Which Method to Use?
+
+- **Environment Variables**: More secure, credentials never stored in database, ideal for production
+- **Admin Panel**: Easier to configure, no server restart needed, good for testing or non-technical users
 
 ## Troubleshooting
 

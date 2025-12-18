@@ -1119,6 +1119,111 @@ function GeneralSettingsSection({
               </div>
             </div>
 
+            {/* Email Configuration */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <span>📧</span>
+                Email Configuration
+              </h3>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-start gap-2">
+                    <span className="text-lg">⚠️</span>
+                    <span>
+                      These settings are used for the contact form. If
+                      environment variables (GMAIL_USER, GMAIL_APP_PASSWORD) are
+                      set, they will take priority. Store sensitive data in
+                      environment variables for better security.
+                    </span>
+                  </p>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                      Gmail Address
+                    </label>
+                    <input
+                      type="email"
+                      value={settings.emailConfig?.gmailUser || ""}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...settings,
+                          emailConfig: {
+                            ...settings.emailConfig,
+                            gmailUser: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      placeholder="your-email@gmail.com"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      The Gmail address that will send contact form emails
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                      Gmail App Password
+                    </label>
+                    <input
+                      type="password"
+                      value={settings.emailConfig?.gmailAppPassword || ""}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...settings,
+                          emailConfig: {
+                            ...settings.emailConfig,
+                            gmailAppPassword: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono"
+                      placeholder="16-character app password"
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Generate from{" "}
+                      <a
+                        href="https://myaccount.google.com/apppasswords"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        Google App Passwords
+                      </a>{" "}
+                      (requires 2-Step Verification)
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2 flex items-center gap-2">
+                      <span>ℹ️</span>
+                      How to get Gmail App Password:
+                    </h4>
+                    <ol className="text-xs text-blue-800 dark:text-blue-300 space-y-1 ml-6 list-decimal">
+                      <li>
+                        Go to{" "}
+                        <a
+                          href="https://myaccount.google.com/security"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline"
+                        >
+                          Google Account Security
+                        </a>
+                      </li>
+                      <li>Enable 2-Step Verification if not already enabled</li>
+                      <li>Go to App passwords</li>
+                      <li>
+                        Select app: Mail, Select device: Other (Elyana Shop)
+                      </li>
+                      <li>Copy the 16-character password and paste it above</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Theme Colors */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">

@@ -1,5 +1,7 @@
+import connectToDatabase from "@/utils/db";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import Settings from "../models/Settings";
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,19 +24,50 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Get email credentials from environment or database
+        let gmailUser = process.env.GMAIL_USER;
+        let gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+
+        // If not in environment, try to get from database
+        if (!gmailUser || !gmailAppPassword) {
+            try {
+                await connectToDatabase();
+                const homepageSettings = await Settings.findOne({ name: "homepage" });
+
+                if (homepageSettings?.value?.emailConfig) {
+                    gmailUser = gmailUser || homepageSettings.value.emailConfig.gmailUser;
+                    gmailAppPassword =
+                        gmailAppPassword || homepageSettings.value.emailConfig.gmailAppPassword;
+                }
+            } catch (dbError) {
+                console.error("Error fetching email config from database:", dbError);
+            }
+        }
+
+        // Check if we have credentials
+        if (!gmailUser || !gmailAppPassword) {
+            return NextResponse.json(
+                {
+                    error:
+                        "Email service is not configured. Please contact the administrator.",
+                },
+                { status: 503 }
+            );
+        }
+
         // Create transporter using Gmail
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_APP_PASSWORD,
+                user: gmailUser,
+                pass: gmailAppPassword,
             },
         });
 
         // Email to admin (you)
         const adminMailOptions = {
-            from: process.env.GMAIL_USER,
-            to: process.env.GMAIL_USER,
+            from: gmailUser,
+            to: gmailUser,
             subject: `New Contact Form: ${subject}`,
             html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -56,7 +89,7 @@ export async function POST(request: NextRequest) {
 
         // Auto-reply email to user
         const userMailOptions = {
-            from: process.env.GMAIL_USER,
+            from: gmailUser,
             to: email,
             subject: `Re: ${subject} - We've received your message!`,
             html: `
@@ -70,7 +103,7 @@ export async function POST(request: NextRequest) {
             <p style="white-space: pre-wrap;">${message}</p>
           </div>
           
-          <p>If you have any urgent concerns, please don't hesitate to reach out to us directly at ${process.env.GMAIL_USER}</p>
+          <p>If you have any urgent concerns, please don't hesitate to reach out to us directly at ${gmailUser}</p>
           
           <p>Best regards,<br/>The Elyana Team</p>
           
@@ -98,4 +131,3 @@ export async function POST(request: NextRequest) {
         );
     }
 }
-
