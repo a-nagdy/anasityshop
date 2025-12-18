@@ -240,7 +240,6 @@ export default function ShippingStep({
               {savedAddresses.map((address) => (
                 <motion.div
                   key={address._id}
-                  whileHover={{ scale: 1.01 }}
                   className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
                   onClick={() => handleAddressSelect(address)}
                 >
@@ -277,7 +276,7 @@ export default function ShippingStep({
         {/* Full Name and Phone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               Full Name *
             </label>
             <input
@@ -300,7 +299,7 @@ export default function ShippingStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               Phone Number *
             </label>
             <input
@@ -325,7 +324,7 @@ export default function ShippingStep({
 
         {/* Address */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Address *
           </label>
           <input
@@ -350,7 +349,7 @@ export default function ShippingStep({
         {/* City, State, Postal Code */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               City *
             </label>
             <input
@@ -373,7 +372,7 @@ export default function ShippingStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               State/Province *
             </label>
             <input
@@ -396,7 +395,7 @@ export default function ShippingStep({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               Postal Code *
             </label>
             <input
@@ -421,7 +420,7 @@ export default function ShippingStep({
 
         {/* Country */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Country *
           </label>
           <select
@@ -465,7 +464,7 @@ export default function ShippingStep({
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Delivery Notes (Optional)
           </label>
           <textarea
@@ -490,7 +489,7 @@ export default function ShippingStep({
           />
           <label
             htmlFor="saveAddress"
-            className="text-sm text-gray-700 dark:text-gray-300"
+            className="text-sm text-gray-700 dark:text-primary"
           >
             Save this address for future orders
           </label>

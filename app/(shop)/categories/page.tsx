@@ -47,7 +47,7 @@ export default function CategoriesPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-primary">
             Loading categories...
           </p>
         </div>
@@ -71,11 +71,9 @@ export default function CategoriesPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               className="text-5xl md:text-7xl font-black text-white mb-6 relative"
             >
-              <span className="text-theme-gradient holographic-text">
-                Categories
-              </span>
+              <span className="theme-primary holographic-text">Categories</span>
               {/* Glowing effect */}
-              <div className="absolute inset-0 text-theme-gradient opacity-50 blur-sm holographic-text">
+              <div className="absolute inset-0 theme-primary opacity-50 blur-sm holographic-text">
                 Categories
               </div>
             </motion.h1>
@@ -84,7 +82,7 @@ export default function CategoriesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-gray-300 text-xl max-w-3xl mx-auto leading-relaxed"
+              className="text-primary text-xl max-w-3xl mx-auto leading-relaxed"
               style={{
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
@@ -215,9 +213,8 @@ function CategoryCard({ category }: CategoryCardProps) {
     <motion.div
       variants={{
         hidden: { opacity: 0, y: 20, scale: 0.9 },
-        visible: { opacity: 1, y: 0, scale: 1 },
+        visible: { opacity: 1, y: 0 },
       }}
-      whileHover={{ y: -8, scale: 1.02 }}
       className="group"
     >
       <Link href={`/categories/${category.slug}`}>
@@ -229,7 +226,7 @@ function CategoryCard({ category }: CategoryCardProps) {
                 src={category.image}
                 alt={category.name}
                 fill
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                className="object-cover transition-transform duration-500"
               />
             ) : (
               <div className="w-full h-full theme-bg-secondary flex items-center justify-center">
@@ -246,7 +243,7 @@ function CategoryCard({ category }: CategoryCardProps) {
 
           {/* Category Info */}
           <div className="p-6">
-            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-theme-gradient transition-colors duration-300">
+            <h3 className="text-xl font-bold text-white mb-2 group-hover:theme-primary transition-colors duration-300">
               {category.name}
             </h3>
 

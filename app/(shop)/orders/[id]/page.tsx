@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/app/components/ThemeProvider";
+// import { useTheme } from "@/app/components/ThemeProvider"; // Disabled - using static theme
 import { OrderService } from "@/app/services/orderService";
 import { OrderResponse } from "@/app/types/api";
 import { motion } from "framer-motion";
@@ -23,7 +23,6 @@ import { toast } from "react-toastify";
 export default function OrderDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const themeSettings = useTheme();
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -156,7 +155,7 @@ export default function OrderDetailsPage() {
         <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-primary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
           >
             <FiArrowLeft className="w-4 h-4" />
             Back
@@ -171,8 +170,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <div className="flex items-center justify-between mb-4">
@@ -204,8 +203,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <h2 className="text-xl font-semibold mb-4">Order Items</h2>
@@ -256,8 +255,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -285,8 +284,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
@@ -320,8 +319,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -372,8 +371,8 @@ export default function OrderDetailsPage() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <h2 className="text-xl font-semibold mb-4">Actions</h2>
@@ -384,7 +383,7 @@ export default function OrderDetailsPage() {
                   </button>
                 </Link>
                 <Link href="/profile">
-                  <button className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                  <button className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-primary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
                     View All Orders
                   </button>
                 </Link>

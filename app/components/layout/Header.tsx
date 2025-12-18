@@ -65,7 +65,7 @@ export default function Header() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-2xl font-bold text-theme-gradient">
+            <Link href="/" className="text-2xl font-bold theme-primary">
               Elyana
             </Link>
           </div>
@@ -113,7 +113,7 @@ export default function Header() {
                           <Link
                             key={category._id}
                             href={`/categories/${category.slug}`}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
                           >
                             <span className="truncate">{category.name}</span>
                           </Link>
@@ -147,11 +147,11 @@ export default function Header() {
           <div className="hidden sm:flex sm:items-center sm:space-x-4">
             <CartButton
               onClick={openCart}
-              className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
+              className="text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white p-2"
             />
             <Link
               href="/profile"
-              className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
+              className="text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white p-2"
             >
               <svg
                 className="h-6 w-6"
@@ -175,7 +175,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white p-2"
+              className="text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white p-2"
             >
               <svg
                 className="h-6 w-6"
@@ -234,7 +234,7 @@ export default function Header() {
                       className={`block px-3 py-2 text-base font-medium ${
                         isActive(item.href)
                           ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/50"
-                          : "text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                          : "text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                       }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -250,13 +250,13 @@ export default function Header() {
                     openCart();
                     setIsMenuOpen(false);
                   }}
-                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="block w-full text-left px-3 py-2 text-base font-medium text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Cart
                 </button>
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="block px-3 py-2 text-base font-medium text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Account

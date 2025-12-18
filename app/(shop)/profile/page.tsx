@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/app/components/ThemeProvider";
+// import { useTheme } from "@/app/components/ThemeProvider"; // Disabled - using static theme
 import { OrderService } from "@/app/services/orderService";
 import { UserService } from "@/app/services/userService";
 import { OrderResponse, UserResponse } from "@/app/types/api";
@@ -21,12 +21,10 @@ import {
 import { toast } from "react-toastify";
 
 export default function Profile() {
-  const themeSettings = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
-  console.log("themeSettings", themeSettings);
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -101,8 +99,8 @@ export default function Profile() {
             <div
               className="rounded-lg shadow-md p-6 mb-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               <div className="flex flex-col items-center text-center mb-6">
@@ -182,8 +180,8 @@ export default function Profile() {
             <div
               className="rounded-lg shadow-md p-6"
               style={{
-                backgroundColor: themeSettings.surfaceColor || "white",
-                boxShadow: `0 4px 12px ${themeSettings.shadowColor}`,
+                backgroundColor: "var(--theme-surface)",
+                boxShadow: "var(--theme-glow)",
               }}
             >
               {activeTab === "profile" && <ProfileTab user={user} />}
@@ -393,7 +391,7 @@ function OrdersTab() {
               </div>
               <div className="flex gap-2">
                 <Link href={`/orders/${order._id}`}>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-primary rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">
                     <FiEye className="w-4 h-4" />
                     View Details
                   </button>

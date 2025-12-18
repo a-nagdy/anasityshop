@@ -206,7 +206,7 @@ export default function AddProductPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Main Product Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                   Main Product Image
                 </label>
                 <ImageUploader
@@ -272,7 +272,7 @@ export default function AddProductPage() {
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Product Name *
               </label>
               <input
@@ -287,7 +287,7 @@ export default function AddProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 SKU (Auto-generated)
               </label>
               <input
@@ -302,7 +302,7 @@ export default function AddProductPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
               Description *
             </label>
             <textarea
@@ -319,7 +319,7 @@ export default function AddProductPage() {
           {/* Pricing and Inventory */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Price ($) *
               </label>
               <input
@@ -336,7 +336,7 @@ export default function AddProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Quantity *
               </label>
               <input
@@ -352,7 +352,7 @@ export default function AddProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Category *
               </label>
               <select
@@ -376,7 +376,7 @@ export default function AddProductPage() {
           {/* Product Attributes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Color
               </label>
               <input
@@ -390,7 +390,7 @@ export default function AddProductPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Size
               </label>
               <input
@@ -419,7 +419,7 @@ export default function AddProductPage() {
                   onChange={handleChange}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
-                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="ml-2 text-sm text-gray-700 dark:text-primary">
                   Featured Product
                 </label>
               </div>
@@ -432,7 +432,7 @@ export default function AddProductPage() {
                   onChange={handleChange}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
-                <label className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="ml-2 text-sm text-gray-700 dark:text-primary">
                   Active (Visible to customers)
                 </label>
               </div>
@@ -444,7 +444,7 @@ export default function AddProductPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-primary bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
             >
               Cancel
             </button>

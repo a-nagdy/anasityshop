@@ -589,7 +589,7 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Search Products
               </label>
               <div className="relative">
@@ -625,7 +625,7 @@ export default function ProductsPage() {
 
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Category
               </label>
               <select
@@ -646,7 +646,7 @@ export default function ProductsPage() {
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Status
               </label>
               <select
@@ -667,7 +667,7 @@ export default function ProductsPage() {
 
             {/* Items per page */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Items per page
               </label>
               <select
@@ -689,7 +689,7 @@ export default function ProductsPage() {
           {/* Price Range */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Min Price ($)
               </label>
               <input
@@ -704,7 +704,7 @@ export default function ProductsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Max Price ($)
               </label>
               <input
@@ -719,7 +719,7 @@ export default function ProductsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Sort By
               </label>
               <select
@@ -736,7 +736,7 @@ export default function ProductsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                 Sort Order
               </label>
               <select
@@ -795,7 +795,7 @@ export default function ProductsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-6 py-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+          <div className="flex items-center text-sm text-gray-700 dark:text-primary">
             <span>
               Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
               {Math.min(
@@ -820,7 +820,7 @@ export default function ProductsPage() {
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+            <span className="px-3 py-1 text-sm text-gray-700 dark:text-primary">
               Page {currentPage} of {totalPages}
             </span>
             <button

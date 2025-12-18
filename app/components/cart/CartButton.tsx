@@ -17,7 +17,7 @@ export default function CartButton({
   return (
     <button
       onClick={onClick}
-      className={`relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors ${className}`}
+      className={`relative p-2 text-gray-600 dark:text-primary hover:text-gray-900 dark:hover:text-white transition-colors ${className}`}
       aria-label="Shopping cart"
     >
       <ShoppingCartIcon className="w-6 h-6" />

@@ -233,7 +233,7 @@ export default function OrderDetailPage({
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary">
                   Status
                 </label>
                 <select
@@ -252,7 +252,7 @@ export default function OrderDetailPage({
               </div>
               <div className="flex items-center space-x-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-primary">
                     Payment Status
                   </label>
                   <button
@@ -268,7 +268,7 @@ export default function OrderDetailPage({
                   </button>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-primary">
                     Delivery Status
                   </label>
                   <button

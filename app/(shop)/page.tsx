@@ -161,15 +161,6 @@ export default function HomePage() {
         {/* Hero Section */}
         <HeroSection banners={homepageSettings?.heroBanners || []} />
 
-        {/* Categories Section */}
-        {homepageSettings?.showFeaturedCategories && categories.length > 0 && (
-          <CategorySlider
-            categories={categories}
-            title="Explore Categories"
-            subtitle="Discover our premium collections"
-          />
-        )}
-
         {/* Promotional Banners */}
         {homepageSettings?.banners && homepageSettings.banners.length > 0 && (
           <BannerSection
@@ -186,6 +177,14 @@ export default function HomePage() {
             title="Featured Products"
             subtitle="Discover our top picks"
             type="featured"
+          />
+        )}
+        {/* Categories Section */}
+        {homepageSettings?.showFeaturedCategories && categories.length > 0 && (
+          <CategorySlider
+            categories={categories}
+            title="Explore Categories"
+            subtitle="Discover our premium collections"
           />
         )}
 
@@ -222,12 +221,12 @@ export default function HomePage() {
               <h2
                 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent"
                 style={{
-                  backgroundImage: "var(--theme-gradient-primary)",
+                  backgroundImage: "var(--theme-gradient-accent)",
                 }}
               >
                 Why Choose Elyana?
               </h2>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl theme-primary max-w-3xl mx-auto">
                 Experience the future of e-commerce with cutting-edge
                 technology, premium products, and unmatched customer service.
               </p>
@@ -285,7 +284,7 @@ export default function HomePage() {
                   >
                     {feature.title}
                   </h3>
-                  <p className="text-gray-300">{feature.description}</p>
+                  <p className="text-primary">{feature.description}</p>
                 </motion.div>
               ))}
             </div>

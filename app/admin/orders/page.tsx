@@ -115,11 +115,11 @@ export default function OrdersPage() {
       delivered:
         "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      refunded: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+      refunded: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-primary",
     };
     return (
       colors[status.toLowerCase() as keyof typeof colors] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-primary"
     );
   };
 
@@ -333,7 +333,7 @@ export default function OrdersPage() {
                   }
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="text-sm text-gray-700 dark:text-primary">
                   {column.header}
                 </span>
               </label>

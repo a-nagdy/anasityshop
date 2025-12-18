@@ -128,7 +128,7 @@ export default function ReviewManagement() {
             {star <= rating ? (
               <StarSolidIcon className="w-4 h-4 text-yellow-400" />
             ) : (
-              <StarIcon className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+              <StarIcon className="w-4 h-4 text-primary dark:text-gray-600" />
             )}
           </div>
         ))}
@@ -181,7 +181,7 @@ export default function ReviewManagement() {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Review Management
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">
+              <p className="text-gray-600 dark:text-primary mt-1">
                 Moderate customer reviews and manage approval status
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function ReviewManagement() {
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
                   filter === tab.id
                     ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300"
+                    : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-primary hover:border-gray-300"
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -332,7 +332,7 @@ export default function ReviewManagement() {
                           <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                             Review Comment
                           </h4>
-                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                          <p className="text-gray-700 dark:text-primary leading-relaxed">
                             {review.comment}
                           </p>
                         </div>
@@ -400,7 +400,7 @@ export default function ReviewManagement() {
                               Review History
                             </h4>
                             <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm">
-                              <p className="text-gray-700 dark:text-gray-300">
+                              <p className="text-gray-700 dark:text-primary">
                                 <span className="font-medium">
                                   {review.status.charAt(0).toUpperCase() +
                                     review.status.slice(1)}
@@ -433,7 +433,7 @@ export default function ReviewManagement() {
                                   "_blank"
                                 )
                               }
-                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-primary rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                               🔗 View Product
                             </button>
@@ -441,7 +441,7 @@ export default function ReviewManagement() {
                               onClick={() =>
                                 navigator.clipboard.writeText(review.user.email)
                               }
-                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-primary rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             >
                               📧 Copy Email
                             </button>

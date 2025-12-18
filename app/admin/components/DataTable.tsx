@@ -151,7 +151,7 @@ export default function DataTable<T>({
 
         {data.length === 0 ? (
           <div className="text-center py-8">
-            <h2 className="text-xl font-semibold text-gray-600 dark:text-gray-300">
+            <h2 className="text-xl font-semibold text-gray-600 dark:text-primary">
               {emptyMessage.title}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mt-2">

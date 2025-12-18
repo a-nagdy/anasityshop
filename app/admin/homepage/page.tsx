@@ -12,9 +12,9 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
-  HomepageSettings,
-  HeroBanner,
   Banner,
+  HeroBanner,
+  HomepageSettings,
 } from "../../services/settingsService";
 
 export default function HomepageManagementPage() {
@@ -86,11 +86,11 @@ export default function HomepageManagementPage() {
     if (!settings) return;
 
     const newBanner: HeroBanner = {
-      title: "New Banner",
-      subtitle: "Enter subtitle",
+      title: "",
+      subtitle: "",
       backgroundImage: "",
-      ctaText: "Learn More",
-      ctaLink: "#",
+      ctaText: "",
+      ctaLink: "",
       active: true,
       order: settings.heroBanners.length,
       showButton: true,
@@ -132,12 +132,12 @@ export default function HomepageManagementPage() {
     if (!settings) return;
 
     const newBanner: Banner = {
-      title: "New Promotional Banner",
-      subtitle: "Enter subtitle",
-      description: "Enter description",
+      title: "",
+      subtitle: "",
+      description: "",
       image: "",
-      ctaText: "Shop Now",
-      ctaLink: "#",
+      ctaText: "",
+      ctaLink: "",
       active: true,
       order: (settings.banners || []).length,
       layout: "full-width",
@@ -209,7 +209,7 @@ export default function HomepageManagementPage() {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   Homepage Management
                 </h1>
-                <p className="text-gray-600 dark:text-gray-300 mt-2">
+                <p className="text-gray-600 dark:text-primary mt-2">
                   Manage hero banners, promotional content, and homepage
                   settings
                 </p>
@@ -257,13 +257,13 @@ export default function HomepageManagementPage() {
                   className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
                     activeTab === tab.id
                       ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-primary hover:border-gray-300"
                   }`}
                 >
                   <span>{tab.icon}</span>
                   {tab.name}
                   {tab.count !== undefined && (
-                    <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs px-2 py-1 rounded-full">
+                    <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-primary text-xs px-2 py-1 rounded-full">
                       {tab.count}
                     </span>
                   )}
@@ -493,7 +493,7 @@ function HeroBannersSection({
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Hero Banners
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">
+              <p className="text-gray-600 dark:text-primary mt-1">
                 Manage main hero banners with slider functionality
               </p>
             </div>
@@ -527,8 +527,11 @@ function HeroBannersSection({
                   {/* Basic Info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Title
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        Title{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -537,13 +540,16 @@ function HeroBannersSection({
                           onUpdate(index, { ...banner, title: e.target.value })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Enter banner title"
+                        placeholder="Enter banner title (optional)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Subtitle
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        Subtitle{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -555,13 +561,16 @@ function HeroBannersSection({
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Enter banner subtitle"
+                        placeholder="Enter banner subtitle (optional)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        CTA Text
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        CTA Text{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -573,13 +582,16 @@ function HeroBannersSection({
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Button text"
+                        placeholder="Button text (optional)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        CTA Link
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        CTA Link{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -591,14 +603,14 @@ function HeroBannersSection({
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Button destination URL"
+                        placeholder="Button destination URL (optional)"
                       />
                     </div>
                   </div>
 
                   {/* Background Image */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                       Background Image
                     </label>
                     <ImageUploader
@@ -680,7 +692,7 @@ function HeroBannersSection({
 
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                             Display Order
                           </label>
                           <input
@@ -760,7 +772,7 @@ function PromotionalBannersSection({
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Promotional Banners
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mt-1">
+              <p className="text-gray-600 dark:text-primary mt-1">
                 Create promotional banners for special offers and campaigns
               </p>
             </div>
@@ -792,8 +804,11 @@ function PromotionalBannersSection({
                   {/* Basic Info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Title
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        Title{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -802,12 +817,12 @@ function PromotionalBannersSection({
                           onUpdate(index, { ...banner, title: e.target.value })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Enter banner title"
+                        placeholder="Enter banner title (optional)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                         Layout
                       </label>
                       <select
@@ -830,8 +845,11 @@ function PromotionalBannersSection({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Subtitle
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        Subtitle{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -843,13 +861,16 @@ function PromotionalBannersSection({
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Enter subtitle"
+                        placeholder="Enter subtitle (optional)"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        CTA Text
+                      <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                        CTA Text{" "}
+                        <span className="text-gray-400 text-xs">
+                          (Optional)
+                        </span>
                       </label>
                       <input
                         type="text"
@@ -861,15 +882,16 @@ function PromotionalBannersSection({
                           })
                         }
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        placeholder="Button text"
+                        placeholder="Button text (optional)"
                       />
                     </div>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Description
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                      Description{" "}
+                      <span className="text-gray-400 text-xs">(Optional)</span>
                     </label>
                     <textarea
                       value={banner.description || ""}
@@ -881,14 +903,15 @@ function PromotionalBannersSection({
                       }
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder="Enter banner description"
+                      placeholder="Enter banner description (optional)"
                     />
                   </div>
 
                   {/* CTA Link */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      CTA Link
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
+                      CTA Link{" "}
+                      <span className="text-gray-400 text-xs">(Optional)</span>
                     </label>
                     <input
                       type="text"
@@ -897,13 +920,13 @@ function PromotionalBannersSection({
                         onUpdate(index, { ...banner, ctaLink: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder="Button destination URL"
+                      placeholder="Button destination URL (optional)"
                     />
                   </div>
 
                   {/* Banner Image */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                       Banner Image
                     </label>
                     <ImageUploader
@@ -964,7 +987,7 @@ function PromotionalBannersSection({
 
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                             Display Order
                           </label>
                           <input
@@ -1031,7 +1054,7 @@ function GeneralSettingsSection({
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
               General Settings
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
+            <p className="text-gray-600 dark:text-primary mt-1">
               Configure global homepage display options and features
             </p>
           </div>
@@ -1105,7 +1128,7 @@ function GeneralSettingsSection({
               <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                       Background Color
                     </label>
                     <div className="flex gap-3">
@@ -1139,7 +1162,7 @@ function GeneralSettingsSection({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                       Accent Color
                     </label>
                     <div className="flex gap-3">

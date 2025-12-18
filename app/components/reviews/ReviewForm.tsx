@@ -158,7 +158,7 @@ export default function ReviewForm({
             {star <= (hoverRating || rating) ? (
               <StarSolidIcon className="w-8 h-8 text-yellow-400" />
             ) : (
-              <StarIcon className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+              <StarIcon className="w-8 h-8 text-primary dark:text-gray-600" />
             )}
           </button>
         ))}
@@ -178,15 +178,15 @@ export default function ReviewForm({
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-primary">
                 Checking authentication...
               </p>
             </div>
@@ -208,9 +208,9 @@ export default function ReviewForm({
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
           >
@@ -256,7 +256,7 @@ export default function ReviewForm({
                 <div className="flex gap-3">
                   <button
                     onClick={onClose}
-                    className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-primary rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     Maybe Later
                   </button>
@@ -286,9 +286,9 @@ export default function ReviewForm({
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
@@ -329,7 +329,7 @@ export default function ReviewForm({
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Rating */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-3">
                   Rating *
                 </label>
                 <div className="flex items-center gap-4">
@@ -344,7 +344,7 @@ export default function ReviewForm({
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                   Review Title (Optional)
                 </label>
                 <input
@@ -362,7 +362,7 @@ export default function ReviewForm({
 
               {/* Comment */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                   Your Review *
                 </label>
                 <textarea
@@ -412,7 +412,7 @@ export default function ReviewForm({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-primary rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>

@@ -49,8 +49,8 @@ export default function CheckoutSteps({
                   >
                     {step.number < currentStep ? (
                       <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         transition={{ duration: 0.2 }}
                       >
                         <CheckIcon className="h-5 w-5" />

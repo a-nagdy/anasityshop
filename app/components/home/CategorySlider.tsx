@@ -80,12 +80,12 @@ export default function CategorySlider({
           <h2
             className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent"
             style={{
-              backgroundImage: "var(--theme-gradient-primary)",
+              backgroundImage: "var(--theme-gradient-accent)",
             }}
           >
             {title}
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-xl text-primary max-w-2xl mx-auto">{subtitle}</p>
         </motion.div>
 
         {/* Categories Grid */}
@@ -99,11 +99,6 @@ export default function CategorySlider({
             <motion.div
               key={category._id}
               variants={itemVariants}
-              whileHover={{
-                scale: 1.05,
-                rotateY: 5,
-                z: 50,
-              }}
               className="group relative"
             >
               <Link href={`/categories/${category.slug}`}>
@@ -179,7 +174,7 @@ export default function CategorySlider({
                     {/* Description */}
                     {category.description && (
                       <motion.p
-                        className="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        className="text-primary text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: index * 0.1 + 0.2 }}
@@ -189,15 +184,11 @@ export default function CategorySlider({
                     )}
 
                     {/* Explore Button */}
-                    <motion.div
-                      className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
+                    <motion.div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span
                         className="inline-flex items-center gap-2 px-4 py-2 text-white font-semibold rounded-lg text-sm"
                         style={{
-                          background: "var(--theme-gradient-primary)",
+                          background: "var(--theme-gradient-accent)",
                           boxShadow:
                             "0 4px 15px rgba(var(--theme-primary-rgb), 0.3)",
                         }}

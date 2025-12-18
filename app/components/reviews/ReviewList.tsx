@@ -84,7 +84,7 @@ export default function ReviewList({
             {star <= rating ? (
               <StarSolidIcon className="w-4 h-4 text-yellow-400" />
             ) : (
-              <StarIcon className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+              <StarIcon className="w-4 h-4 text-primary dark:text-gray-600" />
             )}
           </div>
         ))}
@@ -180,7 +180,7 @@ export default function ReviewList({
                   {review.title}
                 </h5>
               )}
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              <p className="text-gray-700 dark:text-primary leading-relaxed">
                 {review.comment}
               </p>
             </div>

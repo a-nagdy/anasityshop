@@ -127,7 +127,7 @@ export default function ProductCard({
             {isWishlisted ? (
               <HeartSolidIcon className="w-5 h-5 text-red-500" />
             ) : (
-              <HeartIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              <HeartIcon className="w-5 h-5 text-gray-600 dark:text-primary" />
             )}
           </button>
         )}

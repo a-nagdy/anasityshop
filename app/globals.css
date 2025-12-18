@@ -1,42 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf0e6;
+  --foreground: #2d1b20;
 
-  /* Website Theme Variables - Updated by ThemeProvider */
+  /* Website Theme Variables - Static Colors (Dynamic theming disabled) */
   /* Primary Colors */
-  --theme-primary: #00f5ff;
+  --theme-primary: #000000;
   --theme-secondary: #8b5cf6;
-  --theme-accent: #ec4899;
+  --theme-accent: #3d2412;
 
   /* Button Colors */
-  --theme-button-primary: #00f5ff;
+  --theme-button-primary: #000000;
   --theme-button-secondary: #8b5cf6;
-  --theme-button-hover: #00d9ff;
+  --theme-button-hover: #0000001a;
   --theme-button-text: #ffffff;
 
   /* Header Colors */
-  --theme-header-bg: rgba(10, 10, 15, 0.95);
-  --theme-header-text: #ffffff;
+  --theme-header-bg: #faf0e6;
+  --theme-header-text: #2d1b20;
   --theme-header-border: rgba(0, 245, 255, 0.2);
 
   /* Footer Colors */
-  --theme-footer-bg: rgba(10, 10, 15, 0.98);
-  --theme-footer-text: #ffffff;
-  --theme-footer-link: #00f5ff;
+  --theme-footer-bg: #faf0e6;
+  --theme-footer-text: #2d1b20;
+  --theme-footer-link: #000000;
 
   /* Background Colors */
-  --theme-bg-primary: #0a0a0f;
-  --theme-surface: rgba(255, 255, 255, 0.05);
+  --theme-bg-primary: #faf0e6;
+  --theme-surface: rgba(255, 255, 255, 0.4);
 
   /* Text Colors */
-  --theme-text-primary: #ffffff;
-  --theme-text-secondary: #a1a1aa;
+  --theme-text-primary: #2d1b20;
+  --theme-text-secondary: #6b4b52;
 
   /* Border and Shadow */
-  --theme-border: rgba(255, 255, 255, 0.1);
-  --theme-shadow: rgba(0, 245, 255, 0.2);
+  --theme-border: rgba(45, 27, 32, 0.1);
+  --theme-shadow: rgba(0, 0, 0, 0.2);
 
   /* Legacy theme variables for backward compatibility */
   --theme-bg-secondary: rgba(20, 20, 35, 0.8);
@@ -70,12 +70,6 @@
   --theme-gradient-accent: linear-gradient(135deg, var(--theme-accent), var(--theme-primary));
   --theme-gradient-radial: radial-gradient(circle at center, var(--theme-primary-30) 0%, transparent 70%);
 
-  /* Glows */
-  --theme-glow: 0 0 20px rgba(var(--theme-primary-rgb), 0.5);
-  --theme-glow-strong: 0 0 40px rgba(var(--theme-primary-rgb), 0.8);
-  --theme-glow-primary: var(--theme-glow);
-  --theme-glow-secondary: 0 0 40px var(--theme-accent-30);
-
   /* Borders */
   --theme-border-primary: 1px solid var(--theme-border);
   --theme-border-secondary: 2px solid var(--theme-primary-50);
@@ -95,10 +89,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Light pink theme is now default */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Keeping light pink theme for all modes */
+    --background: #faf0e6;
+    --foreground: #2d1b20;
   }
 }
 
@@ -133,7 +129,6 @@ body {
 .btn-theme-secondary:hover {
   background: var(--theme-button-hover);
   border-color: var(--theme-button-hover);
-  box-shadow: var(--theme-glow);
   transform: translateY(-2px);
 }
 
@@ -201,10 +196,6 @@ body {
   background-clip: text;
 }
 
-.text-theme-glow {
-  color: var(--theme-primary);
-  text-shadow: 0 0 10px var(--theme-primary);
-}
 
 /* Custom animations for futuristic effects */
 @keyframes spin-slow {
@@ -531,11 +522,6 @@ body {
 .hover-lift:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-}
-
-.hover-glow:hover {
-  box-shadow: var(--theme-glow-strong);
-  transition: box-shadow 0.3s ease;
 }
 
 /* Custom scrollbar */

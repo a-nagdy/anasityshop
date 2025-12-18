@@ -2,7 +2,7 @@
 
 import ReviewForm from "@/app/components/reviews/ReviewForm";
 import ReviewList from "@/app/components/reviews/ReviewList";
-import { useTheme } from "@/app/components/ThemeProvider";
+// import { useTheme } from "@/app/components/ThemeProvider"; // Disabled - using static theme
 import { AddToCartButton, QuantitySelector } from "@/app/components/ui";
 import {
   CheckIcon,
@@ -77,7 +77,7 @@ interface RelatedProduct {
 export default function ProductDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const themeSettings = useTheme();
+  // const themeSettings = useTheme(); // Disabled - using static theme
 
   const [product, setProduct] = useState<Product | null>(null);
   const [reviewStats, setReviewStats] = useState<ReviewStats>({
@@ -265,9 +265,7 @@ export default function ProductDetailsPage() {
             {star <= rating ? (
               <StarSolidIcon className={`${size} text-yellow-400`} />
             ) : (
-              <StarIcon
-                className={`${size} text-gray-300 dark:text-gray-600`}
-              />
+              <StarIcon className={`${size} text-primary dark:text-gray-600`} />
             )}
           </div>
         ))}
@@ -275,45 +273,7 @@ export default function ProductDetailsPage() {
     );
   };
 
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null;
-  };
-
-  // Get dynamic colors from theme settings
-  const accentColor = themeSettings?.accentColor || "#00f5ff";
-  const backgroundColor = themeSettings?.backgroundColor || "#0a0a0f";
-  const accentRgb = hexToRgb(accentColor);
-  const backgroundRgb = hexToRgb(backgroundColor);
-
-  // Dynamic styles for theming
-  const dynamicStyles = {
-    accentButton: {
-      background: `linear-gradient(135deg, ${accentColor}, ${accentColor}dd)`,
-      boxShadow: accentRgb
-        ? `0 8px 32px rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.3)`
-        : undefined,
-    },
-    accentText: { color: accentColor },
-    accentBorder: { borderColor: accentColor },
-    darkSection: {
-      backgroundColor: backgroundColor,
-      background: backgroundRgb
-        ? `linear-gradient(135deg, ${backgroundColor}, rgba(${backgroundRgb.r}, ${backgroundRgb.g}, ${backgroundRgb.b}, 0.8))`
-        : backgroundColor,
-    },
-    glowEffect: {
-      boxShadow: accentRgb
-        ? `0 0 20px rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.2)`
-        : undefined,
-    },
-  };
+  // Removed hardcoded colors and dynamicStyles - now using CSS variables from globals.css
 
   if (loading) {
     return (
@@ -321,9 +281,9 @@ export default function ProductDetailsPage() {
         <div className="text-center">
           <div
             className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
-            style={{ borderBottomColor: accentColor }}
+            style={{ borderBottomColor: "var(--theme-primary)" }}
           ></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading product...</p>
+          <p className="text-gray-600 dark:text-primary">Loading product...</p>
         </div>
       </div>
     );
@@ -338,8 +298,7 @@ export default function ProductDetailsPage() {
           </h2>
           <button
             onClick={() => router.push("/categories")}
-            className="px-6 py-3 text-white rounded-lg hover:opacity-90 transition-all"
-            style={dynamicStyles.accentButton}
+            className="btn-theme-primary px-6 py-3 text-white rounded-lg hover:opacity-90 transition-all"
           >
             Browse Products
           </button>
@@ -405,7 +364,7 @@ export default function ProductDetailsPage() {
                   onClick={() => setShowImageModal(true)}
                   className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-2 rounded-full hover:bg-white dark:hover:bg-gray-800 transition-colors"
                 >
-                  <MagnifyingGlassIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                  <MagnifyingGlassIcon className="w-5 h-5 text-gray-700 dark:text-primary" />
                 </button>
 
                 {/* Discount Badge */}
@@ -467,7 +426,7 @@ export default function ProductDetailsPage() {
               <div className="flex items-center gap-3">
                 <span
                   className="text-3xl font-bold"
-                  style={dynamicStyles.accentText}
+                  style={{ color: "var(--theme-primary)" }}
                 >
                   ${product.finalPrice.toFixed(2)}
                 </span>
@@ -494,17 +453,9 @@ export default function ProductDetailsPage() {
                         onClick={() => setSelectedColor(color)}
                         className={`px-4 py-2 rounded-lg border-2 transition-all capitalize ${
                           selectedColor === color
-                            ? "text-white shadow-lg"
-                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                            ? "btn-theme-primary text-white shadow-lg"
+                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-primary"
                         }`}
-                        style={
-                          selectedColor === color
-                            ? {
-                                ...dynamicStyles.accentBorder,
-                                ...dynamicStyles.accentButton,
-                              }
-                            : undefined
-                        }
                       >
                         {color}
                       </button>
@@ -526,17 +477,9 @@ export default function ProductDetailsPage() {
                         onClick={() => setSelectedSize(size)}
                         className={`px-4 py-2 rounded-lg border-2 transition-all uppercase ${
                           selectedSize === size
-                            ? "text-white shadow-lg"
-                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                            ? "btn-theme-primary text-white shadow-lg"
+                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800 text-gray-700 dark:text-primary"
                         }`}
-                        style={
-                          selectedSize === size
-                            ? {
-                                ...dynamicStyles.accentBorder,
-                                ...dynamicStyles.accentButton,
-                              }
-                            : undefined
-                        }
                       >
                         {size}
                       </button>
@@ -582,17 +525,9 @@ export default function ProductDetailsPage() {
                     onClick={() => setIsWishlisted(!isWishlisted)}
                     className={`px-6 py-3 border-2 rounded-lg transition-all flex items-center justify-center gap-2 ${
                       isWishlisted
-                        ? "text-white shadow-lg"
+                        ? "btn-theme-primary text-white shadow-lg"
                         : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
                     }`}
-                    style={
-                      isWishlisted
-                        ? {
-                            ...dynamicStyles.accentBorder,
-                            ...dynamicStyles.accentButton,
-                          }
-                        : undefined
-                    }
                   >
                     {isWishlisted ? (
                       <HeartSolidIcon className="w-5 h-5" />
@@ -606,13 +541,12 @@ export default function ProductDetailsPage() {
                     onClick={handleShare}
                     className="px-6 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg hover:border-gray-400 dark:hover:border-gray-500 transition-all flex items-center justify-center gap-2 hover:shadow-lg"
                     style={{
-                      ...dynamicStyles.glowEffect,
+                      boxShadow: "var(--theme-glow)",
                     }}
                     onMouseEnter={(e) => {
-                      if (accentRgb) {
-                        e.currentTarget.style.borderColor = accentColor;
-                        e.currentTarget.style.color = accentColor;
-                      }
+                      e.currentTarget.style.borderColor =
+                        "var(--theme-primary)";
+                      e.currentTarget.style.color = "var(--theme-primary)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = "";
@@ -630,7 +564,7 @@ export default function ProductDetailsPage() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Key Features
                 </h3>
-                <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+                <ul className="space-y-2 text-gray-700 dark:text-primary">
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-5 h-5 text-green-500" />
                     High-quality materials
@@ -670,13 +604,13 @@ export default function ProductDetailsPage() {
                   className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? ""
-                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-primary"
                   }`}
                   style={
                     activeTab === tab.id
                       ? {
-                          borderBottomColor: accentColor,
-                          color: accentColor,
+                          borderBottomColor: "var(--theme-primary)",
+                          color: "var(--theme-primary)",
                         }
                       : undefined
                   }
@@ -832,7 +766,7 @@ export default function ProductDetailsPage() {
             <div>
               <h2
                 className="text-3xl font-bold mb-8 text-center"
-                style={dynamicStyles.accentText}
+                style={{ color: "var(--theme-primary)" }}
               >
                 Related Products
               </h2>
@@ -842,9 +776,7 @@ export default function ProductDetailsPage() {
                     key={relatedProduct._id}
                     whileHover={{
                       scale: 1.02,
-                      boxShadow: accentRgb
-                        ? `0 10px 40px rgba(${accentRgb.r}, ${accentRgb.g}, ${accentRgb.b}, 0.2)`
-                        : undefined,
+                      boxShadow: "0 10px 40px rgba(0, 245, 255, 0.2)",
                     }}
                     className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden group cursor-pointer transition-all duration-300"
                     onClick={() =>
@@ -857,7 +789,7 @@ export default function ProductDetailsPage() {
                       <Image
                         src={relatedProduct.image}
                         alt={relatedProduct.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover transition-transform duration-300"
                         width={80}
                         height={80}
                       />
@@ -870,7 +802,7 @@ export default function ProductDetailsPage() {
                         <div className="flex items-center gap-2">
                           <span
                             className="font-bold"
-                            style={dynamicStyles.accentText}
+                            style={{ color: "var(--theme-primary)" }}
                           >
                             ${relatedProduct.finalPrice.toFixed(2)}
                           </span>

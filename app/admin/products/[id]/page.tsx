@@ -253,7 +253,7 @@ export default function EditProductPage({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Main Product Image */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
                   Main Product Image
                 </label>
                 <div>
@@ -295,7 +295,7 @@ export default function EditProductPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Product Name*
               </label>
               <input
@@ -310,7 +310,7 @@ export default function EditProductPage({
 
             {/* SKU */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 SKU (Auto-generated)*
               </label>
               <input
@@ -326,7 +326,7 @@ export default function EditProductPage({
 
             {/* Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Price*
               </label>
               <input
@@ -343,7 +343,7 @@ export default function EditProductPage({
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Category*
               </label>
               <select
@@ -364,7 +364,7 @@ export default function EditProductPage({
 
             {/* Quantity */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Quantity*
               </label>
               <input
@@ -380,7 +380,7 @@ export default function EditProductPage({
 
             {/* Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Colors (comma separated)
               </label>
               <input
@@ -395,7 +395,7 @@ export default function EditProductPage({
 
             {/* Size */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Sizes (comma separated)
               </label>
               <input
@@ -410,7 +410,7 @@ export default function EditProductPage({
 
             {/* Weight */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Weight
               </label>
               <input
@@ -425,7 +425,7 @@ export default function EditProductPage({
 
             {/* Dimensions */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Dimensions
               </label>
               <input
@@ -440,7 +440,7 @@ export default function EditProductPage({
 
             {/* Material */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Material
               </label>
               <input
@@ -455,7 +455,7 @@ export default function EditProductPage({
 
             {/* Warranty */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Warranty
               </label>
               <input
@@ -471,7 +471,7 @@ export default function EditProductPage({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               Description*
             </label>
             <textarea
@@ -497,7 +497,7 @@ export default function EditProductPage({
               />
               <label
                 htmlFor="featured"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                className="ml-2 block text-sm text-gray-700 dark:text-primary"
               >
                 Featured Product
               </label>
@@ -514,7 +514,7 @@ export default function EditProductPage({
               />
               <label
                 htmlFor="shipping"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                className="ml-2 block text-sm text-gray-700 dark:text-primary"
               >
                 Shipping Available
               </label>
@@ -531,7 +531,7 @@ export default function EditProductPage({
               />
               <label
                 htmlFor="active"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                className="ml-2 block text-sm text-gray-700 dark:text-primary"
               >
                 Active
               </label>

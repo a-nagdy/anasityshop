@@ -45,7 +45,7 @@ export default function CategoryForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Category Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Category Name*
           </label>
           <input
@@ -60,7 +60,7 @@ export default function CategoryForm({
 
         {/* Parent Category */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Parent Category
           </label>
           <select
@@ -85,7 +85,7 @@ export default function CategoryForm({
 
         {/* Image */}
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
             Category Image
           </label>
           <ImageUploader
@@ -143,7 +143,7 @@ export default function CategoryForm({
             />
             <label
               htmlFor="active"
-              className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+              className="ml-2 block text-sm text-gray-700 dark:text-primary"
             >
               Active
             </label>
@@ -156,7 +156,7 @@ export default function CategoryForm({
 
       {/* Description */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
           Description
         </label>
         <textarea

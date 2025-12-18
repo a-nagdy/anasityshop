@@ -106,7 +106,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
-                <ShoppingCartIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                <ShoppingCartIcon className="w-6 h-6 text-gray-600 dark:text-primary" />
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Shopping Cart
                 </h2>
@@ -140,7 +140,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 </div>
               ) : items.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingCartIcon className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
+                  <ShoppingCartIcon className="w-16 h-16 mx-auto text-primary dark:text-gray-600 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Your cart is empty
                   </h3>

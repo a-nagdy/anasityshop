@@ -4,7 +4,7 @@ import PlaceholderImage from "@/assets/svg/elyana-placeholder.svg";
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { AddToCartButton } from "../ui";
 interface Product {
   _id: string;
@@ -27,23 +27,6 @@ interface ProductSliderProps {
   type?: "featured" | "bestseller" | "new" | "sale";
 }
 
-interface HomepageSettings {
-  backgroundColor: string;
-  accentColor: string;
-  animation3dEnabled: boolean;
-}
-
-// Helper function to convert hex to RGB
-const hexToRgb = (hex: string) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
-        result[3],
-        16
-      )}`
-    : "0, 245, 255";
-};
-
 export default function ProductSlider({
   products,
   title = "Featured Products",
@@ -53,25 +36,8 @@ export default function ProductSlider({
   // Debug: console.log(products);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [homepageSettings, setHomepageSettings] =
-    useState<HomepageSettings | null>(null);
+  // Dynamic homepage settings disabled - using static theme colors
   // Removed addingToCart state - now handled by AddToCartButton component
-
-  useEffect(() => {
-    const fetchHomepageSettings = async () => {
-      try {
-        const response = await fetch("/api/settings/homepage");
-        if (response.ok) {
-          const data = await response.json();
-          setHomepageSettings(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching homepage settings:", error);
-      }
-    };
-
-    fetchHomepageSettings();
-  }, []);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -87,8 +53,7 @@ export default function ProductSlider({
 
   // Removed handleAddToCart function - now handled by AddToCartButton component
 
-  const accentColor = homepageSettings?.accentColor || "#00f5ff";
-  const accentRgb = hexToRgb(accentColor);
+  // Removed hardcoded colors - now using CSS variables from globals.css
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -102,11 +67,10 @@ export default function ProductSlider({
   };
 
   const itemVariants = {
-    hidden: { y: 50, opacity: 0, rotateY: -15 },
+    hidden: { y: 50, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      rotateY: 0,
       transition: {
         duration: 0.8,
         ease: "easeOut",
@@ -120,11 +84,11 @@ export default function ProductSlider({
       <div className="absolute inset-0">
         <div
           className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: accentColor }}
+          style={{ backgroundColor: "var(--theme-primary)" }}
         />
         <div
           className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl opacity-10"
-          style={{ backgroundColor: accentColor }}
+          style={{ backgroundColor: "var(--theme-primary)" }}
         />
       </div>
 
@@ -139,12 +103,17 @@ export default function ProductSlider({
           <h2
             className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r bg-clip-text text-transparent"
             style={{
-              backgroundImage: `linear-gradient(to right, ${accentColor}, #8b5cf6)`,
+              backgroundImage: "var(--theme-gradient-accent)",
             }}
           >
             {title}
           </h2>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">{subtitle}</p>
+          <p
+            className="text-xl max-w-2xl mx-auto"
+            style={{ color: "var(--theme-text-secondary)" }}
+          >
+            {subtitle}
+          </p>
 
           {/* Type Badge */}
           {type && (
@@ -167,9 +136,9 @@ export default function ProductSlider({
                 style={
                   type === "featured"
                     ? {
-                        backgroundColor: `rgba(${accentRgb}, 0.2)`,
-                        color: accentColor,
-                        borderColor: `rgba(${accentRgb}, 0.3)`,
+                        backgroundColor: "var(--theme-primary-20)",
+                        color: "var(--theme-primary)",
+                        borderColor: "var(--theme-primary-30)",
                       }
                     : {}
                 }
@@ -194,15 +163,9 @@ export default function ProductSlider({
               <motion.div
                 key={product._id}
                 variants={itemVariants}
-                whileHover={{
-                  scale: 1.05,
-                  rotateY: 5,
-                  z: 50,
-                  transition: { duration: 0.3 },
-                }}
                 className="group relative h-full"
               >
-                <div className="relative bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10 hover:border-white/30 transition-all duration-500 h-full flex flex-col">
+                <div className="relative theme-bg-secondary rounded-2xl overflow-hidden backdrop-blur-sm border border-white/10 hover:border-white/30 transition-all duration-500 h-full flex flex-col">
                   {/* Product Image */}
                   <Link href={`/products/${product.sku || product._id}`}>
                     <div className="relative h-64 flex-shrink-0 overflow-hidden">
@@ -257,39 +220,26 @@ export default function ProductSlider({
                           </span>
                         </div>
                       )}
-
-                      {/* Hover Glow */}
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-t from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                        style={{
-                          background: `linear-gradient(to top, rgba(${accentRgb}, 0.2), transparent)`,
-                        }}
-                      />
                     </div>
                   </Link>
 
                   {/* Product Info */}
                   <div className="p-6 flex flex-col flex-grow">
                     {/* Category */}
-                    <p className="text-sm text-gray-400 mb-2 flex-shrink-0">
+                    {/* <p
+                      className="text-sm mb-2 flex-shrink-0"
+                      style={{ color: "var(--theme-text-secondary)" }}
+                    >
                       {typeof product.category === "string"
                         ? product.category
                         : product.category?.name || "Category"}
-                    </p>
+                    </p> */}
 
                     {/* Product Name */}
                     <Link href={`/products/${product.sku || product._id}`}>
                       <h3
-                        className="text-xl font-bold text-white mb-3 transition-colors duration-300 line-clamp-2 cursor-pointer min-h-[3.5rem] flex-shrink-0"
-                        style={{
-                          color: "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = accentColor;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = "white";
-                        }}
+                        className="text-xl font-bold mb-3 transition-colors duration-300 line-clamp-2 cursor-pointer min-h-[3.5rem] flex-shrink-0"
+                        style={{ color: "var(--theme-text-primary)" }}
                       >
                         {product.name}
                       </h3>
@@ -298,7 +248,10 @@ export default function ProductSlider({
                     {/* Description */}
                     <div className="flex-grow mb-4">
                       {product.description ? (
-                        <p className="text-gray-300 text-sm line-clamp-3 min-h-[4.5rem]">
+                        <p
+                          className="text-sm line-clamp-3 min-h-[4.5rem]"
+                          style={{ color: "var(--theme-text-secondary)" }}
+                        >
                           {product.description}
                         </p>
                       ) : (
@@ -312,15 +265,21 @@ export default function ProductSlider({
                         {product.salePrice &&
                         product.salePrice < product.price ? (
                           <>
-                            <span className="text-2xl font-bold text-green-400">
+                            <span className="text-2xl font-bold text-green-600">
                               {formatPrice(product.salePrice)}
                             </span>
-                            <span className="text-lg text-gray-400 line-through">
+                            <span
+                              className="text-lg line-through"
+                              style={{ color: "var(--theme-text-secondary)" }}
+                            >
                               {formatPrice(product.price)}
                             </span>
                           </>
                         ) : (
-                          <span className="text-2xl font-bold text-white">
+                          <span
+                            className="text-2xl font-bold"
+                            style={{ color: "var(--theme-text-primary)" }}
+                          >
                             {formatPrice(product.price)}
                           </span>
                         )}
@@ -387,9 +346,9 @@ export default function ProductSlider({
                     className="absolute inset-0 rounded-2xl pointer-events-none"
                     animate={{
                       boxShadow: [
-                        `0 0 0 1px rgba(${accentRgb}, 0)`,
-                        `0 0 20px 1px rgba(${accentRgb}, 0.2)`,
-                        `0 0 0 1px rgba(${accentRgb}, 0)`,
+                        "0 0 0 1px rgba(0, 245, 255, 0)",
+                        "0 0 20px 1px rgba(0, 245, 255, 0.2)",
+                        "0 0 0 1px rgba(0, 245, 255, 0)",
                       ],
                     }}
                     transition={{
@@ -402,7 +361,7 @@ export default function ProductSlider({
                   {/* Corner Accents */}
                   <div
                     className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ borderColor: `rgba(${accentRgb}, 0.5)` }}
+                    style={{ borderColor: "var(--theme-primary-50)" }}
                   />
                   <div
                     className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -425,17 +384,16 @@ export default function ProductSlider({
             href="/products"
             className="group inline-flex items-center gap-3 px-8 py-4 text-white font-semibold rounded-xl border transition-all duration-300 backdrop-blur-sm hover:scale-105"
             style={{
-              background: `linear-gradient(135deg, rgba(${accentRgb}, 0.2), rgba(139, 92, 246, 0.2))`,
-              borderColor: `rgba(${accentRgb}, 0.3)`,
-              boxShadow: `0 4px 15px rgba(${accentRgb}, 0.2)`,
+              background: "var(--theme-gradient-accent)",
+              borderColor: "var(--theme-primary-30)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = `linear-gradient(135deg, rgba(${accentRgb}, 0.4), rgba(139, 92, 246, 0.4))`;
-              e.currentTarget.style.borderColor = `rgba(${accentRgb}, 0.5)`;
+              e.currentTarget.style.background = "var(--theme-gradient-accent)";
+              e.currentTarget.style.borderColor = "var(--theme-primary-50)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = `linear-gradient(135deg, rgba(${accentRgb}, 0.2), rgba(139, 92, 246, 0.2))`;
-              e.currentTarget.style.borderColor = `rgba(${accentRgb}, 0.3)`;
+              e.currentTarget.style.background = "var(--theme-gradient-accent)";
+              e.currentTarget.style.borderColor = "var(--theme-primary-30)";
             }}
           >
             View All Products
@@ -443,7 +401,6 @@ export default function ProductSlider({
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
               className="transition-colors"
-              style={{ color: accentColor }}
             >
               →
             </motion.span>

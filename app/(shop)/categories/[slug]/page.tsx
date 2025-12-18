@@ -299,9 +299,7 @@ export default function CategoryPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">
-            Loading category...
-          </p>
+          <p className="text-gray-600 dark:text-primary">Loading category...</p>
         </div>
       </div>
     );
@@ -391,7 +389,7 @@ export default function CategoryPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-gray-300 text-xl max-w-3xl mx-auto leading-relaxed"
+                className="text-primary text-xl max-w-3xl mx-auto leading-relaxed"
                 style={{
                   textShadow: "0 2px 10px rgba(0,0,0,0.5)",
                 }}
@@ -717,8 +715,8 @@ export default function CategoryPage() {
                         <div
                           className={`w-10 h-10 rounded-xl border-2 transition-all duration-300 flex items-center justify-center ${
                             filters.selectedColors.includes(color)
-                              ? "border-white shadow-lg scale-110 ring-2 ring-white/30"
-                              : "border-gray-500 group-hover:border-white group-hover:scale-105"
+                              ? "border-white shadow-lg ring-2 ring-white/30"
+                              : "border-gray-500 group-hover:border-white"
                           }`}
                           style={{ backgroundColor: color.toLowerCase() }}
                         >
@@ -816,7 +814,7 @@ export default function CategoryPage() {
                         }}
                         className="w-5 h-5 rounded-lg border-2 border-gray-500 bg-transparent checked:bg-white/20 checked:border-white focus:ring-2 focus:ring-white/30 transition-all duration-300"
                       />
-                      <span className="ml-3 text-gray-300 group-hover:text-white capitalize transition-colors duration-300">
+                      <span className="ml-3 text-primary group-hover:text-white capitalize transition-colors duration-300">
                         {status}
                       </span>
                     </label>
@@ -858,7 +856,7 @@ export default function CategoryPage() {
                         {[...Array(5 - rating)].map((_, i) => (
                           <FiStar key={i} className="text-gray-600 w-4 h-4" />
                         ))}
-                        <span className="text-gray-300 group-hover:text-white ml-2 transition-colors duration-300">
+                        <span className="text-primary group-hover:text-white ml-2 transition-colors duration-300">
                           {rating}+ Stars
                         </span>
                       </div>
@@ -872,7 +870,7 @@ export default function CategoryPage() {
                       onChange={() => handleFilterChange("rating", 0)}
                       className="w-5 h-5 border-2 border-gray-500 bg-transparent checked:bg-white/20 checked:border-white focus:ring-2 focus:ring-white/30 transition-all duration-300"
                     />
-                    <span className="ml-3 text-gray-300 group-hover:text-white transition-colors duration-300">
+                    <span className="ml-3 text-primary group-hover:text-white transition-colors duration-300">
                       Any Rating
                     </span>
                   </label>
@@ -902,7 +900,7 @@ export default function CategoryPage() {
                     }
                     className="w-5 h-5 rounded-lg border-2 border-gray-500 bg-transparent checked:bg-white/20 checked:border-white focus:ring-2 focus:ring-white/30 transition-all duration-300"
                   />
-                  <span className="ml-3 text-gray-300 group-hover:text-white transition-colors duration-300">
+                  <span className="ml-3 text-primary group-hover:text-white transition-colors duration-300">
                     Featured Products Only
                   </span>
                 </label>
@@ -1046,7 +1044,7 @@ export default function CategoryPage() {
                       className={`px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 transition-all duration-300 ${
                         isCurrentPage
                           ? "bg-white/20 text-white shadow-lg"
-                          : "bg-black/20 text-gray-300 hover:bg-white/10 hover:text-white"
+                          : "bg-black/20 text-primary hover:bg-white/10 hover:text-white"
                       }`}
                       style={{
                         backgroundColor: isCurrentPage
@@ -1216,7 +1214,6 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
         hidden: { opacity: 0, y: 50 },
         visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
       }}
-      whileHover={{ y: -5, scale: 1.02 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       className={`group relative backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500 ${
@@ -1247,7 +1244,7 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
             src={product.image || product.images?.[0] || "/placeholder.jpg"}
             alt={product.name}
             fill
-            className={`object-cover transition-transform duration-700 group-hover:scale-110 ${
+            className={`object-cover transition-transform duration-700 ${
               isOutOfStock ? "grayscale" : ""
             }`}
           />
@@ -1311,7 +1308,7 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
       >
         <div>
           <Link href={`/products/${product.sku || product._id}`}>
-            <h3 className="font-bold text-lg text-white mb-2 group-hover:text-theme-gradient transition-all duration-300 cursor-pointer">
+            <h3 className="font-bold text-lg theme-primary mb-2 group-hover:theme-primary transition-all duration-300 cursor-pointer">
               {product.name}
             </h3>
           </Link>
@@ -1322,7 +1319,7 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
 
           {/* Price */}
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl font-bold text-theme-gradient">
+            <span className="text-2xl font-bold theme-primary">
               ${product.finalPrice?.toFixed(2) || product.price?.toFixed(2)}
             </span>
             {product.hasDiscount && (
@@ -1375,23 +1372,25 @@ function ProductCard({ product, viewMode }: ProductCardProps) {
           size="md"
           fullWidth
           className="relative overflow-hidden"
-          customIcon={isOutOfStock ? (
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          ) : (
-            <FiShoppingCart className="text-lg" />
-          )}
+          customIcon={
+            isOutOfStock ? (
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <FiShoppingCart className="text-lg" />
+            )
+          }
           outOfStockText="Out of Stock"
         >
           {!isOutOfStock && (

@@ -48,11 +48,11 @@ export default function RecentOrdersTable() {
       delivered:
         "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
       cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-      refunded: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+      refunded: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-primary",
     };
     return (
       colors[status.toLowerCase() as keyof typeof colors] ||
-      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+      "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-primary"
     );
   };
 
@@ -172,7 +172,7 @@ export default function RecentOrdersTable() {
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">
                 {order.orderNumber || `#${order._id.slice(-6).toUpperCase()}`}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-primary">
                 <div>{order.user?.name || "Unknown Customer"}</div>
                 <div className="text-gray-500 dark:text-gray-400 text-xs">
                   {order.user?.email || "No email"}

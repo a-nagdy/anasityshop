@@ -25,7 +25,8 @@ const ThemeButton = forwardRef<HTMLButtonElement, ThemeButtonProps>(
       "font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent";
 
     const variantClasses = {
-      primary: "btn-theme-primary",
+      primary:
+        "text-white font-semibold rounded-xl border transition-all duration-300 backdrop-blur-sm hover:scale-105",
       secondary: "btn-theme-secondary",
       accent: "theme-accent-bg text-white hover:opacity-90",
       ghost: "theme-accent hover:theme-accent-bg-10 border-transparent",
@@ -42,8 +43,18 @@ const ThemeButton = forwardRef<HTMLButtonElement, ThemeButtonProps>(
     const allClasses =
       `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${glowClass} ${className}`.trim();
 
+    // Apply gradient background for primary variant
+    const style =
+      variant === "primary"
+        ? {
+            background: "var(--theme-gradient-accent)",
+            borderColor: "var(--theme-primary-30)",
+            ...props.style,
+          }
+        : props.style;
+
     return (
-      <button ref={ref} className={allClasses} {...props}>
+      <button ref={ref} className={allClasses} style={style} {...props}>
         {children}
       </button>
     );

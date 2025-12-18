@@ -237,14 +237,13 @@ export class SettingsService extends BaseService {
         // Validate hero banners
         if (settings.heroBanners) {
             settings.heroBanners.forEach((banner, index) => {
-                if (!banner.title?.trim()) {
-                    errors.push(`Hero banner ${index + 1}: Title is required`);
-                }
-                if (!banner.subtitle?.trim()) {
-                    errors.push(`Hero banner ${index + 1}: Subtitle is required`);
-                }
-                if (banner.ctaLink && !banner.ctaText?.trim()) {
+                // Title and subtitle are now optional
+                // Only validate CTA consistency: if link exists, text should too
+                if (banner.ctaLink?.trim() && !banner.ctaText?.trim()) {
                     errors.push(`Hero banner ${index + 1}: CTA text is required when CTA link is provided`);
+                }
+                if (banner.ctaText?.trim() && !banner.ctaLink?.trim()) {
+                    errors.push(`Hero banner ${index + 1}: CTA link is required when CTA text is provided`);
                 }
             });
         }
@@ -252,14 +251,13 @@ export class SettingsService extends BaseService {
         // Validate promotional banners
         if (settings.banners) {
             settings.banners.forEach((banner, index) => {
-                if (!banner.title?.trim()) {
-                    errors.push(`Promotional banner ${index + 1}: Title is required`);
-                }
-                if (!banner.image?.trim()) {
-                    errors.push(`Promotional banner ${index + 1}: Image is required`);
-                }
-                if (banner.ctaLink && !banner.ctaText?.trim()) {
+                // Title is now optional
+                // Only validate CTA consistency: if link exists, text should too
+                if (banner.ctaLink?.trim() && !banner.ctaText?.trim()) {
                     errors.push(`Promotional banner ${index + 1}: CTA text is required when CTA link is provided`);
+                }
+                if (banner.ctaText?.trim() && !banner.ctaLink?.trim()) {
+                    errors.push(`Promotional banner ${index + 1}: CTA link is required when CTA text is provided`);
                 }
             });
         }

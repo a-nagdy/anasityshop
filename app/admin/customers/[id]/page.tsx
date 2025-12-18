@@ -170,7 +170,7 @@ export default function EditCustomerPage({
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
               Full Name *
             </label>
             <input
@@ -184,7 +184,7 @@ export default function EditCustomerPage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
               Email Address *
             </label>
             <input
@@ -198,7 +198,7 @@ export default function EditCustomerPage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-2">
               Role
             </label>
             <select
@@ -220,7 +220,7 @@ export default function EditCustomerPage({
               onChange={handleInputChange}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            <label className="ml-2 block text-sm text-gray-700 dark:text-primary">
               Active account
             </label>
           </div>
@@ -229,7 +229,7 @@ export default function EditCustomerPage({
             <button
               type="button"
               onClick={() => router.push("/admin/customers")}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-primary bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Cancel
             </button>

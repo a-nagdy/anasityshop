@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; // useEffect removed from unused homepage settings fetch
 
 interface HeroBanner {
   _id?: string;
@@ -26,64 +26,17 @@ interface HeroSectionProps {
   banners: HeroBanner[];
 }
 
-interface HomepageSettings {
-  backgroundColor: string;
-  accentColor: string;
-  animation3dEnabled: boolean;
-}
-
-// Helper function to convert hex to RGB
-const hexToRgb = (hex: string) => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
-        result[3],
-        16
-      )}`
-    : "0, 245, 255";
-};
-
 export default function HeroSection({ banners }: HeroSectionProps) {
-  const [homepageSettings, setHomepageSettings] =
-    useState<HomepageSettings | null>(null);
+  // Removed hardcoded colors - now using CSS variables from globals.css
 
-  useEffect(() => {
-    const fetchHomepageSettings = async () => {
-      try {
-        const response = await fetch("/api/settings/homepage");
-        if (response.ok) {
-          const data = await response.json();
-          setHomepageSettings(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching homepage settings:", error);
-      }
-    };
-
-    fetchHomepageSettings();
-  }, []);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   const activeBanners = banners
     .filter((banner) => banner.active)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  // Default banner if no active banners
-  const defaultBanner: HeroBanner = {
-    title: "Elyana",
-    subtitle: "Future of E-Commerce",
-    backgroundImage: "",
-    ctaText: "Explore Store",
-    ctaLink: "/categories",
-    active: true,
-    order: 0,
-    showButton: true,
-    showSecondaryButton: true,
-  };
-
-  const allBanners = activeBanners.length > 0 ? activeBanners : [defaultBanner];
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const allBanners = activeBanners;
 
   // Auto-play functionality
   useEffect(() => {
@@ -96,21 +49,22 @@ export default function HeroSection({ banners }: HeroSectionProps) {
     return () => clearInterval(interval);
   }, [isAutoPlaying, allBanners.length]);
 
-  const accentColor = homepageSettings?.accentColor || "#00f5ff";
-  const accentRgb = hexToRgb(accentColor);
+  // Don't render if no active banners
+  if (activeBanners.length === 0) {
+    return null;
+  }
 
   // Normalize the current banner properties
   const currentBanner = allBanners[currentSlide];
   const normalizedBanner = {
-    title: currentBanner.title || "Elyana",
-    subtitle: currentBanner.subtitle || "Future of E-Commerce",
+    title: currentBanner.title || "",
+    subtitle: currentBanner.subtitle || "",
     backgroundImage: currentBanner.backgroundImage || currentBanner.image || "",
-    ctaText:
-      currentBanner.ctaText || currentBanner.buttonText || "Explore Store",
-    ctaLink: currentBanner.ctaLink || currentBanner.buttonLink || "/categories",
+    ctaText: currentBanner.ctaText || currentBanner.buttonText || "",
+    ctaLink: currentBanner.ctaLink || currentBanner.buttonLink || "",
     active: currentBanner.active,
     order: currentBanner.order || 0,
-    showButton: currentBanner.showButton !== false,
+    showButton: currentBanner.showButton !== false && !!currentBanner.ctaText,
     showSecondaryButton: currentBanner.showSecondaryButton !== false,
   };
 
@@ -142,9 +96,9 @@ export default function HeroSection({ banners }: HeroSectionProps) {
         <motion.div
           key={currentSlide}
           className="absolute inset-0 z-0"
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 1, ease: "easeInOut" }}
         >
           {normalizedBanner.backgroundImage && (
@@ -153,7 +107,13 @@ export default function HeroSection({ banners }: HeroSectionProps) {
                 src={normalizedBanner.backgroundImage}
                 alt="Hero Background"
                 fill
-                className="object-cover opacity-30"
+                className={`object-cover ${
+                  normalizedBanner.title || normalizedBanner.subtitle
+                    ? "opacity-30"
+                    : "opacity-100"
+                }`}
+                quality={100}
+                sizes="100vw"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-transparent to-black/70" />
@@ -162,104 +122,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Futuristic Background Effects */}
-      <div className="absolute inset-0 z-10">
-        {/* Dynamic Gradient Orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{
-            backgroundColor: `rgba(var(--theme-primary-rgb), 0.2)`,
-            boxShadow: `0 0 100px rgba(var(--theme-primary-rgb), 0.3)`,
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.3, 0.7, 0.3],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{ duration: 6, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{
-            backgroundColor: `rgba(var(--theme-accent-rgb), 0.2)`,
-            boxShadow: `0 0 100px rgba(var(--theme-accent-rgb), 0.3)`,
-          }}
-          animate={{
-            scale: [1.3, 1, 1.3],
-            opacity: [0.7, 0.3, 0.7],
-            x: [0, -50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{ duration: 6, repeat: Infinity, delay: 3 }}
-        />
-
-        {/* Particle Field */}
-        {[...Array(12)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 rounded-full"
-            style={{
-              backgroundColor: `var(--theme-primary)`,
-              left: `${10 + i * 7}%`,
-              top: `${5 + i * 9}%`,
-              boxShadow: `0 0 10px var(--theme-primary)`,
-            }}
-            animate={{
-              scale: [0.5, 1.5, 0.5],
-              opacity: [0.2, 1, 0.2],
-              rotate: [0, 180, 360],
-            }}
-            transition={{
-              duration: 4 + i * 0.3,
-              repeat: Infinity,
-              delay: i * 0.2,
-            }}
-          />
-        ))}
-
-        {/* Holographic Grid Lines */}
-        <div className="absolute inset-0 opacity-10">
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={`h-${i}`}
-              className="absolute h-px w-full"
-              style={{
-                top: `${i * 12.5}%`,
-                background: `linear-gradient(to right, transparent, var(--theme-primary), transparent)`,
-              }}
-              animate={{
-                opacity: [0.1, 0.5, 0.1],
-                scaleX: [0.8, 1.2, 0.8],
-              }}
-              transition={{
-                duration: 3 + i * 0.5,
-                repeat: Infinity,
-                delay: i * 0.3,
-              }}
-            />
-          ))}
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={`v-${i}`}
-              className="absolute w-px h-full"
-              style={{
-                left: `${i * 16.66}%`,
-                background: `linear-gradient(to bottom, transparent, var(--theme-secondary), transparent)`,
-              }}
-              animate={{
-                opacity: [0.1, 0.5, 0.1],
-                scaleY: [0.8, 1.2, 0.8],
-              }}
-              transition={{
-                duration: 4 + i * 0.4,
-                repeat: Infinity,
-                delay: i * 0.2,
-              }}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Background Effects - Removed animated orbs, particles, and grid lines */}
 
       {/* Main Content */}
       <div className="relative z-20 text-center px-6 max-w-7xl mx-auto">
@@ -275,30 +138,13 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             {/* Main Title */}
             <div className="relative inline-block mb-8">
               <motion.h1
-                className="text-6xl md:text-8xl lg:text-9xl font-extrabold bg-clip-text text-transparent mb-4"
+                className="text-6xl md:text-8xl lg:text-9xl font-extrabold mb-4"
                 style={{
-                  backgroundImage: "var(--theme-gradient-primary)",
-                  backgroundSize: "200% 200%",
+                  color: "var(--theme-primary)",
                 }}
-                animate={{
-                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
               >
                 {normalizedBanner.title}
               </motion.h1>
-              <motion.div
-                className="absolute -inset-4 rounded-lg blur-xl"
-                style={{
-                  background: `var(--theme-gradient-primary)`,
-                  opacity: 0.3,
-                }}
-                animate={{
-                  opacity: [0.3, 0.8, 0.3],
-                  scale: [1, 1.05, 1],
-                }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
             </div>
 
             {/* Subtitle */}
@@ -340,19 +186,17 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             {normalizedBanner.showButton && (
               <Link
                 href={normalizedBanner.ctaLink}
-                className="group relative px-10 py-5 text-white font-bold rounded-xl text-lg transition-all duration-300 hover:scale-105 overflow-hidden"
+                className="group relative px-10 py-5 text-white font-bold rounded-xl text-lg transition-all duration-300 overflow-hidden"
                 style={{
-                  background: "var(--theme-gradient-primary)",
-                  boxShadow:
-                    "0 4px 15px rgba(var(--theme-primary-rgb), 0.4), 0 0 50px rgba(var(--theme-primary-rgb), 0.2)",
+                  background: "var(--theme-gradient-accent)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 25px rgba(var(--theme-primary-rgb), 0.6), 0 0 60px rgba(var(--theme-primary-rgb), 0.4)";
+                  e.currentTarget.style.background =
+                    "var(--theme-gradient-accent)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 15px rgba(var(--theme-primary-rgb), 0.4), 0 0 50px rgba(var(--theme-primary-rgb), 0.2)";
+                  e.currentTarget.style.background =
+                    "var(--theme-gradient-accent)";
                 }}
               >
                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -370,7 +214,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             {normalizedBanner.showSecondaryButton && (
               <Link
                 href="/products"
-                className="group relative px-10 py-5 border-2 font-bold rounded-xl text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                className="group relative px-10 py-5 border-2 font-bold rounded-xl text-lg transition-all duration-300 backdrop-blur-sm"
                 style={{
                   borderColor: "var(--theme-secondary)",
                   color: "var(--theme-secondary)",
@@ -412,19 +256,16 @@ export default function HeroSection({ banners }: HeroSectionProps) {
                   style={
                     index === currentSlide
                       ? {
-                          backgroundColor: accentColor,
-                          boxShadow: `0 0 20px rgba(${accentRgb}, 0.8)`,
+                          background: "var(--theme-gradient-accent)",
                         }
                       : {}
                   }
-                  whileHover={{ scale: 1.2 }}
-                  whileTap={{ scale: 0.9 }}
                 >
                   {index === currentSlide && (
                     <motion.div
                       className="absolute inset-0 rounded-full"
                       style={{
-                        background: `linear-gradient(to right, ${accentColor}, #8b5cf6)`,
+                        background: "var(--theme-gradient-accent)",
                       }}
                       initial={{ scaleX: 0 }}
                       animate={{ scaleX: 1 }}
@@ -441,21 +282,17 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             onClick={prevSlide}
             className="absolute left-8 top-1/2 transform -translate-y-1/2 z-30 w-16 h-16 bg-black/50 backdrop-blur-sm border rounded-full flex items-center justify-center font-bold transition-all duration-300"
             style={{
-              borderColor: `rgba(${accentRgb}, 0.5)`,
-              color: accentColor,
+              borderColor: "var(--theme-primary-50)",
+              color: "var(--theme-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = `rgba(${accentRgb}, 0.2)`;
-              e.currentTarget.style.borderColor = accentColor;
-              e.currentTarget.style.boxShadow = `0 0 30px rgba(${accentRgb}, 0.5)`;
+              e.currentTarget.style.backgroundColor = "var(--theme-primary-20)";
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-              e.currentTarget.style.borderColor = `rgba(${accentRgb}, 0.5)`;
-              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "var(--theme-primary-50)";
             }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             <svg
               className="w-6 h-6"
@@ -476,21 +313,17 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             onClick={nextSlide}
             className="absolute right-8 top-1/2 transform -translate-y-1/2 z-30 w-16 h-16 bg-black/50 backdrop-blur-sm border rounded-full flex items-center justify-center transition-all duration-300"
             style={{
-              borderColor: `rgba(${accentRgb}, 0.5)`,
-              color: accentColor,
+              borderColor: "var(--theme-primary-50)",
+              color: "var(--theme-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = `rgba(${accentRgb}, 0.2)`;
-              e.currentTarget.style.borderColor = accentColor;
-              e.currentTarget.style.boxShadow = `0 0 30px rgba(${accentRgb}, 0.5)`;
+              e.currentTarget.style.backgroundColor = "var(--theme-primary-20)";
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-              e.currentTarget.style.borderColor = `rgba(${accentRgb}, 0.5)`;
-              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "var(--theme-primary-50)";
             }}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
           >
             <svg
               className="w-6 h-6"
@@ -510,9 +343,7 @@ export default function HeroSection({ banners }: HeroSectionProps) {
           {/* Auto-play Toggle */}
           <motion.button
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-            className="absolute top-8 right-8 z-30 w-12 h-12 bg-black/50 backdrop-blur-sm border border-purple-500/50 rounded-full flex items-center justify-center text-purple-400 hover:bg-purple-500/20 hover:border-purple-400 transition-all duration-300"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="absolute top-8 right-8 z-30 w-12 h-12 bg-black/50 backdrop-blur-sm border border-white/50 rounded-full flex items-center justify-center text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300"
           >
             {isAutoPlaying ? (
               <svg

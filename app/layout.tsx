@@ -6,8 +6,6 @@ import { initCronJobs } from "../utils/cron";
 import connectToDatabase from "../utils/db";
 import { initializeOptimizations } from "../utils/initOptimizations";
 import CartProvider from "./components/cart/CartProvider";
-import GlobalBackground from "./components/GlobalBackground";
-import ThemeProvider from "./components/ThemeProvider";
 import "./globals.css";
 import ReduxProvider from "./store/ReduxProvider";
 
@@ -67,24 +65,26 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ReduxProvider>
-          <ThemeProvider>
-            <CartProvider>
-              <GlobalBackground />
-              <div className="relative z-10">{children}</div>
-              <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="dark"
-              />
-            </CartProvider>
-          </ThemeProvider>
+          {/* ThemeProvider disabled - using static CSS variables from globals.css */}
+          {/* <ThemeProvider> */}
+          <CartProvider>
+            {/* GlobalBackground disabled - dynamic background effects removed */}
+            {/* <GlobalBackground /> */}
+            <div className="relative z-10">{children}</div>
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+            />
+          </CartProvider>
+          {/* </ThemeProvider> */}
         </ReduxProvider>
       </body>
     </html>

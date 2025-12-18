@@ -208,15 +208,13 @@ export default function PaymentStep({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Payment Methods */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-3">
             Select Payment Method *
           </label>
           <div className="grid gap-3">
             {paymentMethods.map((method) => (
               <motion.div
                 key={method.id}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
                 className={`relative p-4 border rounded-lg cursor-pointer transition-all ${
                   formData.method === method.id
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-500/20"
@@ -280,7 +278,7 @@ export default function PaymentStep({
 
             {/* Card Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Card Number *
               </label>
               <div className="relative">
@@ -316,7 +314,7 @@ export default function PaymentStep({
 
             {/* Cardholder Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Cardholder Name *
               </label>
               <input
@@ -343,7 +341,7 @@ export default function PaymentStep({
             {/* Expiry Date and CVV */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                   Expiry Date *
                 </label>
                 <input
@@ -369,7 +367,7 @@ export default function PaymentStep({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                   CVV *
                 </label>
                 <input

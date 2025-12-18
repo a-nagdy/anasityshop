@@ -192,7 +192,7 @@ export default function ImageUploader({
             <Image
               src={imageUrl}
               alt="Image preview"
-              className="object-contain rounded-md shadow-lg transition-transform duration-300 hover:scale-105"
+              className="object-contain rounded-md shadow-lg transition-transform duration-300"
               width={300}
               height={300}
             />

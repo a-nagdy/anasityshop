@@ -23,9 +23,8 @@ export default function EditCategoryPage({
   const { id } = use(params);
   const dispatch = useDispatch<AppDispatch>();
 
-  const { categories, currentCategory, isLoading, isSubmitting, error } = useSelector(
-    (state: RootState) => state.categories
-  );
+  const { categories, currentCategory, isLoading, isSubmitting, error } =
+    useSelector((state: RootState) => state.categories);
 
   // Fetch the category and all categories (for parent dropdown)
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function EditCategoryPage({
       .unwrap()
       .then(() => {
         // Navigate back to categories list on successful update
-        router.push('/admin/categories');
+        router.push("/admin/categories");
       });
   };
 
@@ -98,11 +97,11 @@ export default function EditCategoryPage({
         <div className="mb-6">
           {/* Slug (read-only) */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
               Slug
             </label>
             <div className="p-2.5 bg-gray-100 dark:bg-gray-600 rounded-md">
-              <span className="text-sm text-gray-600 dark:text-gray-300">
+              <span className="text-sm text-gray-600 dark:text-primary">
                 {currentCategory?.slug}
               </span>
               <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
@@ -114,12 +113,13 @@ export default function EditCategoryPage({
           {/* Product Count (read-only info) - only if products field exists */}
           {currentCategory?.products !== undefined && (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
                 Associated Products
               </label>
               <div className="p-2.5 bg-gray-100 dark:bg-gray-600 rounded-md">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {currentCategory.products} product{currentCategory.products !== 1 && "s"}
+                <span className="text-sm text-gray-600 dark:text-primary">
+                  {currentCategory.products} product
+                  {currentCategory.products !== 1 && "s"}
                 </span>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function EditCategoryPage({
           onSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           submitButtonText="Save Changes"
-          parentCategories={categories.filter(cat => cat._id !== id)} // Exclude current category from parents
+          parentCategories={categories.filter((cat) => cat._id !== id)} // Exclude current category from parents
         />
       </motion.div>
     </div>

@@ -91,14 +91,12 @@ export default function BannerSection({
             <h2
               className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent"
               style={{
-                backgroundImage: "var(--theme-gradient-primary)",
+                backgroundImage: "var(--theme-gradient-accent)",
               }}
             >
               {title}
             </h2>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              {subtitle}
-            </p>
+            <p className="text-xl text-primary max-w-2xl mx-auto">{subtitle}</p>
           </motion.div>
         )}
 
@@ -146,7 +144,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
         src={banner.image}
         alt={banner.title}
         fill
-        className="object-cover group-hover:scale-105 transition-transform duration-700"
+        className="object-cover transition-transform duration-700"
       />
 
       {/* Overlay */}
@@ -160,7 +158,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
           animate={{ scaleX: 1 }}
           transition={{ delay: index * 0.2, duration: 1 }}
           style={{
-            background: "var(--theme-gradient-primary)",
+            background: "var(--theme-gradient-accent)",
           }}
         />
         <motion.div
@@ -169,7 +167,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
           animate={{ scaleX: 1 }}
           transition={{ delay: index * 0.2 + 0.5, duration: 1 }}
           style={{
-            background: "var(--theme-gradient-primary)",
+            background: "var(--theme-gradient-accent)",
           }}
         />
       </div>
@@ -203,7 +201,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 + 0.4 }}
-              className="text-gray-300 mb-6 text-lg"
+              className="text-primary mb-6 text-lg"
             >
               {banner.description}
             </motion.p>
@@ -217,18 +215,17 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
             >
               <Link
                 href={banner.ctaLink}
-                className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl transition-all duration-300"
                 style={{
-                  background: "var(--theme-gradient-primary)",
-                  boxShadow: "0 8px 32px rgba(var(--theme-primary-rgb), 0.3)",
+                  background: "var(--theme-gradient-accent)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 0 30px rgba(var(--theme-primary-rgb), 0.6)";
+                  e.currentTarget.style.background =
+                    "var(--theme-gradient-accent)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 32px rgba(var(--theme-primary-rgb), 0.3)";
+                  e.currentTarget.style.background =
+                    "var(--theme-gradient-accent)";
                 }}
               >
                 {banner.ctaText}
@@ -278,7 +275,7 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.1 + 0.4 }}
-            className="text-gray-300 mb-8 text-lg leading-relaxed"
+            className="text-primary mb-8 text-lg leading-relaxed"
           >
             {banner.description}
           </motion.p>
@@ -295,15 +292,14 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
               className="inline-flex items-center gap-3 px-8 py-4 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105"
               style={{
                 background: "var(--theme-gradient-accent)",
-                boxShadow: "0 8px 32px rgba(var(--theme-accent-rgb), 0.3)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 0 30px rgba(var(--theme-accent-rgb), 0.6)";
+                e.currentTarget.style.background =
+                  "var(--theme-gradient-accent)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 8px 32px rgba(var(--theme-accent-rgb), 0.3)";
+                e.currentTarget.style.background =
+                  "var(--theme-gradient-accent)";
               }}
             >
               {banner.ctaText}
@@ -321,8 +317,8 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
       {/* Image */}
       <div className="order-1 lg:order-2">
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: index * 0.1, duration: 0.8 }}
           className="relative h-80 rounded-2xl overflow-hidden group"
         >
@@ -330,7 +326,7 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
             src={banner.image}
             alt={banner.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            className="object-cover transition-transform duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         </motion.div>
@@ -354,7 +350,7 @@ function GridBanners({ banners }: { banners: Banner[] }) {
             src={banner.image}
             alt={banner.title}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            className="object-cover transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
 
@@ -368,10 +364,9 @@ function GridBanners({ banners }: { banners: Banner[] }) {
                 className="transition-colors text-sm font-semibold"
                 style={{
                   color: "var(--theme-primary)",
-                  textShadow: "0 0 10px rgba(var(--theme-primary-rgb), 0.5)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "var(--theme-accent)";
+                  e.currentTarget.style.color = "var(--theme-primary)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = "var(--theme-primary)";

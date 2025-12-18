@@ -336,7 +336,7 @@ export default function ThemeProvider({ children }: ThemeProviderProps) {
 
     // Gradient effects
     root.style.setProperty(
-      "--theme-gradient-primary",
+      "--theme-gradient-accent",
       `linear-gradient(135deg, ${themeSettings.primaryColor}, ${themeSettings.secondaryColor})`
     );
     root.style.setProperty(

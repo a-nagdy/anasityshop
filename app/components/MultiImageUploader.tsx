@@ -100,7 +100,7 @@ const MultiImageUploader = ({
   return (
     <div className={`relative ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-primary mb-1">
           {label}
         </label>
       )}
@@ -189,7 +189,7 @@ const MultiImageUploader = ({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700"
+            className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 dark:text-primary hover:bg-blue-50 dark:hover:bg-gray-700"
           >
             <svg
               className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400"
