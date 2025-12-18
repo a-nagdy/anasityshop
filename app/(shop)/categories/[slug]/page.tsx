@@ -343,7 +343,7 @@ export default function CategoryPage() {
         )}
 
         {/* Holographic effect overlay */}
-        <div
+        {/* <div
           className="absolute inset-0 opacity-30"
           style={{
             background: `linear-gradient(45deg, 
@@ -353,7 +353,7 @@ export default function CategoryPage() {
             )`,
             animation: "hologram 3s ease-in-out infinite alternate",
           }}
-        />
+        /> */}
 
         <div className="relative z-10 container mx-auto px-4 h-full flex items-center">
           <div className="text-center w-full">
@@ -361,9 +361,9 @@ export default function CategoryPage() {
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               className="text-5xl md:text-7xl font-black text-white mb-6 relative"
-              style={{
-                textShadow: `0 0 30px rgba(var(--theme-primary-rgb), 0.5)`,
-              }}
+              // style={{
+              //   textShadow: `0 0 30px rgba(var(--theme-primary-rgb), 0.5)`,
+              // }}
             >
               <span
                 className="bg-clip-text text-transparent bg-gradient-to-r"
@@ -419,9 +419,9 @@ export default function CategoryPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="backdrop-blur-xl bg-white/5 rounded-2xl border border-white/10 p-6 mb-8 shadow-2xl"
-          style={{
-            boxShadow: `0 8px 32px rgba(var(--theme-primary-rgb), 0.1)`,
-          }}
+          // style={{
+          //   boxShadow: `0 8px 32px rgba(var(--theme-primary-rgb), 0.1)`,
+          // }}
         >
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             {/* Enhanced Search */}
@@ -501,9 +501,9 @@ export default function CategoryPage() {
               <button
                 onClick={() => setIsFilterOpen(true)}
                 className="relative px-6 py-3 bg-black/20 backdrop-blur-sm border border-white/20 rounded-xl text-white hover:bg-white/10 transition-all duration-300 group"
-                style={{
-                  boxShadow: `0 4px 15px rgba(var(--theme-primary-rgb), 0.2)`,
-                }}
+                // style={{
+                //   boxShadow: `0 4px 15px rgba(var(--theme-primary-rgb), 0.2)`,
+                // }}
               >
                 <div className="flex items-center gap-2">
                   <svg
@@ -642,7 +642,7 @@ export default function CategoryPage() {
             <div className="p-6 space-y-8">
               {/* Price Range */}
               <div>
-                <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
@@ -687,7 +687,7 @@ export default function CategoryPage() {
               {/* Colors Filter */}
               {filterOptions.colors.length > 0 && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
@@ -748,7 +748,7 @@ export default function CategoryPage() {
               {/* Sizes Filter */}
               {filterOptions.sizes.length > 0 && (
                 <div>
-                  <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                  <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
@@ -788,7 +788,7 @@ export default function CategoryPage() {
 
               {/* Status Filter */}
               <div>
-                <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
@@ -824,7 +824,7 @@ export default function CategoryPage() {
 
               {/* Rating Filter */}
               <div>
-                <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{
@@ -879,7 +879,7 @@ export default function CategoryPage() {
 
               {/* Featured Filter */}
               <div>
-                <label className="block text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <label className=" text-lg font-semibold text-white mb-4 flex items-center gap-2">
                   <span
                     className="w-2 h-2 rounded-full"
                     style={{

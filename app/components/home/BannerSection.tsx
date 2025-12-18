@@ -50,12 +50,12 @@ export default function BannerSection({
   };
 
   const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.8,
+        duration: 0.5,
         ease: "easeOut",
       },
     },
@@ -144,6 +144,8 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
         src={banner.image}
         alt={banner.title}
         fill
+        loading="lazy"
+        sizes="100vw"
         className="object-cover transition-transform duration-700"
       />
 
@@ -189,8 +191,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 + 0.2 }}
-              className="text-xl md:text-2xl mb-4"
-              style={{ color: "var(--theme-primary)" }}
+              className="text-xl md:text-2xl mb-4 text-white"
             >
               {banner.subtitle}
             </motion.p>
@@ -201,7 +202,7 @@ function FullWidthBanner({ banner, index }: { banner: Banner; index: number }) {
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.1 + 0.4 }}
-              className="text-primary mb-6 text-lg"
+              className="text-white mb-6 text-lg"
             >
               {banner.description}
             </motion.p>
@@ -253,7 +254,7 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: index * 0.1 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-6"
+          className="text-4xl md:text-5xl font-bold mb-6"
         >
           {banner.title}
         </motion.h3>
@@ -326,6 +327,8 @@ function SplitBanner({ banner, index }: { banner: Banner; index: number }) {
             src={banner.image}
             alt={banner.title}
             fill
+            loading="lazy"
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover transition-transform duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
@@ -350,6 +353,8 @@ function GridBanners({ banners }: { banners: Banner[] }) {
             src={banner.image}
             alt={banner.title}
             fill
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />

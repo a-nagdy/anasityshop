@@ -40,12 +40,12 @@ export default function CategorySlider({
   };
 
   const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.6,
+        duration: 0.4,
         ease: "easeOut",
       },
     },
@@ -63,9 +63,9 @@ export default function CategorySlider({
         />
         <div
           className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl"
-          style={{
-            backgroundColor: "rgba(var(--theme-primary-rgb), 0.1)",
-          }}
+          // style={{
+          //   backgroundColor: "rgba(var(--theme-primary-rgb), 0.1)",
+          // }}
         />
       </div>
 
@@ -79,9 +79,9 @@ export default function CategorySlider({
         >
           <h2
             className="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent"
-            style={{
-              backgroundImage: "var(--theme-gradient-accent)",
-            }}
+            // style={{
+            //   backgroundImage: "var(--theme-gradient-accent)",
+            // }}
           >
             {title}
           </h2>
@@ -122,6 +122,9 @@ export default function CategorySlider({
                         src={category.image}
                         alt={category.name}
                         fill
+                        loading={index < 4 ? "eager" : "lazy"}
+                        priority={index < 4}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className="object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -131,10 +134,10 @@ export default function CategorySlider({
                   {/* Hover Effects */}
                   <div
                     className="absolute inset-0 bg-gradient-to-t to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                    style={{
-                      background:
-                        "linear-gradient(to top, rgba(var(--theme-primary-rgb), 0.2), transparent)",
-                    }}
+                    // style={{
+                    //   background:
+                    //     "linear-gradient(to top, rgba(var(--theme-primary-rgb), 0.2), transparent)",
+                    // }}
                   />
 
                   {/* Glowing Border */}
@@ -158,9 +161,9 @@ export default function CategorySlider({
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: index * 0.1 }}
-                      style={{
-                        color: "white",
-                      }}
+                      // style={{
+                      //   color: "white",
+                      // }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.color = "var(--theme-primary)";
                       }}
@@ -187,11 +190,11 @@ export default function CategorySlider({
                     <motion.div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span
                         className="inline-flex items-center gap-2 px-4 py-2 text-white font-semibold rounded-lg text-sm"
-                        style={{
-                          background: "var(--theme-gradient-accent)",
-                          boxShadow:
-                            "0 4px 15px rgba(var(--theme-primary-rgb), 0.3)",
-                        }}
+                        // style={{
+                        //   background: "var(--theme-gradient-accent)",
+                        //   boxShadow:
+                        //     "0 4px 15px rgba(var(--theme-primary-rgb), 0.3)",
+                        // }}
                       >
                         Explore
                         <motion.span
@@ -236,17 +239,17 @@ export default function CategorySlider({
             style={{
               background: "var(--theme-gradient-accent)",
               borderColor: "var(--theme-border)",
-              boxShadow: "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)",
+              // boxShadow: "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = "var(--theme-primary)";
-              e.currentTarget.style.boxShadow =
-                "0 8px 25px rgba(var(--theme-primary-rgb), 0.4)";
+              // e.currentTarget.style.boxShadow =
+              //   "0 8px 25px rgba(var(--theme-primary-rgb), 0.4)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = "var(--theme-border)";
-              e.currentTarget.style.boxShadow =
-                "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)";
+              // e.currentTarget.style.boxShadow =
+              //   "0 4px 15px rgba(var(--theme-primary-rgb), 0.2)";
             }}
           >
             View All Categories
@@ -254,7 +257,7 @@ export default function CategorySlider({
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
               className="transition-colors"
-              style={{ color: "var(--theme-primary)" }}
+              // style={{ color: "var(--theme-primary)" }}
             >
               →
             </motion.span>

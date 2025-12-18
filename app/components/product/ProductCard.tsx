@@ -68,33 +68,33 @@ export default function ProductCard({
     // TODO: Implement actual wishlist API calls
   };
 
-  const getStatusBadge = () => {
-    if (isOutOfStock) {
-      return (
-        <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
-          Out of Stock
-        </span>
-      );
-    }
+  // const getStatusBadge = () => {
+  //   if (isOutOfStock) {
+  //     return (
+  //       <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+  //         Out of Stock
+  //       </span>
+  //     );
+  //   }
 
-    if (product.status === "low stock") {
-      return (
-        <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold">
-          Low Stock
-        </span>
-      );
-    }
+  //   if (product.status === "low stock") {
+  //     return (
+  //       <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-semibold">
+  //         Low Stock
+  //       </span>
+  //     );
+  //   }
 
-    if (product.hasDiscount) {
-      return (
-        <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
-          -{product.discountPercentage}%
-        </span>
-      );
-    }
+  //   if (product.hasDiscount) {
+  //     return (
+  //       <span className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+  //         -{product.discountPercentage}%
+  //       </span>
+  //     );
+  //   }
 
-    return null;
-  };
+  //   return null;
+  // };
 
   return (
     <motion.div
@@ -116,7 +116,7 @@ export default function ProductCard({
         />
 
         {/* Status Badge */}
-        {getStatusBadge()}
+        {/* {getStatusBadge()} */}
 
         {/* Wishlist Button */}
         {showWishlist && (
@@ -150,7 +150,7 @@ export default function ProductCard({
       {/* Product Info */}
       <div className="p-4">
         <div onClick={handleCardClick} className="cursor-pointer">
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[3rem]">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[3rem] capitalize">
             {product.name}
           </h3>
 

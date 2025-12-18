@@ -122,8 +122,6 @@ export default function HeroSection({ banners }: HeroSectionProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Background Effects - Removed animated orbs, particles, and grid lines */}
-
       {/* Main Content */}
       <div className="relative z-20 text-center px-6 max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
@@ -282,16 +280,16 @@ export default function HeroSection({ banners }: HeroSectionProps) {
             onClick={prevSlide}
             className="absolute left-8 top-1/2 transform -translate-y-1/2 z-30 w-16 h-16 bg-black/50 backdrop-blur-sm border rounded-full flex items-center justify-center font-bold transition-all duration-300"
             style={{
-              borderColor: "var(--theme-primary-50)",
+              borderColor: "var(--theme-primary)",
               color: "var(--theme-primary)",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--theme-primary-20)";
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
               e.currentTarget.style.borderColor = "var(--theme-primary)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-              e.currentTarget.style.borderColor = "var(--theme-primary-50)";
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.2)";
+              e.currentTarget.style.borderColor = "var(--theme-primary)";
             }}
           >
             <svg

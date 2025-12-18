@@ -560,10 +560,8 @@ export default function ProductDetailsPage() {
               </div>
 
               {/* Key Features */}
-              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Key Features
-                </h3>
+              <div className="shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg p-6 capitalize">
+                <h3 className="text-lg font-semibold mb-4">Key Features</h3>
                 <ul className="space-y-2 text-gray-700 dark:text-primary">
                   <li className="flex items-center gap-2">
                     <CheckIcon className="w-5 h-5 text-green-500" />
@@ -587,7 +585,7 @@ export default function ProductDetailsPage() {
           </div>
 
           {/* Product Details Tabs */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-16">
+          <div className=" rounded-2xl shadow-lg p-8 mb-16">
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-8">
               {[
@@ -604,7 +602,7 @@ export default function ProductDetailsPage() {
                   className={`px-6 py-3 font-medium border-b-2 transition-colors ${
                     activeTab === tab.id
                       ? ""
-                      : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-primary"
+                      : "border-transparent text-gray-500 dark:text-primary hover:text-gray-700 dark:hover:text-primary"
                   }`}
                   style={
                     activeTab === tab.id
@@ -631,7 +629,7 @@ export default function ProductDetailsPage() {
               >
                 {activeTab === "description" && (
                   <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <p className="text-lg leading-relaxed">
+                    <p className="text-lg leading-relaxed capitalize ">
                       {product.description}
                     </p>
                   </div>

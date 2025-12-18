@@ -42,7 +42,7 @@ export default function ProductSlider({
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "EGP",
     }).format(price);
   };
 
@@ -67,12 +67,12 @@ export default function ProductSlider({
   };
 
   const itemVariants = {
-    hidden: { y: 50, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        duration: 0.8,
+        duration: 0.5,
         ease: "easeOut",
       },
     },
@@ -173,6 +173,9 @@ export default function ProductSlider({
                         src={product.image || PlaceholderImage}
                         alt={product.name}
                         fill
+                        loading={index < 4 ? "eager" : "lazy"}
+                        priority={index < 4}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className={`object-cover transition-transform duration-700 ${
                           inStock
                             ? "group-hover:scale-110"
@@ -184,7 +187,7 @@ export default function ProductSlider({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       {/* Stock Status */}
-                      <div className="absolute top-4 left-4">
+                      {/* <div className="absolute top-4 left-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
                             inStock
@@ -200,7 +203,7 @@ export default function ProductSlider({
                             ? "Low Stock"
                             : "Out of Stock"}
                         </span>
-                      </div>
+                      </div> */}
 
                       {/* Sale Badge */}
                       {product.salePrice &&
@@ -238,7 +241,7 @@ export default function ProductSlider({
                     {/* Product Name */}
                     <Link href={`/products/${product.sku || product._id}`}>
                       <h3
-                        className="text-xl font-bold mb-3 transition-colors duration-300 line-clamp-2 cursor-pointer min-h-[3.5rem] flex-shrink-0"
+                        className="text-xl font-bold mb-3 transition-colors duration-300 line-clamp-2 cursor-pointer min-h-[3.5rem] flex-shrink-0 capitalize"
                         style={{ color: "var(--theme-text-primary)" }}
                       >
                         {product.name}
@@ -249,7 +252,7 @@ export default function ProductSlider({
                     <div className="flex-grow mb-4">
                       {product.description ? (
                         <p
-                          className="text-sm line-clamp-3 min-h-[4.5rem]"
+                          className="text-sm line-clamp-3 min-h-[4.5rem] capitalize"
                           style={{ color: "var(--theme-text-secondary)" }}
                         >
                           {product.description}
@@ -258,7 +261,16 @@ export default function ProductSlider({
                         <div className="min-h-[4.5rem]"></div>
                       )}
                     </div>
-
+                    {/* Stock Info */}
+                    {/* {inStock &&
+                      product.quantity !== undefined &&
+                      product.quantity <= 5 && ( 
+                        <div className="mt-3 text-center flex-shrink-0">
+                          <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded-full">
+                            Only {product.quantity} left in stock!
+                          </span>
+                        </div>
+                      )} */}
                     {/* Price and Add to Cart */}
                     <div className="flex items-center justify-between mt-auto flex-shrink-0">
                       <div className="flex items-center gap-2">
@@ -328,17 +340,6 @@ export default function ProductSlider({
                         />
                       </div>
                     </div>
-
-                    {/* Stock Info */}
-                    {inStock &&
-                      product.quantity !== undefined &&
-                      product.quantity <= 5 && (
-                        <div className="mt-3 text-center flex-shrink-0">
-                          <span className="text-xs text-yellow-400 bg-yellow-500/20 px-2 py-1 rounded-full">
-                            Only {product.quantity} left in stock!
-                          </span>
-                        </div>
-                      )}
                   </div>
 
                   {/* Glowing Border Effect */}

@@ -212,10 +212,10 @@ export default function HomePage() {
         <section className="py-20 relative">
           <div className="max-w-7xl mx-auto px-4 text-center">
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true, margin: "-50px" }}
               className="mb-16"
             >
               <h2
@@ -253,10 +253,10 @@ export default function HomePage() {
               ].map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true, margin: "-50px" }}
                   className="group p-8 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl backdrop-blur-sm border border-white/10 transition-all duration-300"
                   style={{
                     borderColor: "rgba(255, 255, 255, 0.1)",

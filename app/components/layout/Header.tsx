@@ -78,7 +78,7 @@ export default function Header() {
                   /* Categories Dropdown */
                   <div className="relative group">
                     <div
-                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer nav-link-theme ${
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium cursor-pointer nav-link-theme text-md ${
                         pathname.startsWith("/categories") ? "active" : ""
                       }`}
                     >
@@ -98,12 +98,18 @@ export default function Header() {
                       </svg>
                     </div>
 
-                    {/* Dropdown Menu */}
-                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-20">
+                    {/* Dropdown Menu - Pure Glassmorphism */}
+                    <div
+                      className="absolute right-0 mt-2 w-64 rounded-xl backdrop-blur-xl border border-white/30 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-20"
+                      style={{
+                        background: "rgba(255, 255, 255, 0.15)",
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                      }}
+                    >
                       <div className="py-2">
                         {/* Loading State */}
                         {categoriesLoading && (
-                          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                          <div className="px-4 py-2 text-sm text-gray-700">
                             Loading categories...
                           </div>
                         )}
@@ -113,15 +119,17 @@ export default function Header() {
                           <Link
                             key={category._id}
                             href={`/categories/${category.slug}`}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="flex items-center px-4 py-2 text-sm text-gray-900 font-medium hover:bg-white/30 rounded-lg mx-2 transition-all duration-200"
                           >
-                            <span className="truncate">{category.name}</span>
+                            <span className="truncate capitalize text-md font-bold">
+                              {category.name}
+                            </span>
                           </Link>
                         ))}
 
                         {/* Empty State */}
                         {!categoriesLoading && categories.length === 0 && (
-                          <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                          <div className="px-4 py-2 text-sm text-gray-700">
                             No categories available
                           </div>
                         )}
